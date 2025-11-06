@@ -20,16 +20,16 @@ Create `.env.local` in the root directory:
 
 ```env
 # Get these from clerk.com dashboard
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-CLERK_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=YOUR_SECRET_KEY
+CLERK_WEBHOOK_SECRET=YOUR_WEBHOOK_SECRET
 
 # Get from mongodb.com/atlas
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/lms
+MONGODB_URI=YOUR_MONGODB_CONNECTION_STRING
 MONGODB_DB_NAME=lms
 
 # Get from platform.openai.com
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=YOUR_OPENAI_API_KEY
 
 # For local development
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -79,3 +79,4 @@ Open [http://localhost:3000](http://localhost:3000)
 For detailed setup, see [SETUP.md](./SETUP.md)
 
 For production deployment, see [README.md](./README.md)
+

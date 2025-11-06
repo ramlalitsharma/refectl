@@ -52,7 +52,7 @@ Feedback Loop: Agentic AI Updates Curriculum Dynamically
    NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
    NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
    NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-   CLERK_WEBHOOK_SECRET=whsec_your_webhook_secret
+   CLERK_WEBHOOK_SECRET=YOUR_WEBHOOK_SECRET
 
    # MongoDB Atlas
    MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/lms?retryWrites=true&w=majority

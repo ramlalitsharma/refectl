@@ -8,6 +8,8 @@
   SKIP_DB_BUILD = "true"
   # Omit NEXT_PUBLIC_* variables from secret scanning (these are intentionally public in Next.js)
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,NEXT_PUBLIC_APP_URL,MONGODB_DB_NAME"
+  # Exclude documentation files from secret scanning (they contain example placeholders only)
+  SECRETS_SCAN_OMIT_PATHS = "*.md,QUICKSTART.md,README.md,ENV_SETUP.md,PROJECT_SUMMARY.md"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
