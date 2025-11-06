@@ -4,6 +4,9 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { getDatabase } from '@/lib/mongodb';
 import { User } from '@/lib/models/User';
+import { clerkClient } from '@clerk/nextjs/server';
+
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -109,6 +112,57 @@ export async function POST(req: NextRequest) {
         },
       }
     );
+  }
+
+  // Handle Clerk subscription lifecycle events (if enabled on your Clerk app)
+  if (eventType?.startsWith('subscription.')) {
+    try {
+      const db = await getDatabase();
+      const usersCollection = db.collection('users');
+
+      // Clerk subscription events typically include the user id on evt.data.user_id
+      // Fall back to evt.data.id if necessary
+      const userId = (evt as any).data?.user_id || (evt as any).data?.id;
+      const status: string | undefined = (evt as any).data?.status;
+      const currentPeriodEndRaw: string | number | undefined = (evt as any).data?.current_period_end || (evt as any).data?.current_period_ends_at;
+      const currentPeriodEnd = currentPeriodEndRaw ? new Date(String(currentPeriodEndRaw)) : undefined;
+
+      // Map status to tier
+      const isActive = status === 'active' || status === 'trialing';
+      const tier: 'free' | 'premium' = isActive ? 'premium' : 'free';
+
+      if (userId) {
+        // Update Clerk publicMetadata as source of truth
+        try {
+          const client = await clerkClient();
+          await client.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              subscriptionTier: tier,
+              subscriptionStatus: status,
+              subscriptionCurrentPeriodEnd: currentPeriodEnd?.toISOString(),
+            },
+          });
+        } catch (e) {
+          console.warn('Could not update Clerk publicMetadata from subscription webhook:', e);
+        }
+
+        // Persist in MongoDB mirror
+        await usersCollection.updateOne(
+          { clerkId: userId },
+          {
+            $set: {
+              subscriptionTier: tier,
+              subscriptionStatus: status,
+              subscriptionCurrentPeriodEnd: currentPeriodEnd,
+              updatedAt: new Date(),
+            },
+          },
+          { upsert: false }
+        );
+      }
+    } catch (e) {
+      console.error('Error handling subscription webhook:', e);
+    }
   }
 
   return NextResponse.json({ received: true });
