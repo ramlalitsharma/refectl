@@ -1,136 +1,145 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { getDatabase } from '@/lib/mongodb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { SiteBrand } from '@/components/layout/SiteBrand';
+import { StatCard } from '@/components/ui/StatCard';
+import { Progress } from '@/components/ui/Progress';
+import Link from 'next/link';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AnalyticsPage() {
   const { userId } = await auth();
-  
-  if (!userId) {
-    redirect('/sign-in');
+  if (!userId) redirect('/sign-in');
+
+  let stats: any = { cohorts: [], mastery: [], questionStats: [] };
+  try {
+    const db = await getDatabase();
+    const progress = await db.collection('userProgress').find({ userId }).sort({ completedAt: -1 }).limit(100).toArray();
+    
+    // Cohort analysis: group by week/month
+    const cohorts: Record<string, { count: number; avgScore: number }> = {};
+    progress.forEach((p: any) => {
+      const date = new Date(p.completedAt || p.createdAt);
+      const week = `${date.getFullYear()}-W${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`;
+      if (!cohorts[week]) cohorts[week] = { count: 0, avgScore: 0 };
+      cohorts[week].count++;
+      cohorts[week].avgScore = (cohorts[week].avgScore * (cohorts[week].count - 1) + (p.score || 0)) / cohorts[week].count;
+    });
+    stats.cohorts = Object.entries(cohorts).slice(0, 12).map(([period, data]: [string, any]) => ({ period, ...data }));
+
+    // Mastery by subject
+    const mastery: Record<string, { total: number; correct: number }> = {};
+    progress.forEach((p: any) => {
+      const subject = p.subject || 'General';
+      if (!mastery[subject]) mastery[subject] = { total: 0, correct: 0 };
+      mastery[subject].total++;
+      if (p.score >= 70) mastery[subject].correct++;
+    });
+    stats.mastery = Object.entries(mastery).map(([subject, data]: [string, any]) => ({
+      subject,
+      percent: Math.round((data.correct / data.total) * 100),
+    })).sort((a, b) => b.percent - a.percent);
+
+    // Question difficulty stats
+    const qStats: Record<string, { attempts: number; correct: number }> = {};
+    progress.forEach((p: any) => {
+      (p.answers || []).forEach((a: any) => {
+        const key = a.difficulty || 'medium';
+        if (!qStats[key]) qStats[key] = { attempts: 0, correct: 0 };
+        qStats[key].attempts++;
+        if (a.correct) qStats[key].correct++;
+      });
+    });
+    stats.questionStats = Object.entries(qStats).map(([difficulty, data]: [string, any]) => ({
+      difficulty,
+      accuracy: Math.round((data.correct / data.attempts) * 100),
+      attempts: data.attempts,
+    }));
+  } catch (e) {
+    console.error('Analytics fetch error:', e);
   }
 
-  // In production, fetch real data from API
-  const progress = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/user/progress`, {
-    cache: 'no-store',
-  }).then(res => res.ok ? res.json() : []).catch(() => []);
-
-  const totalQuizzes = progress.length;
-  const averageScore = progress.length > 0
-    ? progress.reduce((sum: number, p: any) => sum + p.score, 0) / progress.length
-    : 0;
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <header className="bg-white/70 backdrop-blur border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <SiteBrand />
-          <Link href="/dashboard">
-            <span className="text-blue-600 hover:underline cursor-pointer">← Back</span>
-          </Link>
+          <Link href="/dashboard" className="text-blue-600 hover:underline">← Dashboard</Link>
         </div>
       </header>
-
       <main className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">Total Quizzes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-600">{totalQuizzes}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">Average Score</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-600">{averageScore.toFixed(1)}%</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">Mastery Level</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-purple-600">
-                {averageScore >= 80 ? 'Expert' : averageScore >= 60 ? 'Advanced' : averageScore >= 40 ? 'Intermediate' : 'Beginner'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-600">Streak</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-orange-600">0</p>
-              <p className="text-sm text-gray-600">days</p>
-            </CardContent>
-          </Card>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Insights</h1>
+        
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          <StatCard title="Total Quizzes" value={stats.cohorts.reduce((n: number, c: any) => n + c.count, 0)} subtitle="Completed" icon={<span>📊</span>} color="blue" />
+          <StatCard title="Avg Score" value={`${Math.round(stats.cohorts.reduce((s: number, c: any) => s + c.avgScore, 0) / (stats.cohorts.length || 1))}%`} subtitle="Overall" icon={<span>📈</span>} color="green" />
+          <StatCard title="Subjects" value={stats.mastery.length} subtitle="Tracked" icon={<span>📚</span>} color="purple" />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Over Time</CardTitle>
+              <CardTitle>Cohort Performance</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-64 flex items-center justify-center text-gray-400">
-                <p>Chart visualization would go here</p>
-                <p className="text-sm mt-2">Install recharts for full visualization</p>
-              </div>
+            <CardContent className="pt-6">
+              {stats.cohorts.length === 0 ? (
+                <p className="text-sm text-gray-500">No cohort data yet. Complete quizzes to see trends.</p>
+              ) : (
+                <div className="space-y-4">
+                  {stats.cohorts.map((c: any) => (
+                    <div key={c.period}>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">{c.period}</span>
+                        <span className="text-sm text-gray-500">{c.count} quizzes • {Math.round(c.avgScore)}% avg</span>
+                      </div>
+                      <Progress value={c.avgScore} color="blue" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Topic Mastery</CardTitle>
+              <CardTitle>Mastery by Subject</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">General Knowledge</span>
-                    <span className="text-sm text-gray-600">{averageScore.toFixed(0)}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${averageScore}%` }}
-                    />
-                  </div>
+            <CardContent className="pt-6">
+              {stats.mastery.length === 0 ? (
+                <p className="text-sm text-gray-500">No mastery data yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {stats.mastery.slice(0, 8).map((m: any, idx: number) => (
+                    <div key={m.subject}>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">{m.subject}</span>
+                        <span className="text-sm text-gray-500">{m.percent}%</span>
+                      </div>
+                      <Progress value={m.percent} color={idx % 2 === 0 ? 'green' : 'purple'} />
+                    </div>
+                  ))}
                 </div>
-                {/* Add more topics as data becomes available */}
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Question Difficulty Analysis</CardTitle>
           </CardHeader>
-          <CardContent>
-            {progress.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No quiz history yet. Start taking quizzes to see your progress!</p>
+          <CardContent className="pt-6">
+            {stats.questionStats.length === 0 ? (
+              <p className="text-sm text-gray-500">No question stats yet.</p>
             ) : (
-              <div className="space-y-4">
-                {progress.slice(0, 10).map((p: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{p.quizId || 'Quiz'}</p>
-                      <p className="text-sm text-gray-600">
-                        {new Date(p.completedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-blue-600">{p.score.toFixed(1)}%</p>
-                    </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                {stats.questionStats.map((q: any) => (
+                  <div key={q.difficulty} className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-sm font-medium text-gray-700 capitalize mb-1">{q.difficulty}</div>
+                    <div className="text-2xl font-bold text-gray-900">{q.accuracy}%</div>
+                    <div className="text-xs text-gray-500">{q.attempts} attempts</div>
                   </div>
                 ))}
               </div>

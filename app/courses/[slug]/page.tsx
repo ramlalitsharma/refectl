@@ -54,7 +54,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                 <ol className="list-decimal ml-5 space-y-2">
                   {(m.lessons || []).map((l: any) => (
                     <li key={l.id} className="text-gray-800">
-                      <div className="font-medium">{l.title}</div>
+                      <Link href={`/courses/${slug}/${l.slug}`} className="font-medium hover:text-blue-600 hover:underline">{l.title}</Link>
                       {l.content ? <p className="text-sm text-gray-600 mt-1">{l.content.slice(0, 180)}...</p> : null}
                     </li>
                   ))}
