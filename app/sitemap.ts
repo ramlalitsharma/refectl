@@ -19,6 +19,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     subjectRoutes = subjects
       .filter((s: any) => s.slug)
       .map((s: any) => ({ url: `${baseUrl}/subjects/${s.slug}`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 }));
+    const courses = await db.collection('courses').find({ status: { $ne: 'draft' } }).project({ slug: 1 }).toArray();
+    const courseRoutes = courses
+      .filter((c: any) => c.slug)
+      .map((c: any) => ({ url: `${baseUrl}/courses/${c.slug}`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 }));
+    subjectRoutes = [...subjectRoutes, ...courseRoutes];
   } catch {
     subjectRoutes = [];
   }
