@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/Button';
+import { validateTitle, sanitizeInput } from '@/lib/validation';
 
 interface UserSettingsFormProps {
   user: any;
@@ -9,20 +10,108 @@ interface UserSettingsFormProps {
 
 export function UserSettingsForm({ user }: UserSettingsFormProps) {
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [name, setName] = useState(user?.name || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/user/profile/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setProfilePicture(data.profilePicture);
+        alert('Profile picture uploaded successfully!');
+      } else {
+        alert(data.error || 'Upload failed');
+      }
+    } catch (e) {
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    const nameValidation = validateTitle(name);
+    if (!nameValidation.valid) {
+      alert(nameValidation.error);
+      return;
+    }
+
     setSaving(true);
-    // TODO: Implement user profile update
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: sanitizeInput(name),
+          bio: sanitizeInput(bio),
+        }),
+      });
+
+      if (res.ok) {
+        alert('Profile updated successfully!');
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to update profile');
+      }
+    } catch (e) {
+      alert('Failed to update profile');
+    } finally {
       setSaving(false);
-      alert('Profile updated successfully!');
-    }, 1000);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Profile Picture */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Profile Picture
+        </label>
+        <div className="flex items-center gap-4">
+          {profilePicture ? (
+            <img src={profilePicture} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-gray-300" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-2xl">
+              {user?.name?.[0]?.toUpperCase() || 'U'}
+            </div>
+          )}
+          <div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/*"
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? 'Uploading...' : profilePicture ? 'Change Picture' : 'Upload Picture'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Display Name
@@ -33,6 +122,9 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
           onChange={(e) => setName(e.target.value)}
           placeholder="Your display name"
           className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          minLength={3}
+          maxLength={50}
         />
       </div>
 
@@ -55,9 +147,13 @@ export function UserSettingsForm({ user }: UserSettingsFormProps) {
         </label>
         <textarea
           rows={4}
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
           placeholder="Tell us about yourself..."
           className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          maxLength={500}
         />
+        <p className="text-xs text-gray-500 mt-1">{bio.length}/500 characters</p>
       </div>
 
       <div>

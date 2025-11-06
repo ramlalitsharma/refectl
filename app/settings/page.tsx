@@ -131,7 +131,9 @@ export default async function SettingsPage() {
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Download all your data in a portable format (GDPR compliant)
                     </p>
-                    <Button variant="outline">Download Data</Button>
+                    <a href="/api/user/export" download>
+                      <Button variant="outline">Download Data</Button>
+                    </a>
                   </div>
                   <div className="pt-4 border-t">
                     <div className="font-medium mb-2 text-red-600 dark:text-red-400">Delete Account</div>

@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { CourseReviews } from '@/components/courses/CourseReviews';
+import { CoursePreview } from '@/components/courses/CoursePreview';
+import { CourseCompletion } from '@/components/courses/CourseCompletion';
+import { CourseRecommendations } from '@/components/courses/CourseRecommendations';
 import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -17,12 +20,19 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   let course: any = null;
   let reviews: any = null;
   let userProgress: any = {};
+  let isEnrolled = false;
+  let isCompleted = false;
   
   try {
     const db = await getDatabase();
     course = await db.collection('courses').findOne({ slug });
     
     if (course && userId) {
+      // Check enrollment and completion
+      const enrollment = await db.collection('courseCompletions').findOne({ userId, courseId: String(course._id) });
+      isCompleted = !!enrollment;
+      isEnrolled = isCompleted || (await db.collection('userProgress').countDocuments({ userId, courseId: String(course._id) })) > 0;
+      
       // Fetch reviews
       const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/courses/${slug}/reviews`, { cache: 'no-store' });
       reviews = reviewsRes.ok ? await reviewsRes.json() : { reviews: [], stats: { average: '0', total: 0 } };
@@ -113,6 +123,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Course Preview (for non-enrolled users) */}
+            {!isEnrolled && <CoursePreview course={course} />}
+
+            {/* Course Completion (for enrolled users) */}
+            {isEnrolled && !isCompleted && progressPercent >= 90 && (
+              <CourseCompletion courseSlug={slug} courseTitle={course.title} />
+            )}
+
             {/* Course Content */}
             <Card>
               <CardHeader>
@@ -189,6 +207,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
             {/* Reviews Section */}
             {reviews && <CourseReviews courseSlug={slug} initialReviews={reviews} />}
+
+            {/* Course Recommendations */}
+            {userId && <CourseRecommendations />}
           </div>
 
           {/* Sidebar */}
