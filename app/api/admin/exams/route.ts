@@ -26,20 +26,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { name, description, questionBankIds, questionIds, durationMinutes, totalMarks, tags } = await req.json();
+    const body = await req.json();
+    const {
+      name,
+      description,
+      questionBankIds,
+      questionIds,
+      durationMinutes,
+      totalMarks,
+      category,
+      examType,
+      tags,
+      sections,
+      releaseAt,
+      closeAt,
+      visibility,
+      cohorts,
+      passingScore,
+      price,
+    } = body;
 
-    if (!name || !Array.isArray(questionIds) || questionIds.length === 0) {
-      return NextResponse.json({ error: 'Exam name and at least one question are required' }, { status: 400 });
+    if (!name || !durationMinutes || !totalMarks) {
+      return NextResponse.json({ error: 'Exam name, duration, and total marks are required' }, { status: 400 });
     }
 
     const record = {
       name,
       description: description || '',
       questionBankIds: Array.isArray(questionBankIds) ? questionBankIds : [],
-      questionIds,
+      questionIds: Array.isArray(questionIds) ? questionIds : [],
       durationMinutes: Number(durationMinutes) || 60,
-      totalMarks: Number(totalMarks) || questionIds.length,
+      totalMarks: Number(totalMarks) || 0,
+      category: category || '',
+      examType: examType || '',
       tags: Array.isArray(tags) ? tags : [],
+      sections: Array.isArray(sections) ? sections : [],
+      releaseAt: releaseAt || null,
+      closeAt: closeAt || null,
+      visibility: visibility || 'private',
+      cohorts: Array.isArray(cohorts) ? cohorts : [],
+      passingScore: passingScore !== undefined ? Number(passingScore) : undefined,
+      price: price && price.amount ? { currency: price.currency || 'USD', amount: Number(price.amount) } : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

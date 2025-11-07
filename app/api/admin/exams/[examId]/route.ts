@@ -16,13 +16,33 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ exam
     const body = await req.json();
     const update: any = { updatedAt: new Date() };
 
-    const mutable = ['name', 'description', 'questionBankIds', 'questionIds', 'durationMinutes', 'totalMarks', 'tags'];
+    const mutable = [
+      'name',
+      'description',
+      'questionBankIds',
+      'questionIds',
+      'durationMinutes',
+      'totalMarks',
+      'category',
+      'examType',
+      'tags',
+      'sections',
+      'releaseAt',
+      'closeAt',
+      'visibility',
+      'cohorts',
+      'passingScore',
+      'price',
+    ];
+
     for (const key of mutable) {
       if (body[key] !== undefined) {
-        if (key === 'questionBankIds' || key === 'questionIds' || key === 'tags') {
+        if (key === 'durationMinutes' || key === 'totalMarks' || key === 'passingScore') {
+          update[key] = Number(body[key]);
+        } else if (key === 'questionBankIds' || key === 'questionIds' || key === 'tags' || key === 'sections' || key === 'cohorts') {
           update[key] = Array.isArray(body[key]) ? body[key] : [];
-        } else if (key === 'durationMinutes' || key === 'totalMarks') {
-          update[key] = Number(body[key]) || 0;
+        } else if (key === 'price' && body.price) {
+          update[key] = body.price.amount ? { currency: body.price.currency || 'USD', amount: Number(body.price.amount) } : undefined;
         } else {
           update[key] = body[key];
         }
