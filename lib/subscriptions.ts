@@ -1,4 +1,16 @@
 import { clerkClient } from '@clerk/nextjs/server';
+import { getDatabase } from './mongodb';
+import { serializePlan } from './models/SubscriptionPlan';
+
+export async function getActivePlans() {
+  const db = await getDatabase();
+  const plans = await db
+    .collection('subscriptionPlans')
+    .find({ active: true })
+    .sort({ price: 1 })
+    .toArray();
+  return plans.map(serializePlan);
+}
 
 type SubsProvider = 'clerk' | 'lemonsqueezy';
 

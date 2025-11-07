@@ -203,6 +203,11 @@ export default async function AdminPage() {
                   General Settings →
                 </Button>
               </Link>
+              <Link href="/admin/subscriptions">
+                <Button variant="outline" className="w-full justify-start">
+                  Subscription Plans →
+                </Button>
+              </Link>
               <Button variant="outline" className="w-full justify-start" disabled>
                 API Keys & Integrations →
               </Button>
