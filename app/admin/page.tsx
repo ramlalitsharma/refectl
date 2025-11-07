@@ -129,35 +129,38 @@ export default async function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <span className="text-2xl">📚</span>
-                Content Management
+                Courses
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href="/admin/courses">
-                <Button variant="outline" className="w-full justify-start">
-                  Manage Courses →
+              <p className="text-sm text-slate-500">Manage curricula, author new programs, and track publishing workflow.</p>
+              <div className="grid gap-2">
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/admin/courses">Manage Courses →</Link>
                 </Button>
-              </Link>
-              <Link href="/admin/blogs">
-                <Button variant="outline" className="w-full justify-start">
-                  Manage Blogs →
+                <Button className="justify-start" asChild>
+                  <Link href="/admin/studio/courses">Course Studio →</Link>
                 </Button>
-              </Link>
-              <Link href="/admin/questions">
-                <Button variant="outline" className="w-full justify-start">
-                  Question Banks →
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-2xl">📝</span>
+                Blogs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-slate-500">Publish editorial content, collaborate with AI drafts, and control SEO metadata.</p>
+              <div className="grid gap-2">
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/admin/blogs">Manage Blogs →</Link>
                 </Button>
-              </Link>
-              <Link href="/admin/subjects">
-                <Button variant="outline" className="w-full justify-start">
-                  Subjects & Chapters →
+                <Button className="justify-start" asChild>
+                  <Link href="/admin/studio/blogs">Blog Studio →</Link>
                 </Button>
-              </Link>
-              <Link href="/admin/studio">
-                <Button variant="outline" className="w-full justify-start">
-                  Admin Studio →
-                </Button>
-              </Link>
+              </div>
             </CardContent>
           </Card>
 

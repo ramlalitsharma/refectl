@@ -1,13 +1,12 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/admin-check';
-import { getDatabase } from '@/lib/mongodb';
-import { CourseCreatorStudio } from '@/components/admin/CourseCreatorStudio';
-import { BlogCreatorStudio } from '@/components/admin/BlogCreatorStudio';
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminStudioPage() {
+export default async function AdminStudioHub() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
@@ -17,57 +16,59 @@ export default async function AdminStudioPage() {
     redirect('/dashboard');
   }
 
-  const db = await getDatabase();
-  const [courses, blogs] = await Promise.all([
-    db
-      .collection('courses')
-      .find({}, { projection: { title: 1, status: 1, level: 1, createdAt: 1 } })
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .toArray(),
-    db
-      .collection('blogs')
-      .find({}, { projection: { title: 1, status: 1, createdAt: 1 } })
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .toArray(),
-  ]);
-
-  const recentCourses = courses.map((course: any) => ({
-    id: course._id ? String(course._id) : `${course.slug}`,
-    title: course.title,
-    status: course.status || 'draft',
-    level: course.level,
-    createdAt: course.createdAt,
-  }));
-
-  const recentBlogs = blogs.map((blog: any) => ({
-    id: blog._id ? String(blog._id) : `${blog.slug}`,
-    title: blog.title,
-    status: blog.status || 'draft',
-    createdAt: blog.createdAt,
-  }));
+  const studios = [
+    {
+      name: 'Course Studio',
+      description: 'AI-assisted curriculum builder, manual module editor, workflow publishing.',
+      href: '/admin/studio/courses',
+      icon: '📚',
+    },
+    {
+      name: 'Blog Studio',
+      description: 'Marketing-grade content generation with SEO controls and CTA guidance.',
+      href: '/admin/studio/blogs',
+      icon: '📝',
+    },
+    {
+      name: 'Exam Studio',
+      description: 'Design timed assessments by orchestrating question banks and scoring models.',
+      href: '/admin/exams',
+      icon: '🧠',
+    },
+    {
+      name: 'Question Bank Studio',
+      description: 'Author reusable question pools with tagging, difficulty, and version history.',
+      href: '/admin/questions',
+      icon: '🗂️',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
       <header className="border-b bg-white/80 backdrop-blur">
-        <div className="container mx-auto flex flex-wrap items-center justify-between gap-4 px-4 py-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Admin Studio</h1>
-            <p className="text-sm text-slate-500">Launch world-class learning assets with AI acceleration or manual precision.</p>
-          </div>
-          <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-            <span className="rounded-full border border-slate-200 px-3 py-1">AI authoring</span>
-            <span className="rounded-full border border-slate-200 px-3 py-1">Manual drafting</span>
-            <span className="rounded-full border border-slate-200 px-3 py-1">Version-aware workflow</span>
-          </div>
+        <div className="container mx-auto flex flex-col gap-2 px-4 py-8">
+          <h1 className="text-2xl font-semibold text-slate-900">Studios</h1>
+          <p className="text-sm text-slate-500">
+            Choose the workspace tailored for the asset you want to build. Each studio comes with AI helpers, manual controls, and publishing workflow.
+          </p>
         </div>
       </header>
-
-      <main className="container mx-auto px-4 py-10 space-y-10">
-        <div className="grid gap-10 xl:grid-cols-2">
-          <CourseCreatorStudio recentCourses={recentCourses} />
-          <BlogCreatorStudio recentBlogs={recentBlogs} />
+      <main className="container mx-auto px-4 py-10">
+        <div className="grid gap-6 md:grid-cols-2">
+          {studios.map((studio) => (
+            <div key={studio.name} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <div className="flex items-start gap-4">
+                <span className="text-3xl">{studio.icon}</span>
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold text-slate-900">{studio.name}</h2>
+                  <p className="text-sm text-slate-500">{studio.description}</p>
+                  <Button asChild className="mt-2 w-fit">
+                    <Link href={studio.href}>Launch {studio.name.split(' ')[0]} →</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>
