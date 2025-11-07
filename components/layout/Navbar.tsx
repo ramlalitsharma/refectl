@@ -60,6 +60,11 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            {allowAdmin && (
+              <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white">
+                🛡️ Admin
+              </span>
+            )}
             <ThemeToggle />
             <SignedIn>
               <NotificationBell />
@@ -76,7 +81,7 @@ export function Navbar() {
               {allowAdmin && (
                 <Link href="/admin">
                   <Button variant="outline" size="sm" className="border-white text-white">
-                    Admin
+                    Admin Console
                   </Button>
                 </Link>
               )}
