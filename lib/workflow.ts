@@ -1,13 +1,8 @@
 import { getDatabase } from './mongodb';
 import { ContentType } from './models/ContentVersion';
+import { WORKFLOW_STATUSES, isValidStatus } from './workflow-status';
 
-const STATUS_ORDER = ['draft', 'in_review', 'approved', 'published', 'archived'] as const;
-
-export const WORKFLOW_STATUSES = STATUS_ORDER;
-
-export function isValidStatus(status: string) {
-  return STATUS_ORDER.includes(status as typeof STATUS_ORDER[number]);
-}
+export { WORKFLOW_STATUSES, isValidStatus };
 
 export async function recordContentVersion({
   contentType,

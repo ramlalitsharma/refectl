@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { requireAdmin } from '@/lib/admin-check';
 import { getDatabase } from '@/lib/mongodb';
-import { isValidStatus, recordContentVersion } from '@/lib/workflow';
+import { recordContentVersion } from '@/lib/workflow';
+import { isValidStatus } from '@/lib/workflow-status';
 
 export const runtime = 'nodejs';
 

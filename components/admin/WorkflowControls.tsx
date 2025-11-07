@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { WORKFLOW_STATUSES } from '@/lib/workflow';
+import { WORKFLOW_STATUSES } from '@/lib/workflow-status';
 
 interface WorkflowControlsProps {
   contentType: 'course' | 'blog';
