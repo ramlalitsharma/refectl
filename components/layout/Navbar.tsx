@@ -68,15 +68,16 @@ export function Navbar() {
             <ThemeToggle />
             <SignedIn>
               <NotificationBell />
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm" className="border-white text-white">
-                  My Dashboard
-                </Button>
-              </Link>
-              {allowAdmin && (
+              {allowAdmin ? (
                 <Link href="/admin">
                   <Button variant="outline" size="sm" className="border-white text-white">
                     Admin Console
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/dashboard">
+                  <Button variant="outline" size="sm" className="border-white text-white">
+                    My Dashboard
                   </Button>
                 </Link>
               )}
