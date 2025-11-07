@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import Link from 'next/link';
 
 interface LeaderboardEntry {
   rank: number;
@@ -77,9 +78,9 @@ export function Leaderboard({ entries = [] }: LeaderboardProps) {
           ))}
         </div>)}
         <div className="mt-4 text-center">
-          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          <Link href="/leaderboard" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
             View Full Leaderboard →
-          </button>
+          </Link>
         </div>
       </CardContent>
     </Card>
