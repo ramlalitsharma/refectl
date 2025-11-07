@@ -68,14 +68,9 @@ export function Navbar() {
             <ThemeToggle />
             <SignedIn>
               <NotificationBell />
-              <Link href="/my-learning">
-                <Button variant="outline" size="sm" className="border-white text-white">
-                  My Learning
-                </Button>
-              </Link>
               <Link href="/dashboard">
                 <Button variant="outline" size="sm" className="border-white text-white">
-                  Dashboard
+                  My Dashboard
                 </Button>
               </Link>
               {allowAdmin && (
