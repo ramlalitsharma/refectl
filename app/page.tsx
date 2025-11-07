@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Navbar } from '@/components/layout/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { getDatabase } from '@/lib/mongodb';
 
@@ -61,10 +60,8 @@ export default async function Home() {
   const categories = Array.from(new Set(courses.map((c) => c.subject).filter(Boolean)));
 
   return (
-    <div className="min-h-screen bg-[#f4f6f9] text-slate-900">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-12">
+    <div className="bg-[#f4f6f9] text-slate-900">
+      <div className="container mx-auto px-4 py-12">
         {/* Hero */}
         <section className="grid gap-6 lg:grid-cols-[minmax(0,0.75fr),minmax(0,1fr)] items-center mb-12">
           <Card className="shadow-xl border-none">
@@ -299,53 +296,7 @@ export default async function Home() {
             </Card>
           </div>
         </section>
-      </main>
-
-      <footer className="bg-white border-t border-slate-200">
-        <div className="container mx-auto px-4 py-10">
-          <div className="grid gap-8 md:grid-cols-4 text-sm text-slate-600">
-            <div className="space-y-3">
-              <Link href="/" className="text-xl font-semibold text-slate-900">
-                AdaptIQ
-              </Link>
-              <p>Share your expertise, inspire learners, and earn while making a difference.</p>
-              <Link href="/pricing">
-                <Button size="sm" className="px-4">Register Now</Button>
-              </Link>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900">Resources</h4>
-              <ul className="mt-3 space-y-2">
-                <li><Link href="/courses">Courses</Link></li>
-                <li><Link href="/subjects">Subjects</Link></li>
-                <li><Link href="/blog">Blog</Link></li>
-                <li><Link href="/analytics">Analytics</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900">Platform</h4>
-              <ul className="mt-3 space-y-2">
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/preparations">Preparations</Link></li>
-                <li><Link href="/terms">Terms & Conditions</Link></li>
-                <li><Link href="/privacy">Privacy Policy</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-slate-900">Socials</h4>
-              <ul className="mt-3 space-y-2">
-                <li><a href="https://www.facebook.com">Facebook</a></li>
-                <li><a href="https://www.youtube.com">YouTube</a></li>
-                <li><a href="https://www.instagram.com">Instagram</a></li>
-                <li><a href="https://www.linkedin.com">LinkedIn</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-slate-200 pt-4 text-center text-xs text-slate-500">
-            © {new Date().getFullYear()} AdaptIQ. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
