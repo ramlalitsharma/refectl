@@ -185,6 +185,13 @@ export default async function AdminPage() {
       action: 'Open enrollments',
     },
     {
+      name: 'Notifications Studio',
+      description: 'Design templates and automate event-based messaging.',
+      href: '/admin/studio/notifications',
+      icon: '🔔',
+      action: 'Manage notifications',
+    },
+    {
       name: 'Subscriptions & Plans',
       description: 'Control pricing, free tiers, and commercial offerings.',
       href: '/admin/subscriptions',
