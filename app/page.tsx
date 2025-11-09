@@ -13,6 +13,7 @@ interface Course {
   level?: string;
   price?: number;
   thumbnail?: string;
+  tags?: string[];
 }
 
 const formatPrice = (price?: number) => {
@@ -52,11 +53,21 @@ export default async function Home() {
     ...course,
     _id: String(course._id),
     slug: course.slug || String(course._id),
+    tags: Array.isArray(course.tags) ? course.tags : [],
   })) as Course[];
 
-  const trending = courses.slice(0, 6);
-  const liveClasses = courses.slice(6, 10).length ? courses.slice(6, 10) : courses.slice(0, 4);
-  const batches = courses.slice(2, 6).length ? courses.slice(2, 6) : courses.slice(0, 4);
+  const pickByTags = (tags: string[], fallbackCount: number) => {
+    const filtered = courses.filter((course) =>
+      course.tags?.some((tag) => tags.includes(tag.toLowerCase())),
+    );
+    if (filtered.length >= fallbackCount) return filtered.slice(0, fallbackCount);
+    if (courses.length === 0) return [];
+    return courses.slice(0, fallbackCount);
+  };
+
+  const trending = pickByTags(['trending', 'featured', 'popular'], 6);
+  const liveClasses = pickByTags(['live', 'webinar', 'bootcamp'], 4);
+  const batches = pickByTags(['batch', 'cohort', 'program'], 4);
   const categories = Array.from(new Set(courses.map((c) => c.subject).filter(Boolean)));
 
   return (
@@ -128,46 +139,54 @@ export default async function Home() {
           <div className="rounded-3xl bg-teal-600 px-6 py-4 text-white font-semibold text-lg uppercase tracking-wide inline-block">
             Trending Courses
           </div>
-          <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {trending.map((course) => (
-              <Card key={course._id} className="overflow-hidden shadow-md">
-                <CardContent className="p-0">
-                  <div className="h-40 w-full overflow-hidden">
-                    <img
-                      src={
-                        course.thumbnail ||
-                        'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80'
-                      }
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="space-y-3 p-5">
-                    <div className="flex items-center justify-between text-xs text-slate-500">
-                      <span>{course.subject || 'General'}</span>
-                      <span>{course.level ? course.level.toUpperCase() : 'All levels'}</span>
+          {trending.length === 0 ? (
+            <Card className="mt-6 border-dashed border-2 border-teal-200 bg-white/70">
+              <CardContent className="py-12 text-center text-sm text-slate-500">
+                Publish a course with the tag <strong>"trending"</strong> to showcase it here.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {trending.map((course) => (
+                <Card key={course._id} className="overflow-hidden shadow-md">
+                  <CardContent className="p-0">
+                    <div className="h-40 w-full overflow-hidden">
+                      <img
+                        src={
+                          course.thumbnail ||
+                          'https://images.unsplash.com/photo-1550439062-609e1531270e?auto=format&fit=crop&w=800&q=80'
+                        }
+                        alt={course.title}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
-                      {course.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 line-clamp-2">
-                      {course.summary || 'Learn with interactive lessons, quizzes, and real projects.'}
-                    </p>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-lg font-semibold text-emerald-600">
-                        {formatPrice(course.price)}
-                      </span>
-                      <Link href={`/courses/${course.slug}`}>
-                        <Button size="sm" className="px-4">
-                          View Details
-                        </Button>
-                      </Link>
+                    <div className="space-y-3 p-5">
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{course.subject || 'General'}</span>
+                        <span>{course.level ? course.level.toUpperCase() : 'All levels'}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900 line-clamp-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-sm text-slate-500 line-clamp-2">
+                        {course.summary || 'Learn with interactive lessons, quizzes, and real projects.'}
+                      </p>
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-lg font-semibold text-emerald-600">
+                          {formatPrice(course.price)}
+                        </span>
+                        <Link href={`/courses/${course.slug}`}>
+                          <Button size="sm" className="px-4">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
           <div className="mt-6 text-center">
             <Link href="/courses">
               <Button variant="outline" className="px-10">
@@ -182,23 +201,31 @@ export default async function Home() {
           <div className="rounded-3xl bg-teal-600 px-6 py-4 text-white font-semibold text-lg uppercase tracking-wide inline-block">
             Live Classes
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {liveClasses.map((cls, idx) => (
-              <Card key={`${cls._id}-live-${idx}`} className="shadow">
-                <CardContent className="p-5 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-md bg-red-600 px-2 py-1 text-xs text-white">LIVE</span>
-                    <span className="text-xs text-slate-500">Starts in 02 : 30 : 45</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900">{cls.title}</h3>
-                  <p className="text-sm text-slate-500 line-clamp-2">
-                    {cls.summary || 'Join the live session to learn with instructors in real time.'}
-                  </p>
-                  <Button className="w-full">Join Now</Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {liveClasses.length === 0 ? (
+            <Card className="mt-6 border-dashed border-2 border-teal-200 bg-white/70">
+              <CardContent className="py-12 text-center text-sm text-slate-500">
+                Tag a course with <strong>"live"</strong> or <strong>"webinar"</strong> to feature it in Live Classes.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {liveClasses.map((cls, idx) => (
+                <Card key={`${cls._id}-live-${idx}`} className="shadow">
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span className="rounded-md bg-red-600 px-2 py-1 text-xs text-white">LIVE</span>
+                      <span className="text-xs text-slate-500">Starts in 02 : 30 : 45</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900">{cls.title}</h3>
+                    <p className="text-sm text-slate-500 line-clamp-2">
+                      {cls.summary || 'Join the live session to learn with instructors in real time.'}
+                    </p>
+                    <Button className="w-full">Join Now</Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
           <div className="mt-6 text-center">
             <Button variant="outline" className="px-10">
               View All
@@ -211,38 +238,46 @@ export default async function Home() {
           <div className="rounded-3xl bg-teal-600 px-6 py-4 text-white font-semibold text-lg uppercase tracking-wide inline-block">
             Online Batches
           </div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {batches.map((batch, idx) => (
-              <Card key={`${batch._id}-batch-${idx}`} className="shadow">
-                <CardContent className="space-y-3 p-5">
-                  <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
-                    {batch.title}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
-                    <div>
-                      <p className="font-semibold text-slate-600">Start Date</p>
-                      <p>01 Jan 2025</p>
+          {batches.length === 0 ? (
+            <Card className="mt-6 border-dashed border-2 border-teal-200 bg-white/70">
+              <CardContent className="py-12 text-center text-sm text-slate-500">
+                Add the tag <strong>"batch"</strong> or <strong>"cohort"</strong> to a course to promote it here.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {batches.map((batch, idx) => (
+                <Card key={`${batch._id}-batch-${idx}`} className="shadow">
+                  <CardContent className="space-y-3 p-5">
+                    <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
+                      {batch.title}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
+                      <div>
+                        <p className="font-semibold text-slate-600">Start Date</p>
+                        <p>01 Jan 2025</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-600">Duration</p>
+                        <p>12 Weeks</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-600">Seats Left</p>
+                        <p>{80 - idx * 10} seats</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-600">Level</p>
+                        <p>{batch.level || 'All levels'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-slate-600">Duration</p>
-                      <p>12 Weeks</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-600">Seats Left</p>
-                      <p>{80 - idx * 10} seats</p>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-600">Level</p>
-                      <p>{batch.level || 'All levels'}</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full">
-                    View Details
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <Button variant="outline" className="w-full">
+                      View Details
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
           <div className="mt-6 text-center">
             <Button variant="outline" className="px-10">
               View All

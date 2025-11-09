@@ -46,6 +46,8 @@ export async function isAdmin(): Promise<boolean> {
     if (user.isAdmin === true) return true;
     if (roleHasPermission(roles, 'admin:access')) return true;
     if (Array.isArray(user.permissions) && user.permissions.includes('admin:access')) return true;
+    if (roleHasPermission(roles, 'schemas:manage')) return true;
+    if (Array.isArray(user.permissions) && user.permissions.includes('schemas:manage')) return true;
 
     return false;
   } catch (error) {

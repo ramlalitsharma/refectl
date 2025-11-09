@@ -6,7 +6,8 @@ export type PermissionKey =
   | 'users:manage'
   | 'analytics:view'
   | 'finance:view'
-  | 'notifications:manage';
+  | 'notifications:manage'
+  | 'schemas:manage';
 
 export const PERMISSION_OPTIONS: { key: PermissionKey; label: string; description: string }[] = [
   { key: 'admin:access', label: 'Admin Access', description: 'Grants access to admin console and protected tools.' },
@@ -17,4 +18,5 @@ export const PERMISSION_OPTIONS: { key: PermissionKey; label: string; descriptio
   { key: 'analytics:view', label: 'View Analytics', description: 'Allows accessing analytics dashboards and reports.' },
   { key: 'finance:view', label: 'View Financials', description: 'Allows viewing subscription revenue and financial metrics.' },
   { key: 'notifications:manage', label: 'Manage Notifications', description: 'Allows editing notification templates and triggers.' },
+  { key: 'schemas:manage', label: 'Manage Content Schemas', description: 'Allows creating and editing schema definitions for studios.' },
 ];
