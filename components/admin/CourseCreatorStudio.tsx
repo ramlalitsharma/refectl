@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { WorkflowControls } from '@/components/admin/WorkflowControls';
+import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 
 interface CourseSummary {
   id: string;
@@ -469,12 +470,11 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
               </label>
               <label className="space-y-1 text-sm text-slate-600">
                 Executive summary
-                <textarea
+                <MarkdownEditor
                   value={form.summary}
-                  onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
+                  onChange={(next) => setForm((prev) => ({ ...prev, summary: next }))}
                   placeholder="3-week accelerator to master adaptive testing."
-                  rows={3}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                  height={180}
                 />
               </label>
               <div className="grid gap-3 md:grid-cols-2">
@@ -680,11 +680,11 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
                         </div>
                         <label className="mt-2 block text-xs text-slate-500">
                           Lesson notes / content bullets
-                          <textarea
+                          <MarkdownEditor
                             value={lesson.content || ''}
-                            onChange={(e) => updateLesson(moduleIndex, lessonIndex, 'content', e.target.value)}
-                            className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
-                            rows={3}
+                            onChange={(next) => updateLesson(moduleIndex, lessonIndex, 'content', next)}
+                            height={200}
+                            placeholder="Add lesson explanation, steps, or examples..."
                           />
                         </label>
                       </div>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
 
 interface BlogSummary {
   id: string;
@@ -315,15 +316,12 @@ export function BlogCreatorStudio({ recentBlogs }: BlogCreatorStudioProps) {
 
           <section className="space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">Content editor</h3>
-            <label className="space-y-2 text-sm text-slate-600 block">
-              Article Markdown
-              <textarea
-                value={form.markdown}
-                onChange={(e) => setForm((prev) => ({ ...prev, markdown: e.target.value }))}
-                rows={24}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 font-mono text-xs"
-              />
-            </label>
+            <MarkdownEditor
+              value={form.markdown}
+              onChange={(next) => setForm((prev) => ({ ...prev, markdown: next }))}
+              height={400}
+              placeholder="# Outline\n- Intro\n- Key insight\n- CTA"
+            />
             {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>}
             <div className="flex gap-3">
               <Button onClick={handleSubmit} disabled={!canSubmit || loading}>
