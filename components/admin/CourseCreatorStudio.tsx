@@ -290,6 +290,32 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
     },
   });
 
+  const handleQuickStatus = async (slug: string, status: 'draft' | 'published') => {
+    setLoading(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/admin/courses/${slug}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || `Failed to update course status to ${status}`);
+      }
+      if (editingSlug === slug) {
+        setCurrentStatus(status);
+      }
+      setFeedback(`Course marked as ${status}.`);
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || 'Unable to update status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (nextStatus?: string) => {
     if (!canSubmit || loading) return;
     setLoading(true);
@@ -344,6 +370,30 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
 
   const clearEditing = () => {
     router.push('/admin/studio/courses');
+  };
+
+  const handleQuickStatus = async (slug: string, status: string) => {
+    setLoading(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/admin/courses/${slug}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update course status');
+      }
+      setFeedback(`Course status updated to ${status}.`);
+      router.refresh();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Unable to update course status');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -686,24 +736,50 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
                   {recentCourses.map((course) => {
                     const isActive = searchParams?.get('slug') === course.slug;
                     return (
-                      <Link
+                      <div
                         key={course.id}
-                        href={`/admin/studio/courses?slug=${course.slug}`}
-                        className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition ${
+                        className={`rounded-lg border px-3 py-2 transition ${
                           isActive ? 'border-teal-400 bg-teal-50 text-teal-800' : 'border-slate-100 text-slate-700 hover:border-slate-300'
                         }`}
                       >
-                        <div>
-                          <div className="font-medium line-clamp-1">{course.title}</div>
-                          <div className="text-xs text-slate-400">
-                            {course.level ? `${course.level} • ` : ''}
-                            {course.createdAt ? new Date(course.createdAt).toLocaleString() : ''}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="font-medium line-clamp-1">{course.title}</div>
+                            <div className="text-xs text-slate-400">
+                              {course.level ? `${course.level} • ` : ''}
+                              {course.createdAt ? new Date(course.createdAt).toLocaleString() : ''}
+                            </div>
                           </div>
+                          <Badge variant={course.status === 'published' ? 'success' : course.status === 'in_review' ? 'info' : 'default'}>
+                            {course.status}
+                          </Badge>
                         </div>
-                        <Badge variant={course.status === 'published' ? 'success' : course.status === 'in_review' ? 'info' : 'default'}>
-                          {course.status}
-                        </Badge>
-                      </Link>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => router.push(`/admin/studio/courses?slug=${course.slug}`)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleQuickStatus(course.slug, 'draft')}
+                            disabled={loading}
+                          >
+                            Mark draft
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleQuickStatus(course.slug, 'published')}
+                            disabled={loading}
+                          >
+                            Publish
+                          </Button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
