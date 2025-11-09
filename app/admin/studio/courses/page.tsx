@@ -7,7 +7,7 @@ import { CourseCreatorStudio } from '@/components/admin/CourseCreatorStudio';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  searchParams?: { slug?: string };
+  searchParams?: { slug?: string } | Promise<{ slug?: string } | undefined>;
 }
 
 export default async function CourseStudioPage({ searchParams }: PageProps) {
@@ -38,7 +38,8 @@ export default async function CourseStudioPage({ searchParams }: PageProps) {
     createdAt: course.createdAt,
   }));
 
-  const selectedSlug = searchParams?.slug;
+  const resolvedSearchParams = searchParams instanceof Promise ? await searchParams : searchParams;
+  const selectedSlug = resolvedSearchParams?.slug;
   let selectedCourseData: any = null;
 
   if (selectedSlug) {
