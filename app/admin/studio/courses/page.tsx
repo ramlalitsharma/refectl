@@ -45,21 +45,47 @@ export default async function CourseStudioPage({ searchParams }: PageProps) {
   if (selectedSlug) {
     const selectedCourse = await db.collection('courses').findOne({ slug: selectedSlug });
     if (selectedCourse) {
+      const {
+        _id,
+        createdAt,
+        updatedAt,
+        workflowUpdatedAt,
+        workflowUpdatedBy,
+        modules = [],
+        resources = [],
+        tags = [],
+        metadata = {},
+        price = null,
+        seo = {},
+        ...rest
+      } = selectedCourse;
+
       selectedCourseData = {
-        id: selectedCourse._id ? String(selectedCourse._id) : selectedCourse.slug,
+        id: _id ? String(_id) : selectedCourse.slug,
         slug: selectedCourse.slug,
-        title: selectedCourse.title,
-        summary: selectedCourse.summary,
-        subject: selectedCourse.subject,
-        level: selectedCourse.level,
-        status: selectedCourse.status,
-        language: selectedCourse.language,
-        tags: selectedCourse.tags || [],
-        metadata: selectedCourse.metadata || {},
-        price: selectedCourse.price || null,
-        seo: selectedCourse.seo || {},
-        modules: selectedCourse.modules || [],
-        resources: selectedCourse.resources || [],
+        ...rest,
+        tags: Array.isArray(tags) ? tags : [],
+        metadata,
+        price,
+        seo,
+        createdAt: createdAt ? createdAt.toISOString() : undefined,
+        updatedAt: updatedAt ? updatedAt.toISOString() : undefined,
+        workflowUpdatedAt: workflowUpdatedAt ? workflowUpdatedAt.toISOString() : undefined,
+        workflowUpdatedBy: workflowUpdatedBy || undefined,
+        modules: modules.map((module: any) => ({
+          title: module.title,
+          lessons: Array.isArray(module.lessons)
+            ? module.lessons.map((lesson: any) => ({
+                title: lesson.title,
+                content: lesson.content,
+              }))
+            : [],
+        })),
+        resources: resources.map((resource: any) => ({
+          type: resource.type,
+          label: resource.label,
+          url: resource.url,
+        })),
       };
     }
   }
