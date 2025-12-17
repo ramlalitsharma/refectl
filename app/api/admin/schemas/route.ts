@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { requireAdmin, userHasPermission } from '@/lib/admin-check';
 import { getDatabase } from '@/lib/mongodb';
 import { serializeSchema } from '@/lib/models/ContentSchema';
+import type { ContentSchema } from '@/lib/models/ContentSchema';
 import { PermissionKey } from '@/lib/permissions';
 
 export const runtime = 'nodejs';
@@ -22,7 +23,11 @@ export async function GET() {
   try {
     await ensureSchemaPermission();
     const db = await getDatabase();
-    const schemas = await db.collection('contentSchemas').find({}).sort({ updatedAt: -1 }).toArray();
+    const schemas = await db
+      .collection<ContentSchema>('contentSchemas')
+      .find({})
+      .sort({ updatedAt: -1 })
+      .toArray();
     return NextResponse.json({ schemas: schemas.map(serializeSchema) });
   } catch (error: any) {
     const status = error.message === 'Unauthorized' ? 401 : error.message === 'Forbidden' ? 403 : 500;
@@ -42,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const db = await getDatabase();
 
-    const existing = await db.collection('contentSchemas').findOne({ key });
+    const existing = await db.collection<ContentSchema>('contentSchemas').findOne({ key });
     if (existing) {
       return NextResponse.json({ error: 'Schema key already exists' }, { status: 409 });
     }
@@ -58,7 +63,7 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
     };
 
-    const result = await db.collection('contentSchemas').insertOne(doc);
+    const result = await db.collection<ContentSchema>('contentSchemas').insertOne(doc as ContentSchema);
     return NextResponse.json({ schema: serializeSchema({ ...doc, _id: result.insertedId }) });
   } catch (error: any) {
     const status = error.message === 'Unauthorized' ? 401 : error.message === 'Forbidden' ? 403 : 500;

@@ -48,27 +48,57 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ en
       update.waitlistPosition = waitlistPosition !== null ? Number(waitlistPosition) : null;
     }
 
+    // Try multiple query strategies to find enrollment
+    let query: any = {};
+    
+    // First try as ObjectId
+    if (ObjectId.isValid(enrollmentId)) {
+      query = {
+        $or: [
+          { _id: new ObjectId(enrollmentId) },
+          { id: enrollmentId },
+        ],
+      };
+    } else {
+      // Try as composite key format: "userId:courseId"
+      if (enrollmentId.includes(':')) {
+        const [userId, courseId] = enrollmentId.split(':');
+        query = {
+          userId,
+          courseId,
+        };
+      } else {
+        // Try as string ID field or direct _id match
+        query = {
+          $or: [
+            { id: enrollmentId },
+            { _id: enrollmentId },
+          ],
+        };
+      }
+    }
+
     const result = await db.collection('enrollments').findOneAndUpdate(
-      { _id: new ObjectId(enrollmentId) },
+      query,
       {
         $set: update,
         ...(status
           ? {
-              $push: {
+              $push: (({
                 history: {
                   status,
                   changedAt: now,
                   adminId,
                   note: notes || null,
                 },
-              },
+              }) as unknown as import('mongodb').PushOperator<any>),
             }
           : {}),
       },
       { returnDocument: 'after' },
     );
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Enrollment not found' }, { status: 404 });
     }
 

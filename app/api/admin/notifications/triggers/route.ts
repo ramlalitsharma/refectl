@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { requireAdmin } from '@/lib/admin-check';
 import { getDatabase } from '@/lib/mongodb';
 import { serializeTrigger } from '@/lib/models/NotificationTemplate';
+import type { NotificationTrigger } from '@/lib/models/NotificationTemplate';
 
 export const runtime = 'nodejs';
 
@@ -13,7 +14,11 @@ export async function GET() {
     await requireAdmin();
 
     const db = await getDatabase();
-    const triggers = await db.collection('notificationTriggers').find({}).sort({ updatedAt: -1 }).toArray();
+    const triggers = await db
+      .collection<NotificationTrigger>('notificationTriggers')
+      .find({})
+      .sort({ updatedAt: -1 })
+      .toArray();
     return NextResponse.json({ triggers: triggers.map(serializeTrigger) });
   } catch (error: any) {
     console.error('Notification triggers fetch error:', error);

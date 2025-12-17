@@ -63,9 +63,10 @@ export function CourseReviews({ courseSlug, initialReviews }: CourseReviewsProps
       setComment('');
       setRating(5);
       setFeedback(data.message || 'Review submitted for moderation.');
-    } catch (e: any) {
+    } catch (e) {
       console.error('Review submit error:', e);
-      setError(e.message || 'Unable to submit review');
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg || 'Unable to submit review');
     } finally {
       setSubmitting(false);
     }

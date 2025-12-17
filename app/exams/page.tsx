@@ -3,8 +3,12 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { SiteBrand } from '@/components/layout/SiteBrand';
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { CategoryNavigation } from '@/components/layout/CategoryNavigation';
 import { getLatestKeywords } from '@/lib/seo';
+import { getDatabase } from '@/lib/mongodb';
 
 const exams = [
   {
@@ -106,36 +110,139 @@ const exams = [
   { id: 'mecce', name: 'MECEE', fullName: 'Medical Education Commission - Entrance Exam', description: 'Medical entrance (Nepal)', duration: 'Varies', scoring: 'Percentile', sections: 1, icon: '🇳🇵' },
 ];
 
-export default async function ExamsPage() {
+export default async function ExamsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { userId } = await auth();
+  const params = await searchParams;
   
   if (!userId) {
     redirect('/sign-in');
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <SiteBrand />
-          <Link href="/subjects">
-            <span className="text-blue-600 hover:underline cursor-pointer">← Back to Subjects</span>
-          </Link>
-        </div>
-      </header>
+  // Fetch exams from database
+  let dbExams: any[] = [];
+  try {
+    const db = await getDatabase();
+    dbExams = await db
+      .collection('examTemplates')
+      .find({ visibility: { $in: ['public', undefined] } })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray();
+  } catch (error) {
+    console.error('Exams fetch error:', error);
+  }
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Prepare for Your Exams</h2>
-          <p className="text-gray-600">
-            Get personalized practice tests, study plans, and performance tracking for major standardized tests
-          </p>
-        </div>
+  // Combine database exams with hardcoded exam list
+  const allExams = [
+    ...exams.map((exam) => ({
+      id: exam.id,
+      name: exam.name,
+      fullName: exam.fullName,
+      description: exam.description,
+      duration: exam.duration,
+      scoring: exam.scoring,
+      sections: exam.sections,
+      icon: exam.icon,
+      category: exam.id.includes('sat') || exam.id.includes('act') || exam.id.includes('gre') || exam.id.includes('gmat') || exam.id.includes('ielts') || exam.id.includes('toefl') || exam.id.includes('mcat') || exam.id.includes('lsat')
+        ? 'International'
+        : exam.id.includes('see') || exam.id.includes('neb') || exam.id.includes('ioe') || exam.id.includes('ku') || exam.id.includes('mecce')
+        ? 'Nepal'
+        : 'India',
+    })),
+    ...dbExams.map((exam: any) => ({
+      id: exam.examType || String(exam._id),
+      name: exam.name,
+      fullName: exam.name,
+      description: exam.description || '',
+      duration: `${Math.floor((exam.durationMinutes || 60) / 60)}h ${(exam.durationMinutes || 60) % 60}m`,
+      scoring: exam.totalMarks ? `0-${exam.totalMarks}` : 'Varies',
+      sections: exam.sections?.length || 1,
+      icon: '📝',
+      category: exam.category || 'General',
+    })),
+  ];
+
+  // Group exams by category
+  const categoryBuckets = new Map<string, typeof allExams>();
+  allExams.forEach((exam) => {
+    const category = exam.category || 'General';
+    if (!categoryBuckets.has(category)) {
+      categoryBuckets.set(category, []);
+    }
+    categoryBuckets.get(category)!.push(exam);
+  });
+
+  // Get all categories with counts
+  const categories = Array.from(categoryBuckets.keys()).sort();
+  const categoryList = categories.map((cat) => ({
+    name: cat,
+    slug: cat.toLowerCase().replace(/\s+/g, '-'),
+    count: categoryBuckets.get(cat)?.length || 0,
+  }));
+
+  // Filter exams by selected category
+  const selectedCategory = params?.category;
+  const filteredExams = selectedCategory
+    ? categoryBuckets.get(selectedCategory) || []
+    : allExams;
+
+  return (
+    <div className="min-h-screen bg-[#f4f6f9]">
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Exams' }]} className="mb-4" />
+
+        <Card className="border-none shadow-2xl bg-gradient-to-br from-blue-600 via-indigo-500 to-purple-600 text-white">
+          <CardContent className="p-10">
+            <div className="space-y-5">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-sm font-semibold uppercase tracking-wide">
+                <span>📝</span> Exam Preparation
+              </span>
+              <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
+                {selectedCategory ? `${selectedCategory} Exams` : 'Prepare for Your Exams'}
+              </h1>
+              <p className="text-white/80 text-base md:text-lg max-w-2xl">
+                {selectedCategory
+                  ? `Explore ${filteredExams.length} ${selectedCategory.toLowerCase()} exam preparation resources.`
+                  : 'Get personalized practice tests, study plans, and performance tracking for major standardized tests.'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-lg bg-white">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-lg font-semibold text-slate-900">Browse by Category</h2>
+              <p className="text-sm text-slate-500">
+                Filter exams by category to find the preparation resources you need.
+              </p>
+            </div>
+            <CategoryNavigation
+              categories={categoryList}
+              currentCategory={selectedCategory}
+              basePath="/exams"
+            />
+          </CardContent>
+        </Card>
+
+        {selectedCategory && (
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900">{selectedCategory} Exams</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {filteredExams.length} {filteredExams.length === 1 ? 'exam' : 'exams'} available
+              </p>
+            </div>
+            <Link href="/exams">
+              <Button variant="outline" size="sm">View All Categories</Button>
+            </Link>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exams.map((exam) => (
+          {filteredExams.map((exam) => (
             <Link key={exam.id} href={`/exams/${exam.id}`}>
-              <Card hover className="h-full">
+              <Card className="h-full hover:shadow-lg transition-all border-none shadow-md">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-3">
                     <div className="text-5xl">{exam.icon}</div>

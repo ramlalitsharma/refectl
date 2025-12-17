@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ temp
       .collection('notificationTemplates')
       .findOneAndUpdate({ _id: new ObjectId(templateId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 

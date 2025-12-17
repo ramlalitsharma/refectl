@@ -62,6 +62,12 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
     enrollmentId: string,
     updates: { status?: string; cohort?: string | null; notes?: string | null; waitlistPosition?: number | null },
   ) => {
+    // Accept both ObjectId format and composite keys
+    if (!enrollmentId || enrollmentId.trim() === '') {
+      alert('Enrollment identifier is missing. Please refresh the page and try again.');
+      return;
+    }
+    
     setLoadingId(enrollmentId);
     try {
       const res = await fetch(`/api/admin/enrollments/${enrollmentId}`, {
@@ -71,15 +77,27 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Failed to update enrollment');
+        const errorMsg = data.error || 'Failed to update enrollment';
+        // If enrollment not found, try to refresh the list
+        if (data.error?.includes('not found')) {
+          alert(`Enrollment not found. This may have been deleted. Please refresh the page.`);
+          window.location.reload();
+          return;
+        }
+        throw new Error(errorMsg);
       }
       const data = await res.json();
       const updated = data.enrollment;
+      const matchId = (item: EnrollmentItem) =>
+        item.id === enrollmentId || 
+        String(item.id) === enrollmentId ||
+        (!item.id && `${item.userId}:${item.courseId}` === enrollmentId);
       setEnrollments((prev) =>
         prev.map((item) =>
-          item.id === enrollmentId
+          matchId(item)
             ? {
                 ...item,
+                id: updated._id ? String(updated._id) : item.id,
                 status: updated.status,
                 cohort: updated.cohort || null,
                 waitlistPosition: updated.waitlistPosition ?? null,
@@ -154,8 +172,11 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((item) => (
-            <Card key={item.id} className="border border-slate-200 bg-white shadow-sm">
+          {filtered.map((item) => {
+            const stableId = item.id || `${item.userId}:${item.courseId}`;
+            const targetId = item.id || stableId;
+            return (
+            <Card key={stableId} className="border border-slate-200 bg-white shadow-sm">
               <CardContent className="space-y-4 p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-2">
@@ -179,32 +200,32 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
                   <Button
                     variant="inverse"
                     size="sm"
-                    disabled={loadingId === item.id || item.status === 'approved'}
-                    onClick={() => handleStatusChange(item.id!, 'approved')}
+                    disabled={loadingId === targetId || item.status === 'approved'}
+                    onClick={() => handleStatusChange(targetId, 'approved')}
                   >
                     Approve
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={loadingId === item.id}
-                    onClick={() => handleStatusChange(item.id!, 'waitlisted')}
+                    disabled={loadingId === targetId}
+                    onClick={() => handleStatusChange(targetId, 'waitlisted')}
                   >
                     Waitlist
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={loadingId === item.id}
-                    onClick={() => handleStatusChange(item.id!, 'rejected')}
+                    disabled={loadingId === targetId}
+                    onClick={() => handleStatusChange(targetId, 'rejected')}
                   >
                     Reject
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    disabled={loadingId === item.id}
-                    onClick={() => handleAssignCohort(item.id!, item.cohort)}
+                    disabled={loadingId === targetId}
+                    onClick={() => handleAssignCohort(targetId, item.cohort)}
                   >
                     Assign Cohort
                   </Button>
@@ -212,8 +233,8 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
                     <Button
                       variant="ghost"
                       size="sm"
-                      disabled={loadingId === item.id}
-                      onClick={() => handleClearWaitlist(item.id!)}
+                      disabled={loadingId === targetId}
+                      onClick={() => handleClearWaitlist(targetId)}
                     >
                       Clear Waitlist Slot
                     </Button>
@@ -240,7 +261,7 @@ export function EnrollmentManager({ initialEnrollments }: EnrollmentManagerProps
                 )}
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
     </div>

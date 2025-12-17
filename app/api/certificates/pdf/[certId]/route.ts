@@ -4,9 +4,9 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export const runtime = 'nodejs';
 
-export async function GET(req: NextRequest, { params }: { params: { certId: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ certId: string }> }) {
   try {
-    const { certId } = params;
+    const { certId } = await context.params;
     const db = await getDatabase();
     const cert = await db.collection('certificates').findOne({ id: certId });
     if (!cert) return NextResponse.json({ error: 'Certificate not found' }, { status: 404 });

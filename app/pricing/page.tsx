@@ -1,155 +1,150 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Check, Star, Zap, Shield, Crown, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { getSubscriptionDetails } from '@/lib/clerk-subscriptions';
-import { SiteBrand } from '@/components/layout/SiteBrand';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/ToastManager';
+import Link from 'next/link';
 
-export default async function PricingPage() {
-  const { userId } = await auth();
-  
-  if (!userId) {
-    redirect('/sign-in');
-  }
+export default function PricingPage() {
+  const router = useRouter();
+  const { addToast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  const subscription = await getSubscriptionDetails();
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      // Simulate processing time
+      await new Promise(r => setTimeout(r, 1500));
+
+      const res = await fetch('/api/user/subscription/upgrade', { method: 'POST' });
+      if (!res.ok) throw new Error('Upgrade failed');
+
+      addToast({
+        type: 'success',
+        title: 'Welcome to Pro! 🌟',
+        message: 'Your account has been upgraded. Enjoy unlimited access!',
+        duration: 5000
+      });
+
+      // Redirect to dashboard after short delay
+      setTimeout(() => router.push('/dashboard'), 1000);
+
+    } catch (error) {
+      addToast({
+        type: 'warning',
+        title: 'Error',
+        message: 'Could not process upgrade. Please try again.',
+      });
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <SiteBrand />
-          <Link href="/dashboard" className="text-blue-600 hover:underline">
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+      <Link href="/dashboard" className="absolute top-8 left-8 text-slate-500 hover:text-slate-800 flex items-center gap-2 font-medium">
+        <ArrowLeft className="w-5 h-5" /> Back to Dashboard
+      </Link>
 
-      <main className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
-          <p className="text-xl text-gray-600">
-            Unlock advanced AI features and analytics with Premium
+      <div className="max-w-4xl w-full space-y-12">
+
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+            Unlock Your Full Potential
+          </h1>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            Get unlimited access to AI tutoring, advanced analytics, and exclusive badges.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {/* Cards */}
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+
           {/* Free Plan */}
-          <Card className={subscription?.tier === 'free' ? 'ring-2 ring-blue-500' : ''}>
-            <CardHeader>
-              <CardTitle className="text-2xl">Free</CardTitle>
-              <CardDescription>Perfect for getting started</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-gray-600">/month</span>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Basic adaptive quizzes</span>
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-slate-800">Basic</h3>
+              <div className="text-4xl font-black mt-2 text-slate-900">$0 <span className="text-lg text-slate-500 font-normal">/ mo</span></div>
+              <p className="text-slate-500 mt-2">Perfect for getting started.</p>
+            </div>
+            <ul className="space-y-4 mb-8">
+              {[
+                '3 AI Quizzes per day',
+                '5 AI Chat messages per day',
+                'Basic Leaderboard Access',
+                'Standard Analytics'
+              ].map((feature, i) => (
+                <li key={i} className="flex items-center gap-3 text-slate-600">
+                  <div className="p-1 rounded-full bg-slate-100 text-slate-600">
+                    <Check className="w-3 h-3" />
+                  </div>
+                  {feature}
                 </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Limited AI question generation</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Progress tracking</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-gray-400 mr-2">✗</span>
-                  <span className="text-gray-500">Advanced analytics</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-gray-400 mr-2">✗</span>
-                  <span className="text-gray-500">Knowledge gap prediction</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-gray-400 mr-2">✗</span>
-                  <span className="text-gray-500">AI tutor access</span>
-                </li>
-              </ul>
-              {subscription?.tier === 'free' ? (
-                <Button variant="outline" className="w-full" disabled>
-                  Current Plan
-                </Button>
-              ) : (
-                <Button variant="outline" className="w-full" disabled>
-                  Current Plan
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+              ))}
+            </ul>
+            <Button variant="outline" className="w-full py-6 text-lg rounded-xl" disabled>
+              Current Plan
+            </Button>
+          </div>
 
-          {/* Premium Plan */}
-          <Card className={`relative ${subscription?.tier === 'premium' ? 'ring-2 ring-blue-500' : 'border-blue-500 border-2'}`}>
-            {subscription?.tier === 'premium' && (
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                  Current Plan
-                </span>
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle className="text-2xl">Premium</CardTitle>
-              <CardDescription>Unlock full AI-powered learning</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$19</span>
-                <span className="text-gray-600">/month</span>
-              </div>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Everything in Free</span>
+          {/* Pro Plan */}
+          <motion.div
+            initial={{ scale: 0.95, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="relative bg-gradient-to-br from-indigo-900 to-indigo-800 p-8 rounded-3xl shadow-2xl text-white border border-indigo-700/50"
+          >
+            {/* Badge */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-400 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+              <Star className="w-3 h-3 fill-white" /> MOST POPULAR
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Crown className="w-6 h-6 text-amber-400 fill-amber-400" /> Pro Power
+              </h3>
+              <div className="text-5xl font-black mt-2 text-white">$9.99 <span className="text-lg text-indigo-200 font-normal">/ mo</span></div>
+              <p className="text-indigo-200 mt-2">For serious learners.</p>
+            </div>
+            <ul className="space-y-4 mb-8">
+              {[
+                'Unlimited AI Quizzes',
+                'Unlimited AI Tutor Chat',
+                'Advanced Analytics & Insights',
+                'Verified Gold "Pro" Badge',
+                'Priority Support'
+              ].map((feature, i) => (
+                <li key={i} className="flex items-center gap-3 text-indigo-50">
+                  <div className="p-1 rounded-full bg-indigo-500/50 text-amber-300">
+                    <Zap className="w-3 h-3 fill-amber-300" />
+                  </div>
+                  {feature}
                 </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Unlimited AI question generation</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Advanced analytics & predictions</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>95% accurate knowledge gap detection</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>AI tutor access</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-green-500 mr-2">✓</span>
-                  <span>Priority support</span>
-                </li>
-              </ul>
-              {subscription?.tier === 'premium' ? (
-                <Button variant="outline" className="w-full" disabled>
-                  Active
-                </Button>
-              ) : (
-                <Link href="/api/subscription/checkout" className="w-full">
-                  <Button className="w-full">
-                    Upgrade to Premium
-                  </Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+              ))}
+            </ul>
+            <Button
+              onClick={handleUpgrade}
+              disabled={loading}
+              className="w-full py-8 text-xl font-bold rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white shadow-xl transition-transform active:scale-95"
+            >
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Upgrade Now'}
+            </Button>
+            <p className="text-center text-indigo-300 text-xs mt-4">
+              30-day money-back guarantee. Cancel anytime.
+            </p>
+          </motion.div>
+
         </div>
 
-        <div className="mt-12 text-center text-gray-600">
-          <p>
-            Note: Subscription management is handled through Clerk. 
-            Configure your subscription plans in the Clerk Dashboard.
-          </p>
+        {/* Trust Badges */}
+        <div className="flex flex-wrap justify-center gap-6 md:gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+          <div className="flex items-center gap-2 font-bold text-slate-600"><Shield className="w-5 h-5" /> Secure Payment</div>
+          <div className="flex items-center gap-2 font-bold text-slate-600"><Star className="w-5 h-5" /> 4.9/5 Rating</div>
         </div>
-      </main>
+
+      </div>
     </div>
   );
 }

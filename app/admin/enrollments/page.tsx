@@ -32,10 +32,35 @@ export default async function AdminEnrollmentsPage() {
 
   const userIds = Array.from(new Set(enrollmentsRaw.map((e: any) => e.userId).filter(Boolean)));
   const courseIds = Array.from(new Set(enrollmentsRaw.map((e: any) => e.courseId).filter(Boolean)));
+  const courseSlugs = Array.from(new Set(enrollmentsRaw.map((e: any) => e.courseSlug).filter(Boolean)));
+
+  const userObjectIds = userIds
+    .filter((id: string) => ObjectId.isValid(id))
+    .map((id: string) => new ObjectId(id));
+
+  const courseObjectIds = courseIds
+    .filter((id: string) => ObjectId.isValid(id))
+    .map((id: string) => new ObjectId(id));
 
   const [users, courses] = await Promise.all([
-    db.collection('users').find({ $or: [{ clerkId: { $in: userIds } }, { _id: { $in: userIds } }] }).toArray(),
-    db.collection('courses').find({ $or: [{ _id: { $in: courseIds } }, { slug: { $in: courseIds } }] }).toArray(),
+    db
+      .collection('users')
+      .find({
+        $or: [
+          { clerkId: { $in: userIds } },
+          ...(userObjectIds.length > 0 ? [{ _id: { $in: userObjectIds } }] : []),
+        ],
+      })
+      .toArray(),
+    db
+      .collection('courses')
+      .find({
+        $or: [
+          ...(courseObjectIds.length > 0 ? [{ _id: { $in: courseObjectIds } }] : []),
+          { slug: { $in: [...courseIds, ...courseSlugs] } },
+        ],
+      })
+      .toArray(),
   ]);
 
   const userMap = new Map<string, any>();

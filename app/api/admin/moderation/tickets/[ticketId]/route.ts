@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ tick
       { returnDocument: 'after' },
     );
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 });
     }
 

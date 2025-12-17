@@ -5,6 +5,12 @@ export interface User {
   clerkId: string;
   email: string;
   name: string;
+  role?: 'superadmin' | 'admin' | 'teacher' | 'student';
+  isSuperAdmin?: boolean;
+  isAdmin?: boolean;
+  isTeacher?: boolean;
+  permissions?: string[];
+  roleIds?: ObjectId[];
   subscriptionTier: 'free' | 'premium';
   subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'trialing';
   subscriptionCurrentPeriodEnd?: Date;

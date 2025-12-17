@@ -1,18 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AdaptiveQuiz } from '@/components/quiz/AdaptiveQuiz';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export function SelectedQuiz() {
-  const [selection, setSelection] = useState<{ subjectName?: string } | null>(null);
-  useEffect(() => {
+  const [selection] = useState<{ subjectName?: string } | null>(() => {
     try {
-      const raw = localStorage.getItem('adaptiq-subject-selection');
-      if (raw) setSelection(JSON.parse(raw));
-    } catch {}
-  }, []);
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('adaptiq-subject-selection') : null;
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
 
   if (!selection?.subjectName) {
     return (

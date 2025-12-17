@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/admin-check';
 import { getDatabase } from '@/lib/mongodb';
 import { PERMISSION_OPTIONS, PermissionKey } from '@/lib/permissions';
 import { serializeRole } from '@/lib/models/Role';
+import type { Role } from '@/lib/models/Role';
 
 export const runtime = 'nodejs';
 
@@ -14,7 +15,11 @@ export async function GET() {
     await requireAdmin();
 
     const db = await getDatabase();
-    const roles = await db.collection('roles').find({}).sort({ createdAt: -1 }).toArray();
+    const roles = await db
+      .collection<Role>('roles')
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
     return NextResponse.json({ roles: roles.map(serializeRole) });
   } catch (error: any) {
     console.error('Roles fetch error:', error);
@@ -47,12 +52,12 @@ export async function POST(req: NextRequest) {
     const now = new Date();
     const db = await getDatabase();
 
-    const existing = await db.collection('roles').findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    const existing = await db.collection<Role>('roles').findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
     if (existing) {
       return NextResponse.json({ error: 'A role with this name already exists' }, { status: 409 });
     }
 
-    const result = await db.collection('roles').insertOne({
+    const result = await db.collection<Role>('roles').insertOne({
       name,
       description: description || '',
       permissions: perms,

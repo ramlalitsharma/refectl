@@ -1,11 +1,12 @@
 import { clerkClient } from '@clerk/nextjs/server';
 import { getDatabase } from './mongodb';
+import type { SubscriptionPlan } from './models/SubscriptionPlan';
 import { serializePlan } from './models/SubscriptionPlan';
 
 export async function getActivePlans() {
   const db = await getDatabase();
   const plans = await db
-    .collection('subscriptionPlans')
+    .collection<SubscriptionPlan>('subscriptionPlans')
     .find({ active: true })
     .sort({ price: 1 })
     .toArray();

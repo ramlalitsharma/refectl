@@ -56,7 +56,7 @@ const defaultForm: FormState = {
   seo: {
     title: 'AdaptIQ – Adaptive Learning LMS',
     description: 'Adaptive learning platform delivering AI-powered courses, exams, and analytics.',
-    keywords: 'adaptive learning, LMS, AI courses',
+    keywords: 'adaptive learning, online Learing Platform, AI courses',
     image: '',
   },
   footerHtml: '<p>© AdaptIQ. All rights reserved.</p>',

@@ -36,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ bank
         { returnDocument: 'after' },
       );
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     }
 

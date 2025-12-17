@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { StatCard } from '@/components/ui/StatCard';
-import { requireAdmin } from '@/lib/admin-check';
+import { requireAdmin, getUserRole, isSuperAdmin } from '@/lib/admin-check';
+import { ViewAsSwitcher } from '@/components/admin/ViewAsSwitcher';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,9 @@ export default async function AdminDashboardPage() {
   } catch {
     redirect('/dashboard');
   }
+
+  const role = await getUserRole();
+  const isSuperAdminUser = await isSuperAdmin();
 
   let stats = {
     totalUsers: 0,
@@ -78,7 +82,15 @@ export default async function AdminDashboardPage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <SiteBrand />
           <div className="flex items-center gap-4">
+            {isSuperAdminUser && (
+              <ViewAsSwitcher currentRole={role || 'student'} isSuperAdmin={isSuperAdminUser} />
+            )}
             <ThemeToggle />
+            {role === 'superadmin' && (
+              <Link href="/admin/super">
+                <Button variant="outline" size="sm">Super Admin Console</Button>
+              </Link>
+            )}
             <Link href="/admin">
               <Button variant="outline" size="sm">← Admin Panel</Button>
             </Link>

@@ -13,7 +13,7 @@ export interface Role {
 
 export function serializeRole(role: Role & { _id?: any }) {
   return {
-    id: role._id ? String(role._id) : undefined,
+    id: role._id ? String(role._id) : String(role.name),
     name: role.name,
     description: role.description || '',
     permissions: role.permissions || [],

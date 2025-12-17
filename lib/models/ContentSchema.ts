@@ -34,7 +34,7 @@ export interface ContentSchema {
 
 export function serializeSchema(schema: ContentSchema & { _id?: any }) {
   return {
-    id: schema._id ? String(schema._id) : undefined,
+    id: schema._id ? String(schema._id) : schema.key,
     name: schema.name,
     key: schema.key,
     description: schema.description || '',

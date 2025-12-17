@@ -1,8 +1,9 @@
 // Enhanced input validation utilities
 
+import { sanitizeString, escapeRegex, isValidEmail as isValidEmailUtil } from './security';
+
 export function validateEmail(email: string): boolean {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+  return isValidEmailUtil(email);
 }
 
 export function validateSlug(slug: string): boolean {
@@ -20,6 +21,10 @@ export function validateTitle(title: string): { valid: boolean; error?: string }
   if (title.length > 200) {
     return { valid: false, error: 'Title must be less than 200 characters' };
   }
+  // Check for potentially dangerous content
+  if (/<script|javascript:|on\w+\s*=/i.test(title)) {
+    return { valid: false, error: 'Title contains invalid characters' };
+  }
   return { valid: true };
 }
 
@@ -36,13 +41,15 @@ export function validateContent(content: string, minLength = 10): { valid: boole
   return { valid: true };
 }
 
-export function sanitizeInput(input: string): string {
-  // Remove potentially dangerous characters
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim();
+export function sanitizeInput(input: string, maxLength = 1000): string {
+  return sanitizeString(input, maxLength);
+}
+
+/**
+ * Escape regex pattern to prevent ReDoS attacks
+ */
+export function escapeRegexPattern(pattern: string): string {
+  return escapeRegex(pattern);
 }
 
 export function validateRating(rating: number): { valid: boolean; error?: string } {

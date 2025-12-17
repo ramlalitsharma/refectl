@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { isAdmin } from '@/lib/admin-check';
 import { serializeEnrollment } from '@/lib/models/Enrollment';
+import { ObjectId } from 'mongodb';
+
+function normalizeId(id: any): string | undefined {
+  if (!id) return undefined;
+  if (typeof id === 'string') {
+    return id;
+  }
+  if (typeof id === 'object') {
+    if (typeof id.toHexString === 'function') return id.toHexString();
+    if (typeof id.toString === 'function') {
+      const str = id.toString();
+      const match = str.match(/[a-fA-F0-9]{24}/);
+      return match ? match[0] : str;
+    }
+  }
+  return undefined;
+}
 
 export const runtime = 'nodejs';
 
@@ -23,10 +40,35 @@ export async function GET(req: NextRequest) {
     // gather related user and course info
     const userIds = Array.from(new Set(enrollments.map((e: any) => e.userId).filter(Boolean)));
     const courseIds = Array.from(new Set(enrollments.map((e: any) => e.courseId).filter(Boolean)));
+    const courseSlugs = Array.from(new Set(enrollments.map((e: any) => e.courseSlug).filter(Boolean)));
+
+    const userObjectIds = userIds
+      .filter((id: string) => ObjectId.isValid(id))
+      .map((id: string) => new ObjectId(id));
+
+    const courseObjectIds = courseIds
+      .filter((id: string) => ObjectId.isValid(id))
+      .map((id: string) => new ObjectId(id));
 
     const [users, courses] = await Promise.all([
-      db.collection('users').find({ $or: [{ clerkId: { $in: userIds } }, { _id: { $in: userIds } }] }).toArray(),
-      db.collection('courses').find({ $or: [{ _id: { $in: courseIds } }, { slug: { $in: courseIds } }] }).toArray(),
+      db
+        .collection('users')
+        .find({
+          $or: [
+            { clerkId: { $in: userIds } },
+            ...(userObjectIds.length > 0 ? [{ _id: { $in: userObjectIds } }] : []),
+          ],
+        })
+        .toArray(),
+      db
+        .collection('courses')
+        .find({
+          $or: [
+            ...(courseObjectIds.length > 0 ? [{ _id: { $in: courseObjectIds } }] : []),
+            { slug: { $in: [...courseIds, ...courseSlugs] } },
+          ],
+        })
+        .toArray(),
     ]);
 
     const userMap = new Map<string, any>();
@@ -45,10 +87,12 @@ export async function GET(req: NextRequest) {
       const serialized = serializeEnrollment(enrollment);
       const user = userMap.get(enrollment.userId) || {};
       const course = courseMap.get(enrollment.courseId) || {};
+      const enrollmentId = normalizeId(enrollment._id) || `${enrollment.userId}:${enrollment.courseId}`;
 
       return {
         ...serialized,
-        userName: user.name || user.fullName || user.email || 'Unknown user',
+        id: enrollmentId, // Ensure stable ID
+        userName: user.name || user.fullName || user.firstName || user.email || 'Unknown user',
         userEmail: user.email || '',
         userId: enrollment.userId,
         courseTitle: serialized.courseTitle || course.title || 'Course',

@@ -128,7 +128,8 @@ export async function POST(req: NextRequest) {
         },
       );
 
-    return NextResponse.json({ settings: serializeSiteSettings(result.value as any) });
+    const updated = (result as any)?.value;
+    return NextResponse.json({ settings: serializeSiteSettings(updated as any) });
   } catch (error: any) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

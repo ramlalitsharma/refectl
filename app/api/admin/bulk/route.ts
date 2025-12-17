@@ -18,39 +18,37 @@ export async function POST(req: NextRequest) {
 
     const db = await getDatabase();
     const collection = type === 'courses' ? 'courses' : 'blogs';
-    const objectIds = ids.map((id: string) => {
-      try {
-        return { _id: id };
-      } catch {
-        return { slug: id };
-      }
+    const { ObjectId } = await import('mongodb');
+    const orFilters = ids.map((id: string) => {
+      return /^[a-fA-F0-9]{24}$/.test(id) ? { _id: new ObjectId(id) } : { slug: id };
     });
 
     let result;
     switch (action) {
       case 'publish':
         result = await db.collection(collection).updateMany(
-          { $or: objectIds },
+          { $or: orFilters },
           { $set: { status: 'published', updatedAt: new Date() } }
         );
         break;
       case 'unpublish':
         result = await db.collection(collection).updateMany(
-          { $or: objectIds },
+          { $or: orFilters },
           { $set: { status: 'draft', updatedAt: new Date() } }
         );
         break;
       case 'delete':
-        result = await db.collection(collection).deleteMany({ $or: objectIds });
+        result = await db.collection(collection).deleteMany({ $or: orFilters });
         break;
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
 
+    const modified = (('modifiedCount' in result) ? (result as any).modifiedCount : (('deletedCount' in result) ? (result as any).deletedCount : 0)) || 0;
     return NextResponse.json({
       success: true,
       message: `${action} completed`,
-      modified: result.modifiedCount || result.deletedCount
+      modified,
     });
   } catch (e: any) {
     if (e.message === 'Admin access required') {

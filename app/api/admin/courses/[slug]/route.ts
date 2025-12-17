@@ -48,6 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
       seo,
       metadata,
       price,
+      thumbnail,
       status,
       changeNote,
     } = body;
@@ -73,6 +74,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     if (seo !== undefined) updateData.seo = seo;
     if (metadata !== undefined) updateData.metadata = metadata;
     if (price !== undefined) updateData.price = price;
+    if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
     if (status) {
       if (!isValidStatus(status)) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 });

@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { WorkflowControls } from '@/components/admin/WorkflowControls';
 import { MarkdownEditor } from '@/components/editor/MarkdownEditor';
+import { VideoUploader } from '@/components/video/VideoUploader';
+import { ManualEnrollment } from '@/components/admin/ManualEnrollment';
+import { ImageUploader } from '@/components/admin/ImageUploader';
+import { CourseOutlineEditor } from '@/components/admin/CourseOutlineEditor';
 
 interface CourseSummary {
   id: string;
@@ -23,6 +27,7 @@ interface SelectedCourse extends Partial<CourseSummary> {
   level?: string;
   language?: string;
   tags?: string[];
+  thumbnail?: string;
   metadata?: {
     audience?: string;
     goals?: string;
@@ -76,6 +81,7 @@ const DEFAULT_FORM = {
   priceCurrency: 'USD',
   seoTitle: '',
   seoDescription: '',
+  thumbnail: '',
 };
 
 export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCreatorStudioProps) {
@@ -133,6 +139,7 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
       priceCurrency: selectedCourse.price?.currency || DEFAULT_FORM.priceCurrency,
       seoTitle: selectedCourse.seo?.title || '',
       seoDescription: selectedCourse.seo?.description || '',
+      thumbnail: selectedCourse.thumbnail || '',
     });
     setModules(
       (selectedCourse.modules || []).map((module) => ({
@@ -166,9 +173,9 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
       prev.map((module, mi) =>
         mi === moduleIndex
           ? {
-              ...module,
-              lessons: module.lessons.map((lesson, li) => (li === lessonIndex ? { ...lesson, [key]: value } : lesson)),
-            }
+            ...module,
+            lessons: module.lessons.map((lesson, li) => (li === lessonIndex ? { ...lesson, [key]: value } : lesson)),
+          }
           : module,
       ),
     );
@@ -193,9 +200,9 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
       prev.map((module, mi) =>
         mi === moduleIndex
           ? {
-              ...module,
-              lessons: module.lessons.filter((_, li) => li !== lessonIndex),
-            }
+            ...module,
+            lessons: module.lessons.filter((_, li) => li !== lessonIndex),
+          }
           : module,
       ),
     );
@@ -272,12 +279,13 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean),
+    thumbnail: form.thumbnail.trim() || undefined,
     resources: resources.filter((resource) => resource.label.trim() && resource.url.trim()),
     price: form.priceAmount
       ? {
-          currency: form.priceCurrency || 'USD',
-          amount: Number(form.priceAmount),
-        }
+        currency: form.priceCurrency || 'USD',
+        amount: Number(form.priceAmount),
+      }
       : undefined,
     seo: {
       title: form.seoTitle.trim() || undefined,
@@ -417,7 +425,7 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
           <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
         )}
 
-        <div className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,0.85fr),minmax(0,1.15fr),minmax(0,0.9fr)]">
+        <div className="mt-6 grid gap-6 2xl:grid-cols-3">
           <section className="space-y-4">
             <h3 className="text-sm font-semibold text-slate-800">Course metadata</h3>
             <div className="space-y-3">
@@ -502,6 +510,13 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
                   />
                 </label>
               </div>
+              <div>
+                <ImageUploader
+                  value={form.thumbnail}
+                  onChange={(url) => setForm((prev) => ({ ...prev, thumbnail: url }))}
+                  label="Course Thumbnail"
+                />
+              </div>
               {(mode === 'ai' && !editingSlug) && (
                 <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <h4 className="text-sm font-semibold text-slate-700">AI guidance</h4>
@@ -559,73 +574,94 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
                   </Button>
                 </div>
               )}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">Resource links</span>
-                  <Button variant="outline" size="sm" onClick={addResource}>
-                    + Resource
-                  </Button>
-                </div>
-                {resources.length === 0 && <p className="text-xs text-slate-400">Add supportive videos, PDFs, or external links.</p>}
-                <div className="space-y-3">
-                  {resources.map((resource, index) => (
-                    <div key={index} className="rounded-lg border border-slate-200 p-3 space-y-2">
-                      <div className="flex gap-2">
-                        <select
-                          value={resource.type}
-                          onChange={(e) => updateResource(index, 'type', e.target.value)}
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
-                        >
-                          <option value="link">Link</option>
-                          <option value="video">Video</option>
-                          <option value="pdf">PDF</option>
-                          <option value="image">Image</option>
-                        </select>
-                        <input
-                          value={resource.label}
-                          onChange={(e) => updateResource(index, 'label', e.target.value)}
-                          placeholder="Resource title"
-                          className="flex-1 rounded-lg border border-slate-200 px-2 py-1 text-xs"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          value={resource.url}
-                          onChange={(e) => updateResource(index, 'url', e.target.value)}
-                          placeholder="https://"
-                          className="flex-1 rounded-lg border border-slate-200 px-2 py-1 text-xs"
-                        />
-                        <Button variant="ghost" size="sm" onClick={() => removeResource(index)}>
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-slate-700">SEO metadata</h4>
-                <label className="space-y-1 text-xs text-slate-600">
-                  SEO title
-                  <input
-                    value={form.seoTitle}
-                    onChange={(e) => setForm((prev) => ({ ...prev, seoTitle: e.target.value }))}
-                    placeholder="Master adaptive learning with AdaptIQ"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2"
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Video Upload</h4>
+                  <VideoUploader
+                    onUploadComplete={(uploadId) => {
+                      setFeedback(`Video uploaded successfully! Upload ID: ${uploadId}`);
+                      // Optionally add to resources
+                      setResources((prev) => [
+                        ...prev,
+                        {
+                          type: 'video',
+                          label: 'Uploaded Video',
+                          url: `/videos/${uploadId}/playlist.m3u8`, // Self-hosted HLS
+                        },
+                      ]);
+                    }}
+                    onError={(error) => setError(error)}
                   />
-                </label>
-                <label className="space-y-1 text-xs text-slate-600">
-                  SEO description
-                  <textarea
-                    value={form.seoDescription}
-                    onChange={(e) => setForm((prev) => ({ ...prev, seoDescription: e.target.value }))}
-                    placeholder="Personalized adaptive course with AI-driven analytics."
-                    rows={3}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2"
-                  />
-                </label>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-700">Resource links</span>
+                    <Button variant="outline" size="sm" onClick={addResource}>
+                      + Resource
+                    </Button>
+                  </div>
+                  {resources.length === 0 && <p className="text-xs text-slate-400">Add supportive videos, PDFs, or external links.</p>}
+                  <div className="space-y-3">
+                    {resources.map((resource, index) => (
+                      <div key={index} className="rounded-lg border border-slate-200 p-3 space-y-2">
+                        <div className="flex gap-2">
+                          <select
+                            value={resource.type}
+                            onChange={(e) => updateResource(index, 'type', e.target.value)}
+                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                          >
+                            <option value="link">Link</option>
+                            <option value="video">Video</option>
+                            <option value="pdf">PDF</option>
+                            <option value="image">Image</option>
+                          </select>
+                          <input
+                            value={resource.label}
+                            onChange={(e) => updateResource(index, 'label', e.target.value)}
+                            placeholder="Resource title"
+                            className="flex-1 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            value={resource.url}
+                            onChange={(e) => updateResource(index, 'url', e.target.value)}
+                            placeholder="https://"
+                            className="flex-1 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                          />
+                          <Button variant="ghost" size="sm" onClick={() => removeResource(index)}>
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-slate-700">SEO metadata</h4>
+                  <label className="space-y-1 text-xs text-slate-600">
+                    SEO title
+                    <input
+                      value={form.seoTitle}
+                      onChange={(e) => setForm((prev) => ({ ...prev, seoTitle: e.target.value }))}
+                      placeholder="Master adaptive learning with AdaptIQ"
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                    />
+                  </label>
+                  <label className="space-y-1 text-xs text-slate-600">
+                    SEO description
+                    <textarea
+                      value={form.seoDescription}
+                      onChange={(e) => setForm((prev) => ({ ...prev, seoDescription: e.target.value }))}
+                      placeholder="Personalized adaptive course with AI-driven analytics."
+                      rows={3}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2"
+                    />
+                  </label>
+                </div>
               </div>
             </div>
+
           </section>
 
           <section className="space-y-4">
@@ -636,65 +672,39 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
               </Button>
             </div>
             <div className="space-y-4">
-              {modules.map((module, moduleIndex) => (
-                <div key={moduleIndex} className="rounded-xl border border-slate-200 p-4">
-                  <label className="space-y-1 text-sm text-slate-600 block">
-                    Module title
-                    <input
-                      value={module.title}
-                      onChange={(e) => updateModuleTitle(moduleIndex, e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2"
-                    />
-                  </label>
-                  <div className="mt-3 space-y-3">
-                    {module.lessons.map((lesson, lessonIndex) => (
-                      <div key={lessonIndex} className="rounded-lg border border-slate-100 p-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <label className="flex-1 text-sm text-slate-600">
-                            Lesson title
-                            <input
-                              value={lesson.title}
-                              onChange={(e) => updateLesson(moduleIndex, lessonIndex, 'title', e.target.value)}
-                              className="w-full rounded-lg border border-slate-200 px-3 py-2"
-                            />
-                          </label>
-                          <Button variant="ghost" size="sm" onClick={() => removeLesson(moduleIndex, lessonIndex)} disabled={module.lessons.length <= 1}>
-                            Remove
-                          </Button>
-                        </div>
-                        <label className="mt-2 block text-xs text-slate-500">
-                          Lesson notes / content bullets
-                          <MarkdownEditor
-                            value={lesson.content || ''}
-                            onChange={(next) => updateLesson(moduleIndex, lessonIndex, 'content', next)}
-                            height={200}
-                            placeholder="Add lesson explanation, steps, or examples..."
-                          />
-                        </label>
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={() => addLesson(moduleIndex)}>
-                      + Lesson
-                    </Button>
-                  </div>
-                </div>
-              ))}
+              <CourseOutlineEditor
+                modules={modules}
+                onChange={setModules}
+              />
             </div>
 
             {editingSlug && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <h4 className="text-sm font-semibold text-slate-700">Workflow status</h4>
-                <WorkflowControls
-                  contentType="course"
-                  contentId={editingSlug}
-                  status={currentStatus}
-                  onStatusChange={(status) => {
-                    setCurrentStatus(status);
-                    setFeedback(`Status updated to ${status}.`);
-                    router.refresh();
-                  }}
-                />
-              </div>
+              <>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <h4 className="text-sm font-semibold text-slate-700">Workflow status</h4>
+                  <WorkflowControls
+                    contentType="course"
+                    contentId={editingSlug}
+                    status={currentStatus}
+                    onStatusChange={(status) => {
+                      setCurrentStatus(status);
+                      setFeedback(`Status updated to ${status}.`);
+                      router.refresh();
+                    }}
+                  />
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-4">Manual Enrollment</h4>
+                  <ManualEnrollment
+                    courseId={selectedCourse?.id || editingSlug}
+                    courseTitle={form.title || selectedCourse?.title}
+                    onEnrolled={() => {
+                      setFeedback('Student enrolled successfully!');
+                      router.refresh();
+                    }}
+                  />
+                </div>
+              </>
             )}
 
             <div className="flex flex-wrap gap-3">
@@ -722,9 +732,8 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
                     return (
                       <div
                         key={course.id}
-                        className={`rounded-lg border px-3 py-2 transition ${
-                          isActive ? 'border-teal-400 bg-teal-50 text-teal-800' : 'border-slate-100 text-slate-700 hover:border-slate-300'
-                        }`}
+                        className={`rounded-lg border px-3 py-2 transition ${isActive ? 'border-teal-400 bg-teal-50 text-teal-800' : 'border-slate-100 text-slate-700 hover:border-slate-300'
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -778,7 +787,7 @@ export function CourseCreatorStudio({ recentCourses, selectedCourse }: CourseCre
           <h3 className="text-lg font-semibold text-emerald-900">Course drafted</h3>
           <p className="text-sm text-emerald-700">{result.title} — status {result.status}</p>
           <pre className="mt-3 max-h-72 overflow-auto rounded-lg bg-white/80 p-4 text-xs text-slate-700">
-{JSON.stringify(result.modules, null, 2)}
+            {JSON.stringify(result.modules, null, 2)}
           </pre>
         </div>
       )}

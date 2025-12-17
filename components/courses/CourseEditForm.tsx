@@ -2,10 +2,18 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+
+interface EditableCourse {
+  title?: string;
+  summary?: string;
+  subject?: string;
+  level?: string;
+  status?: 'draft' | 'published';
+  slug: string;
+}
 
 interface CourseEditFormProps {
-  course: any;
+  course: EditableCourse;
   onSave?: () => void;
 }
 
@@ -35,7 +43,7 @@ export function CourseEditForm({ course, onSave }: CourseEditFormProps) {
         const error = await res.json();
         alert(error.error || 'Failed to update course');
       }
-    } catch (e) {
+    } catch {
       alert('Failed to update course');
     } finally {
       setSaving(false);

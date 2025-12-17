@@ -54,7 +54,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ exam
       .collection('examTemplates')
       .findOneAndUpdate({ _id: new ObjectId(examId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Exam not found' }, { status: 404 });
     }
 

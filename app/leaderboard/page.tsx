@@ -73,7 +73,7 @@ export default async function LeaderboardPage() {
                         <div className="flex items-center gap-3">
                           <h2 className="text-lg font-semibold text-slate-900">{entry.name}</h2>
                           {entry.streak > 0 && (
-                            <Badge variant="outline" size="sm" className="border-amber-200 text-amber-600 bg-amber-50">
+                            <Badge variant="warning" size="sm" className="border-amber-200 text-amber-600 bg-amber-50">
                               🔥 {entry.streak} day streak
                             </Badge>
                           )}

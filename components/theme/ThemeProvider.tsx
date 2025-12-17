@@ -56,7 +56,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used within ThemeProvider');
+  if (!context) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('useTheme was rendered outside of ThemeProvider. Falling back to light theme.');
+    }
+    return {
+      theme: 'light' as Theme,
+      resolvedTheme: 'light' as const,
+      setTheme: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Attempted to set theme without ThemeProvider context.');
+        }
+      },
+    };
+  }
   return context;
 }
 

@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { auth, currentUser } from '@/lib/auth';
 import crypto from 'crypto';
+import { validateTitle } from '@/lib/validation';
 
 export const runtime = 'nodejs';
+
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 5;
+const rateMap = new Map<string, { ts: number; count: number }>();
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +16,23 @@ export async function POST(req: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { courseId, courseTitle } = body as { courseId: string; courseTitle: string };
+    const courseId = String(body?.courseId || '');
+    const courseTitle = String(body?.courseTitle || '');
+    if (!courseId) return NextResponse.json({ error: 'Course ID is required' }, { status: 400 });
+    const titleCheck = validateTitle(courseTitle);
+    if (!titleCheck.valid) return NextResponse.json({ error: titleCheck.error || 'Invalid course title' }, { status: 400 });
+
+    const key = `cert-generate:${userId}:${courseId}`;
+    const nowTs = Date.now();
+    const existing = rateMap.get(key);
+    if (existing && nowTs - existing.ts < RATE_LIMIT_WINDOW_MS) {
+      if (existing.count >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
+      rateMap.set(key, { ts: existing.ts, count: existing.count + 1 });
+    } else {
+      rateMap.set(key, { ts: nowTs, count: 1 });
+    }
 
     const user = await currentUser();
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 });

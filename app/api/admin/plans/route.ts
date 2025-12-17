@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { isAdmin } from '@/lib/admin-check';
 import { serializePlan } from '@/lib/models/SubscriptionPlan';
+import type { SubscriptionPlan } from '@/lib/models/SubscriptionPlan';
 
 export const runtime = 'nodejs';
 
@@ -12,7 +13,11 @@ export async function GET() {
     }
 
     const db = await getDatabase();
-    const plans = await db.collection('subscriptionPlans').find({}).sort({ price: 1 }).toArray();
+    const plans = await db
+      .collection<SubscriptionPlan>('subscriptionPlans')
+      .find({})
+      .sort({ price: 1 })
+      .toArray();
     return NextResponse.json({ plans: plans.map(serializePlan) });
   } catch (error: any) {
     console.error('Subscription plans fetch error:', error);

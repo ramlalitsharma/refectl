@@ -45,7 +45,7 @@ export function CourseCompletion({ courseSlug, courseTitle }: CourseCompletionPr
         </CardHeader>
         <CardContent>
           <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Congratulations! You've successfully completed <strong>{courseTitle}</strong>.
+            Congratulations! You&apos;ve successfully completed <strong>{courseTitle}</strong>.
           </p>
           <div className="flex gap-3">
             <Link href={`/certificates/${certificateId}`}>

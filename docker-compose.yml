@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: adaptiq-lms
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # In production, these should be passed via environment variables or secrets
+      # For local Docker testing, we reference the local mongo service
+      - MONGODB_URI=mongodb://mongo:27017/adaptiq
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    depends_on:
+      - mongo
+
+  mongo:
+    container_name: adaptiq-mongo
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

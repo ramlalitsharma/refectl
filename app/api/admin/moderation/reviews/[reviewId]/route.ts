@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ revi
       { returnDocument: 'after' },
     );
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Review not found' }, { status: 404 });
     }
 

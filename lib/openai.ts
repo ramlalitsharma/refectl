@@ -29,9 +29,16 @@ export async function generateAdaptiveQuestion(
   const subjectContext = context?.subjectName ? `Subject: ${context.subjectName}.` : '';
   const levelContext = context?.levelName ? `Level: ${context.levelName}.` : '';
   const chapterContext = context?.chapterName ? `Chapter: ${context.chapterName}.` : '';
-  const prompt = `Generate a ${difficulty} level quiz question about ${topic}.
+  const prompt = `Generate a ${difficulty} level QUIZ QUESTION (NOT course content, NOT blog, NOT tutorial - only a quiz question) about ${topic}.
 ${previousPerformance ? `Previous performance: ${previousPerformance.correctAnswers} correct, ${previousPerformance.incorrectAnswers} incorrect. Weak areas: ${previousPerformance.weakTopics.join(', ')}` : ''}
 ${subjectContext} ${levelContext} ${chapterContext}
+
+IMPORTANT: Generate ONLY a quiz question with:
+- A clear question text
+- Four multiple choice options
+- One correct answer
+- An explanation
+- DO NOT generate course lessons, blog posts, or tutorial content
 
 Return a JSON object with:
 {
@@ -42,7 +49,7 @@ Return a JSON object with:
   "difficulty": "${difficulty}"
 }
 
-Make the question relevant and educational.`;
+Make the question relevant, educational, and appropriate for the difficulty level.`;
 
   if (!openai) {
     throw new Error('OPENAI_API_KEY is not set in environment variables. Please add it to your .env.local file.');
@@ -54,7 +61,7 @@ Make the question relevant and educational.`;
       messages: [
         {
           role: 'system',
-          content: 'You are an expert educational content creator. Generate clear, accurate quiz questions with good explanations. Always return valid JSON.',
+          content: 'You are an expert quiz question creator specializing in educational assessments. Your ONLY task is to generate quiz questions with multiple choice options, correct answers, and explanations. DO NOT generate course content, blog posts, tutorials, or any other content type - ONLY quiz questions. Always return valid JSON.',
         },
         {
           role: 'user',

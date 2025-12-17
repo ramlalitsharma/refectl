@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(raw);
     const eventName: string = event?.meta?.event_name || '';
     const data = event?.data || {};
+    const eventId: string = event?.meta?.event_id || data?.id || signature || crypto.createHash('sha256').update(raw).digest('hex');
 
     // Extract user id/email from order/subscription metadata
     const userId: string | undefined = data?.attributes?.user_id || data?.attributes?.customer_id || data?.attributes?.identifier || undefined;
@@ -39,6 +40,11 @@ export async function POST(req: NextRequest) {
 
     const db = await getDatabase();
     const users = db.collection('users');
+    const events = db.collection('webhookEvents');
+    const dup = await events.findOne({ provider: 'lemon', eventId });
+    if (dup) {
+      return NextResponse.json({ received: true, duplicate: true, event: eventName });
+    }
 
     if (userId) {
       await users.updateOne(
@@ -51,6 +57,7 @@ export async function POST(req: NextRequest) {
       await setUserSubscription(userId, { tier, status, currentPeriodEnd });
     }
 
+    await events.insertOne({ provider: 'lemon', eventId, type: eventName, createdAt: new Date() });
     return NextResponse.json({ received: true, event: eventName });
   } catch (e: any) {
     console.error('Lemon Squeezy webhook error:', e);

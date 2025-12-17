@@ -101,7 +101,7 @@ async function getFinancialStats(): Promise<FinancialStats> {
     totals,
     trends: Object.values(revenueByPeriod).sort((a, b) => (a.period > b.period ? 1 : -1)).slice(-6),
     planBreakdown: Object.values(planBreakdown),
-    churnReasons: Object.entries(churnReasons).map(([reason, count]) => ({ reason, count })),
+    churnReasons: Object.entries(churnReasons).map(([reason, count]) => ({ reason, count: Number(count) })),
   };
 }
 

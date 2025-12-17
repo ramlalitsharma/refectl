@@ -21,9 +21,25 @@ export interface EnrollmentRecord {
   }>;
 }
 
+function normalizeId(id: any): string | undefined {
+  if (!id) return undefined;
+  if (typeof id === 'string') {
+    return id;
+  }
+  if (typeof id === 'object') {
+    if (typeof id.toHexString === 'function') return id.toHexString();
+    if (typeof id.toString === 'function') {
+      const str = id.toString();
+      const match = str.match(/[a-fA-F0-9]{24}/);
+      return match ? match[0] : str;
+    }
+  }
+  return undefined;
+}
+
 export function serializeEnrollment(record: EnrollmentRecord & { _id?: any }) {
   return {
-    id: record._id ? String(record._id) : undefined,
+    id: normalizeId(record._id),
     userId: record.userId,
     courseId: record.courseId,
     courseSlug: record.courseSlug,

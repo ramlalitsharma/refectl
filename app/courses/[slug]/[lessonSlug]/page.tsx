@@ -1,5 +1,6 @@
 import { getDatabase } from '@/lib/mongodb';
 import Link from 'next/link';
+import Script from 'next/script';
 import { SiteBrand } from '@/components/layout/SiteBrand';
 import { AdaptiveQuiz } from '@/components/quiz/AdaptiveQuiz';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -27,7 +28,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
         }
       }
     }
-  } catch {}
+  } catch { }
 
   if (!course || !lesson) {
     return (
@@ -49,9 +50,11 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <head>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      </head>
+      <Script
+        id="lesson-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="bg-white dark:bg-gray-800 border-b sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <SiteBrand />
@@ -68,7 +71,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           <nav className="text-sm text-gray-600 dark:text-gray-400 mb-6">
             <Link href="/courses" className="hover:underline">Courses</Link> / <Link href={`/courses/${slug}`} className="hover:underline">{course.title}</Link> / <span className="text-gray-900 dark:text-white">{lesson.title}</span>
           </nav>
-          
+
           <div className="mb-6">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">{lesson.title}</h1>
             <p className="text-gray-600 dark:text-gray-400">Module: {module.title}</p>
@@ -78,7 +81,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           {lesson.videoUrl || lesson.videoId ? (
             <Card className="mb-8">
               <CardContent className="p-0">
-                <VideoPlayer 
+                <VideoPlayer
                   videoUrl={lesson.videoUrl}
                   videoId={lesson.videoId}
                   title={lesson.title}

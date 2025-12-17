@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
 
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 10;
+const rateMap = new Map<string, { ts: number; count: number }>();
+
 /**
  * This route handles subscription checkout for Clerk
  * In production, you would integrate with Clerk's billing/subscription management
@@ -13,6 +17,18 @@ export async function GET(req: NextRequest) {
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const key = `subscription-checkout:${userId}`;
+    const nowTs = Date.now();
+    const existing = rateMap.get(key);
+    if (existing && nowTs - existing.ts < RATE_LIMIT_WINDOW_MS) {
+      if (existing.count >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
+      rateMap.set(key, { ts: existing.ts, count: existing.count + 1 });
+    } else {
+      rateMap.set(key, { ts: nowTs, count: 1 });
     }
 
     // In production, integrate with Clerk's subscription/billing system
@@ -56,12 +72,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User ID required' }, { status: 400 });
     }
 
+    const allowedTiers = new Set(['free', 'premium']);
+    const finalTier = allowedTiers.has(String(tier)) ? String(tier) : 'premium';
+    const allowedStatus = new Set(['active', 'on_trial', 'paused', 'canceled']);
+    const finalStatus = allowedStatus.has(String(status)) ? String(status) : 'active';
+
     // Update user subscription status
     const client = await clerkClient();
     await client.users.updateUserMetadata(userId, {
       publicMetadata: {
-        subscriptionTier: tier || 'premium',
-        subscriptionStatus: status || 'active',
+        subscriptionTier: finalTier,
+        subscriptionStatus: finalStatus,
         subscriptionCurrentPeriodEnd: currentPeriodEnd || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       },
     });

@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const payload = await req.json();
     const { email, subject, message, priority = 'medium', tags } = payload;
 
-    const resolvedEmail = email || (await currentUser())?.emailAddresses?.[0]?.emailAddress;
+    const resolvedEmail = email || (await currentUser())?.email;
     if (!resolvedEmail) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }

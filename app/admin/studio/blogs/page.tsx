@@ -19,13 +19,14 @@ export default async function BlogStudioPage() {
   const db = await getDatabase();
   const blogs = await db
     .collection('blogs')
-    .find({}, { projection: { title: 1, status: 1, createdAt: 1 } })
+    .find({}, { projection: { title: 1, status: 1, createdAt: 1, slug: 1 } })
     .sort({ createdAt: -1 })
     .limit(12)
     .toArray();
 
   const formatted = blogs.map((blog: any) => ({
     id: blog._id ? String(blog._id) : blog.slug,
+    slug: blog.slug,
     title: blog.title,
     status: blog.status || 'draft',
     createdAt: blog.createdAt,

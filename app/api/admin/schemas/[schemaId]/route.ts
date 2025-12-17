@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ sche
       .collection('contentSchemas')
       .findOneAndUpdate({ _id: new ObjectId(schemaId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Schema not found' }, { status: 404 });
     }
 

@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+ 
+import { MuxVideoPlayer } from '@/components/video/MuxVideoPlayer';
 
 interface VideoPlayerProps {
   videoUrl?: string;
   videoId?: string;
   title?: string;
-  provider?: 'youtube' | 'vimeo' | 'direct';
+  provider?: 'youtube' | 'vimeo' | 'direct' | 'self-hosted' | 'hls';
+  playbackId?: string; // For self-hosted HLS videos
 }
 
-export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube' }: VideoPlayerProps) {
-  const [error, setError] = useState(false);
+export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube', playbackId }: VideoPlayerProps) {
 
   if (!videoUrl && !videoId) {
     return (
@@ -32,7 +33,7 @@ export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube' }: 
           className="w-full h-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-          onError={() => setError(true)}
+          onError={() => {}}
         />
       </div>
     );
@@ -47,9 +48,21 @@ export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube' }: 
           className="w-full h-full"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
-          onError={() => setError(true)}
+          onError={() => {}}
         />
       </div>
+    );
+  }
+
+  // Self-hosted HLS video
+  if (provider === 'self-hosted' || provider === 'hls') {
+    return (
+      <MuxVideoPlayer
+        playbackId={playbackId || videoId || ''}
+        title={title}
+        provider="self-hosted"
+        baseUrl={process.env.NEXT_PUBLIC_VIDEO_BASE_URL}
+      />
     );
   }
 
@@ -60,7 +73,7 @@ export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube' }: 
           src={videoUrl}
           controls
           className="w-full h-full"
-          onError={() => setError(true)}
+          onError={() => {}}
         >
           Your browser does not support the video tag.
         </video>
@@ -70,4 +83,3 @@ export function VideoPlayer({ videoUrl, videoId, title, provider = 'youtube' }: 
 
   return null;
 }
-

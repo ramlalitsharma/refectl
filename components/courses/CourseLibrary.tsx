@@ -13,7 +13,7 @@ interface Course {
   summary?: string;
   subject?: string;
   level?: string;
-  modules?: any[];
+  modules?: Array<{ id?: string; title?: string; lessons?: unknown[] }>;
   createdAt?: string;
   icon?: string;
 }
@@ -42,7 +42,8 @@ export function CourseLibrary({
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          setBookmarked(new Set(data.map((b: any) => b.courseId)));
+          const ids = (data as Array<{ courseId: string }>).map((b) => b.courseId);
+          setBookmarked(new Set(ids));
         }
       })
       .catch(() => undefined);
@@ -130,9 +131,10 @@ export function CourseLibrary({
       if (data.status) {
         setEnrollmentStatuses((prev) => ({ ...prev, [courseId]: data.status }));
       }
-    } catch (error: any) {
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error('Enrollment request error:', error);
-      alert(error.message || 'Could not submit enrollment request');
+      alert(msg || 'Could not submit enrollment request');
     } finally {
       setRequestingCourse(null);
     }
@@ -206,8 +208,20 @@ export function CourseLibrary({
           {courses.map((course, idx) => {
             const courseId = course._id || course.slug;
             const isBookmarked = bookmarked.has(courseId);
-            const lessonCount = course.modules?.reduce((n: number, m: any) => n + (m.lessons?.length || 0), 0) || 0;
+            const lessonCount = course.modules?.reduce((n: number, m: { lessons?: unknown[] }) => n + (Array.isArray(m.lessons) ? m.lessons.length : 0), 0) || 0;
             const enrollmentStatus = enrollmentStatuses[courseId];
+            const statusLabel =
+              enrollmentStatus === 'approved'
+                ? 'Enrolled'
+                : enrollmentStatus === 'completed'
+                ? 'Completed'
+                : enrollmentStatus === 'pending'
+                ? 'Awaiting Approval'
+                : enrollmentStatus === 'waitlisted'
+                ? 'Waitlisted'
+                : enrollmentStatus === 'rejected'
+                ? 'Rejected'
+                : null;
 
             return (
               <FadeIn key={course.slug} delay={idx * 0.05}>
@@ -248,6 +262,21 @@ export function CourseLibrary({
                         <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 font-medium text-blue-700">
                           {lessonCount} lessons
                         </span>
+                        {statusLabel && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-medium ${
+                              enrollmentStatus === 'approved' || enrollmentStatus === 'completed'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : enrollmentStatus === 'pending'
+                                ? 'bg-amber-100 text-amber-700'
+                                : enrollmentStatus === 'waitlisted'
+                                ? 'bg-orange-100 text-orange-700'
+                                : 'bg-rose-100 text-rose-700'
+                            }`}
+                          >
+                            {statusLabel}
+                          </span>
+                        )}
                       </div>
 
                       <div className="space-y-2">
@@ -256,9 +285,11 @@ export function CourseLibrary({
                         </Button>
 
                         {isAuthenticated ? (
-                          enrollmentStatus === 'approved' ? (
+                          enrollmentStatus === 'approved' || enrollmentStatus === 'completed' ? (
                             <Button variant="outline" className="w-full" asChild>
-                              <Link href={`/courses/${course.slug}`}>Go to Course</Link>
+                              <Link href={`/courses/${course.slug}`}>
+                                {enrollmentStatus === 'completed' ? 'Review Course' : 'Continue Learning'}
+                              </Link>
                             </Button>
                           ) : enrollmentStatus === 'pending' ? (
                             <Button variant="outline" className="w-full" disabled>

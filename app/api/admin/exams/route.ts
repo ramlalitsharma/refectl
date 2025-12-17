@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { isAdmin } from '@/lib/admin-check';
 import { serializeExamTemplate } from '@/lib/models/ExamTemplate';
+import type { ExamTemplate } from '@/lib/models/ExamTemplate';
 
 export const runtime = 'nodejs';
 
@@ -12,7 +13,11 @@ export async function GET() {
     }
 
     const db = await getDatabase();
-    const exams = await db.collection('examTemplates').find({}).sort({ updatedAt: -1 }).toArray();
+    const exams = await db
+      .collection<ExamTemplate>('examTemplates')
+      .find({})
+      .sort({ updatedAt: -1 })
+      .toArray();
     return NextResponse.json({ exams: exams.map(serializeExamTemplate) });
   } catch (error: any) {
     console.error('Exam templates fetch error:', error);

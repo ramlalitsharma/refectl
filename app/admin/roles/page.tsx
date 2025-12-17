@@ -27,7 +27,7 @@ export default async function AdminRolesPage() {
     .limit(25)
     .toArray();
 
-  const roles = rolesRaw.map(serializeRole);
+  const roles = rolesRaw.map((role: any) => serializeRole(role));
   const users = usersRaw.map((user: any) => ({
     id: user._id ? user._id.toString() : user.clerkId,
     name: user.name || '',

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Suspense } from "react";
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 import "./globals.css";
 import "@/styles/md-editor.css";
 
@@ -121,13 +123,16 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <div className="flex min-h-screen flex-col bg-[#f4f6f9] text-slate-900">
-              <Navbar />
+              <Suspense>
+                <Navbar />
+              </Suspense>
               <main className="flex-1">
                 {children}
               </main>
               <Footer />
             </div>
             <CookieConsent />
+            <ServiceWorkerRegistration />
           </ThemeProvider>
         </body>
       </html>

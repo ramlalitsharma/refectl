@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { generateAdaptiveQuestion } from '@/lib/openai';
 import { checkSubscriptionStatus } from '@/lib/clerk-subscriptions';
+import { sanitizeInput } from '@/lib/validation';
+
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 10;
+const rateMap = new Map<string, { ts: number; count: number }>();
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,13 +29,30 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { topic, difficulty, previousPerformance, context } = body;
+    const rawTopic = String(body?.topic || '').trim();
+    const rawDifficulty = String(body?.difficulty || '').trim().toLowerCase();
+    const previousPerformance = body?.previousPerformance;
+    let context = String(body?.context || '');
 
-    if (!topic) {
-      return NextResponse.json(
-        { error: 'Topic is required' },
-        { status: 400 }
-      );
+    if (!rawTopic) {
+      return NextResponse.json({ error: 'Topic is required' }, { status: 400 });
+    }
+    const topic = sanitizeInput(rawTopic).slice(0, 120);
+    const difficulty = (['easy', 'medium', 'hard'].includes(rawDifficulty)
+      ? rawDifficulty
+      : 'medium') as 'easy' | 'medium' | 'hard';
+    context = sanitizeInput(context).slice(0, 2000);
+
+    const key = `quiz-generate:${userId}:${topic}:${difficulty}`;
+    const nowTs = Date.now();
+    const existing = rateMap.get(key);
+    if (existing && nowTs - existing.ts < RATE_LIMIT_WINDOW_MS) {
+      if (existing.count >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
+      rateMap.set(key, { ts: existing.ts, count: existing.count + 1 });
+    } else {
+      rateMap.set(key, { ts: nowTs, count: 1 });
     }
 
     // Check subscription for premium features (optional - defaults to free tier if check fails)
@@ -45,12 +67,12 @@ export async function POST(req: NextRequest) {
     // Premium users can use advanced AI models
     const model = subscription.hasAccess ? 'gpt-4o' : 'gpt-4o-mini';
 
-    const question = await generateAdaptiveQuestion(
-      topic,
-      difficulty || 'medium',
-      previousPerformance,
-      context
-    );
+    const contextObj = {
+      subjectName: topic,
+      levelName: difficulty,
+      ...(context ? { chapterName: context } : {}),
+    };
+    const question = await generateAdaptiveQuestion(topic, difficulty, previousPerformance, contextObj);
 
     return NextResponse.json(question);
   } catch (error: any) {

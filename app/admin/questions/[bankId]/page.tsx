@@ -12,7 +12,7 @@ import { QuestionEditor } from '@/components/admin/QuestionEditor';
 
 export const dynamic = 'force-dynamic';
 
-export default async function QuestionBankDetailPage({ params }: { params: { bankId: string } }) {
+export default async function QuestionBankDetailPage({ params }: { params: Promise<{ bankId: string }> }) {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
@@ -22,15 +22,16 @@ export default async function QuestionBankDetailPage({ params }: { params: { ban
     redirect('/dashboard');
   }
 
+  const { bankId } = await params;
   const db = await getDatabase();
-  const bank = await db.collection('questionBanks').findOne({ _id: new ObjectId(params.bankId) });
+  const bank = await db.collection('questionBanks').findOne({ _id: new ObjectId(bankId) });
   if (!bank) {
     redirect('/admin/questions');
   }
 
   const questions = await db
     .collection('questionBankQuestions')
-    .find({ bankId: new ObjectId(params.bankId) })
+    .find({ bankId: new ObjectId(bankId) })
     .sort({ createdAt: -1 })
     .limit(200)
     .toArray();
@@ -63,7 +64,7 @@ export default async function QuestionBankDetailPage({ params }: { params: { ban
           </div>
         </div>
 
-        <QuestionEditor bankId={params.bankId} initialQuestions={serializedQuestions} />
+        <QuestionEditor bankId={bankId} initialQuestions={serializedQuestions} />
       </main>
     </div>
   );

@@ -96,19 +96,35 @@ export function AdaptiveQuiz({ topic, initialDifficulty = 'medium' }: AdaptiveQu
       });
 
       if (!response.ok) {
-        // Try parse JSON, otherwise fallback to text with status
-        let errorPayload: any = {};
+        // Read response body as text first (can only be read once)
+        let errorPayload: any = { status: response.status };
         try {
-          errorPayload = await response.json();
+          const text = await response.text();
+          // Try to parse as JSON, otherwise use as plain text
+          try {
+            const json = JSON.parse(text);
+            errorPayload = { ...errorPayload, ...json };
+          } catch {
+            errorPayload = { 
+              ...errorPayload,
+              error: 'Request failed', 
+              message: text || `HTTP ${response.status}: ${response.statusText || 'Unknown error'}` 
+            };
+          }
         } catch {
-          const text = await response.text().catch(() => '');
-          errorPayload = { error: 'Request failed', message: text || 'Unknown error', status: response.status };
+          // If we can't read the body at all, use status info
+          errorPayload = { 
+            ...errorPayload,
+            error: 'Request failed', 
+            message: `HTTP ${response.status}: ${response.statusText || 'Unknown error'}` 
+          };
         }
         console.error('API Error:', errorPayload);
         if (response.status === 401) {
           throw new Error('Unauthorized. Please sign in to generate questions.');
         }
-        throw new Error(errorPayload.error || errorPayload.message || 'Failed to generate question');
+        const errorMessage = errorPayload.error || errorPayload.message || `Failed to generate question (HTTP ${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const question: Question = await response.json();
@@ -264,7 +280,7 @@ export function AdaptiveQuiz({ topic, initialDifficulty = 'medium' }: AdaptiveQu
             <>
               <Button
                 onClick={handleNext}
-                variant="primary"
+                variant="default"
                 className="flex-1"
               >
                 Next Question

@@ -61,14 +61,14 @@ export async function POST(req: NextRequest) {
             notes: null,
             waitlistPosition: null,
           },
-          $push: {
+          $push: (({
             history: {
               status: 'pending',
               changedAt: now,
               adminId: null,
               note: 'Learner re-submitted enrollment request',
             },
-          },
+          }) as unknown as import('mongodb').PushOperator<any>),
         },
       );
 

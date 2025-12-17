@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ role
       .collection('roles')
       .findOneAndUpdate({ _id: new ObjectId(roleId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
     }
 
@@ -64,7 +64,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ r
     }
 
     await db.collection('roles').deleteOne({ _id: new ObjectId(roleId) });
-    await db.collection('users').updateMany({ roleIds: new ObjectId(roleId) }, { $pull: { roleIds: new ObjectId(roleId) } });
+    await db.collection('users').updateMany(
+      { roleIds: new ObjectId(roleId) },
+      { $pull: ((({ roleIds: new ObjectId(roleId) }) as unknown) as import('mongodb').PullOperator<any>) }
+    );
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

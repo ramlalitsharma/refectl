@@ -52,7 +52,7 @@ export function TutorialStudio({ recentTutorials }: TutorialStudioProps) {
   const [outlineLoading, setOutlineLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => form.title.trim().length > 0 && sections.every((section) => section.title.trim()), [form.title, sections]);
 
@@ -98,7 +98,8 @@ export function TutorialStudio({ recentTutorials }: TutorialStudioProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate outline');
-      const generatedSections = (data.outline.sections || []).map((section: any) => ({
+      const rawSections = (data.outline.sections || []) as Array<{ title?: string; duration?: number; narrative?: string; demo?: string }>;
+      const generatedSections = rawSections.map((section) => ({
         title: section.title,
         duration: section.duration || 10,
         narrative: section.narrative || '',
@@ -107,8 +108,9 @@ export function TutorialStudio({ recentTutorials }: TutorialStudioProps) {
       if (generatedSections.length) {
         setSections(generatedSections);
       }
-    } catch (err: any) {
-      setError(err.message || 'Unable to generate outline');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Unable to generate outline');
     } finally {
       setOutlineLoading(false);
     }
@@ -143,8 +145,9 @@ export function TutorialStudio({ recentTutorials }: TutorialStudioProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save tutorial');
       setResult(data.tutorialId);
-    } catch (err: any) {
-      setError(err.message || 'Unable to save tutorial');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Unable to save tutorial');
     } finally {
       setSaving(false);
     }

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import { getDatabase } from '@/lib/mongodb';
 import { isAdmin } from '@/lib/admin-check';
 import { serializeQuestionBank, serializeQuestion } from '@/lib/models/QuestionBank';
+import type { QuestionBank, QuestionItem } from '@/lib/models/QuestionBank';
 
 export const runtime = 'nodejs';
 
@@ -15,8 +16,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ bank
     const db = await getDatabase();
 
     const [bank, questions] = await Promise.all([
-      db.collection('questionBanks').findOne({ _id: new ObjectId(bankId) }),
-      db.collection('questionBankQuestions').find({ bankId: new ObjectId(bankId) }).sort({ createdAt: -1 }).toArray(),
+      db.collection<QuestionBank>('questionBanks').findOne({ _id: new ObjectId(bankId) }),
+      db
+        .collection<QuestionItem>('questionBankQuestions')
+        .find({ bankId: new ObjectId(bankId) })
+        .sort({ createdAt: -1 })
+        .toArray(),
     ]);
 
     if (!bank) {
@@ -48,13 +53,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ bank
     }
 
     const db = await getDatabase();
-    const result = await db.collection('questionBanks').findOneAndUpdate({ _id: new ObjectId(bankId) }, { $set: update }, { returnDocument: 'after' });
+    const result = await db
+      .collection<QuestionBank>('questionBanks')
+      .findOneAndUpdate({ _id: new ObjectId(bankId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!(result as any)?.value) {
       return NextResponse.json({ error: 'Question bank not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, bank: serializeQuestionBank(result.value as any) });
+    return NextResponse.json({ success: true, bank: serializeQuestionBank((result as any).value as any) });
   } catch (error: any) {
     console.error('Question bank update error:', error);
     return NextResponse.json({ error: 'Failed to update question bank', message: error.message }, { status: 500 });

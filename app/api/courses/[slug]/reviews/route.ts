@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { auth, currentUser } from '@/lib/auth';
+import { validateSlug, validateRating, sanitizeInput } from '@/lib/validation';
 import { ObjectId } from 'mongodb';
 
 export const runtime = 'nodejs';
@@ -12,6 +13,9 @@ const APPROVED_QUERY = {
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    if (!validateSlug(slug)) {
+      return NextResponse.json({ error: 'Invalid course slug' }, { status: 400 });
+    }
     const db = await getDatabase();
 
     const reviewsCollection = db.collection('reviews');
@@ -53,35 +57,57 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
   }
 }
 
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 5;
+const rateMap = new Map<string, { ts: number; count: number }>();
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { slug } = await params;
-    const { rating, comment } = await req.json();
-
-    if (!rating || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
+    if (!validateSlug(slug)) {
+      return NextResponse.json({ error: 'Invalid course slug' }, { status: 400 });
     }
 
+    const { rating, comment } = await req.json();
+
+    const r = validateRating(Number(rating));
+    if (!r.valid) {
+      return NextResponse.json({ error: r.error || 'Invalid rating' }, { status: 400 });
+    }
+
+    const key = `${userId}:${slug}`;
+    const now = Date.now();
+    const entry = rateMap.get(key);
+    if (entry && now - entry.ts < RATE_LIMIT_WINDOW_MS) {
+      if (entry.count >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
+      rateMap.set(key, { ts: entry.ts, count: entry.count + 1 });
+    } else {
+      rateMap.set(key, { ts: now, count: 1 });
+    }
+
+    const safeComment = typeof comment === 'string' ? sanitizeInput(comment) : '';
+
     const user = await currentUser();
-    const displayName =
-      user?.fullName || user?.username || user?.emailAddresses?.[0]?.emailAddress || 'Learner';
+    const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Learner';
 
     const db = await getDatabase();
     const reviews = db.collection('reviews');
-    const now = new Date();
+    const nowDate = new Date();
 
     const baseDoc = {
       courseSlug: slug,
       userId,
       userName: displayName,
       rating,
-      comment: comment || '',
+      comment: safeComment,
       status: 'pending',
-      createdAt: now,
-      updatedAt: now,
+      createdAt: nowDate,
+      updatedAt: nowDate,
     };
 
     const existing = await reviews.findOne({ userId, courseSlug: slug });
@@ -91,7 +117,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
         {
           $set: {
             ...baseDoc,
-            createdAt: existing.createdAt || now,
+            createdAt: existing.createdAt || nowDate,
             status: 'pending',
           },
         },

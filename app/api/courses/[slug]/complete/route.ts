@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getDatabase } from '@/lib/mongodb';
+import { validateSlug } from '@/lib/validation';
 
 export const runtime = 'nodejs';
+
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 5;
+const rateMap = new Map<string, { ts: number; count: number }>();
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
@@ -10,39 +15,54 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { slug } = await params;
+    if (!validateSlug(slug)) {
+      return NextResponse.json({ error: 'Invalid course slug' }, { status: 400 });
+    }
+
+    const rateKey = `course-complete:${userId}:${slug}`;
+    const nowTs = Date.now();
+    const existing = rateMap.get(rateKey);
+    if (existing && nowTs - existing.ts < RATE_LIMIT_WINDOW_MS) {
+      if (existing.count >= RATE_LIMIT_MAX) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      }
+      rateMap.set(rateKey, { ts: existing.ts, count: existing.count + 1 });
+    } else {
+      rateMap.set(rateKey, { ts: nowTs, count: 1 });
+    }
     const db = await getDatabase();
     
-    // Get course
     const course = await db.collection('courses').findOne({ slug });
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    // Check if already completed
-    const existing = await db.collection('courseCompletions').findOne({
+    const existingCompletion = await db.collection('courseCompletions').findOne({
       userId,
       courseId: String(course._id),
     });
 
-    if (existing) {
-      return NextResponse.json({ success: true, certificateId: existing.certificateId });
+    if (existingCompletion) {
+      return NextResponse.json({ success: true, certificateId: existingCompletion.certificateId });
     }
 
-    // Generate certificate
     const certRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/certificates/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId,
         courseId: String(course._id),
-        courseName: course.title,
+        courseTitle: course.title,
       }),
     });
 
+    if (!certRes.ok) {
+      const err = await certRes.json().catch(() => ({}));
+      return NextResponse.json({ error: 'Certificate generation failed', details: err }, { status: 500 });
+    }
     const certData = await certRes.json();
-    const certificateId = certData.certificateId;
+    const certificateId = certData?.certificate?.id;
 
-    // Record completion
     await db.collection('courseCompletions').insertOne({
       userId,
       courseId: String(course._id),
@@ -52,7 +72,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
       completedAt: new Date(),
     });
 
-    // Send notification
     await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/notifications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +84,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
       }),
     });
 
-    // Send email
     await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/notifications/email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

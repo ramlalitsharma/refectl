@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { StatCard } from '@/components/ui/StatCard';
-import { requireAdmin } from '@/lib/admin-check';
+import { getUserRole, requireAdmin } from '@/lib/admin-check';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +23,13 @@ type StudioTile = {
 export default async function AdminPage() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
+
+  // If the logged-in user is a superadmin, send them to the dedicated
+  // Super Admin Console instead of the regular admin control center.
+  const role = await getUserRole();
+  if (role === 'superadmin') {
+    redirect('/admin/super');
+  }
 
   try {
     await requireAdmin();
@@ -70,7 +77,9 @@ export default async function AdminPage() {
       db.collection('examTemplates').countDocuments(),
     ]);
 
-    const activeUsers = new Set(progress.map((p: any) => p.userId)).size;
+    const activeUsers = new Set(
+      (progress as Array<{ userId?: string }>).map((p) => p.userId)
+    ).size;
 
     const premiumUsers = await db.collection('users').countDocuments({
       $or: [
@@ -170,12 +179,20 @@ export default async function AdminPage() {
 
   const operationsTiles: StudioTile[] = [
     {
-      name: 'Learner Management',
-      description: 'Segment learners, manage cohorts, and monitor enrollments.',
+      name: 'User Management',
+      description: 'Create and manage superadmins, admins, and teachers with role-based access.',
       href: '/admin/users',
       icon: '👥',
-      action: 'Manage learners',
+      action: 'Manage users',
       metric: `${stats.totalUsers} users`,
+    },
+    {
+      name: 'Video Library',
+      description: 'Upload, manage, and link videos to courses from a centralized library.',
+      href: '/admin/videos',
+      icon: '🎥',
+      action: 'Manage videos',
+      metric: 'Video library',
     },
     {
       name: 'Enrollment Ops',
@@ -333,7 +350,7 @@ function StudioGrid({ tiles, columns = 'md:grid-cols-2 xl:grid-cols-3' }: { tile
   return (
     <div className={`grid gap-5 ${columns}`}>
       {tiles.map((tile) => (
-        <Card key={tile.name} className="border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+        <Card key={tile.name} hover className="border border-slate-200 bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-start gap-3">
               <span className="text-3xl">{tile.icon}</span>

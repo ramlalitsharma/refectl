@@ -1,153 +1,238 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { FadeIn } from '@/components/ui/Motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Notification } from '@/lib/models/Notification';
+import { useAuth } from '@clerk/nextjs';
 
-interface Notification {
-  _id: string;
-  type: string;
-  title: string;
-  message: string;
-  link?: string;
-  read: boolean;
-  createdAt: string;
+interface NotificationBellProps {
+  // Can be placed in header/navbar
 }
 
-export function NotificationBell() {
+export function NotificationBell(_props: NotificationBellProps = {}) {
+  const { userId, getToken, isLoaded } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoaded || !userId) return;
+
     fetchNotifications();
+
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
+
     return () => clearInterval(interval);
-  }, []);
+  }, [isLoaded, userId]);
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch('/api/notifications?limit=10');
-      const data = await res.json();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (e) {
-      console.error('Failed to fetch notifications:', e);
-    }
-  };
+      const token = await getToken();
+      if (!token) return;
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await fetch('/api/notifications', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId }),
+      const res = await fetch('/api/notifications?limit=10', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      fetchNotifications();
-    } catch (e) {
-      console.error('Failed to mark as read:', e);
-    }
-  };
+      if (res.status === 401) { setLoading(false); return; }
+      if (!res.ok) throw new Error('Failed to fetch notifications');
 
-  const markAllAsRead = async () => {
-    setLoading(true);
-    try {
-      await fetch('/api/notifications', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markAll: true }),
-      });
-      fetchNotifications();
-    } catch (e) {
-      console.error('Failed to mark all as read:', e);
+      const result = await res.json();
+      if (result.success && result.data) {
+        setNotifications(result.data.notifications);
+        setUnreadCount(result.data.unreadCount);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'success': return '✅';
-      case 'warning': return '⚠️';
-      case 'error': return '❌';
-      case 'course': return '📚';
-      case 'quiz': return '✅';
-      default: return '🔔';
+  const markAsRead = async (notificationId?: string) => {
+    try {
+      const body = notificationId
+        ? { notificationIds: [notificationId] }
+        : { markAll: true };
+
+      const res = await fetch('/api/notifications/mark-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error('Failed to mark as read');
+
+      // Refresh notifications
+      await fetchNotifications();
+    } catch (err) {
+      console.error('Error marking as read:', err);
     }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      badge: '🎖️',
+      level_up: '🎊',
+      quest: '✨',
+      streak: '🔥',
+      rank: '🏆',
+      achievement: '🌟',
+    };
+    return icons[type] || '🔔';
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors: Record<string, string> = {
+      high: 'bg-red-50 border-red-200',
+      medium: 'bg-yellow-50 border-yellow-200',
+      low: 'bg-slate-50 border-slate-200',
+    };
+    return colors[priority] || colors.low;
   };
 
   return (
     <div className="relative">
+      {/* Bell Button */}
       <button
-        onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 rounded-full hover:bg-slate-100 transition-colors"
         aria-label="Notifications"
       >
-        <span className="text-2xl">🔔</span>
+        <svg
+          className="w-6 h-6 text-slate-700"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+          />
+        </svg>
+
+        {/* Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
+          </motion.span>
         )}
       </button>
 
-      {showDropdown && (
-        <Card className="absolute right-0 mt-2 w-80 max-h-96 overflow-hidden z-50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg">Notifications</CardTitle>
-            {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={markAllAsRead} disabled={loading}>
-                Mark all read
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="p-0 max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-600 dark:text-gray-400">
-                No notifications
+      {/* Dropdown Panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+
+            {/* Dropdown */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-[600px] flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                <h3 className="font-semibold text-slate-800">Notifications</h3>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAsRead()}
+                    className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                  >
+                    Mark all as read
+                  </button>
+                )}
               </div>
-            ) : (
-              <div className="divide-y">
-                {notifications.map((notif, idx) => (
-                  <FadeIn key={notif._id} delay={idx * 0.05}>
-                    <div
-                      className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
-                        !notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                      }`}
-                      onClick={() => {
-                        if (notif.link) window.location.href = notif.link;
-                        if (!notif.read) markAsRead(notif._id);
-                      }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-xl">{getTypeIcon(notif.type)}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {notif.title}
+
+              {/* Notifications List */}
+              <div className="overflow-y-auto flex-1">
+                {loading ? (
+                  <div className="p-8 text-center text-slate-400">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="p-8 text-center text-slate-400">
+                    <div className="text-4xl mb-2">🔔</div>
+                    <div className="text-sm">No notifications yet</div>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100">
+                    {notifications.map((notification) => (
+                      <motion.div
+                        key={notification._id?.toString()}
+                        className={`p-4 cursor-pointer transition-colors ${!notification.read
+                          ? getPriorityColor(notification.priority)
+                          : 'hover:bg-slate-50'
+                          }`}
+                        onClick={() => {
+                          if (!notification.read) {
+                            markAsRead(notification._id?.toString());
+                          }
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="text-2xl flex-shrink-0">
+                            {notification.icon || getNotificationIcon(notification.type)}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {notif.message}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {new Date(notif.createdAt).toLocaleDateString()}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="font-semibold text-sm text-slate-800">
+                                {notification.title}
+                              </div>
+                              {!notification.read && (
+                                <div className="w-2 h-2 rounded-full bg-teal-500 flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                            <div className="text-sm text-slate-600 mt-1">
+                              {notification.message}
+                            </div>
+                            {notification.metadata?.xpAwarded && (
+                              <div className="text-xs text-teal-600 mt-1">
+                                +{notification.metadata.xpAwarded} XP
+                              </div>
+                            )}
+                            <div className="text-xs text-slate-400 mt-2">
+                              {new Date(notification.createdAt).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </div>
                           </div>
                         </div>
-                        {!notif.read && (
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-                        )}
-                      </div>
-                    </div>
-                  </FadeIn>
-                ))}
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+
+              {/* Footer */}
+              {notifications.length > 0 && (
+                <div className="p-3 border-t border-slate-200 text-center">
+                  <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">
+                    View all notifications →
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-

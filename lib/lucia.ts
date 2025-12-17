@@ -87,14 +87,34 @@ async function getSessionToken() {
   return c.get(SESSION_COOKIE)?.value || null;
 }
 
-function setSessionCookie(token: string, expires: Date) {
-  const c = cookies();
-  c.set(SESSION_COOKIE, token, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', expires });
+function isSecureContext() {
+  if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+    return true;
+  }
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+  return baseUrl.startsWith('https://');
 }
 
-function clearSessionCookie() {
-  const c = cookies();
-  c.set(SESSION_COOKIE, '', { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 0 });
+async function setSessionCookie(token: string, expires: Date) {
+  const c = await cookies();
+  c.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    secure: isSecureContext(),
+    sameSite: 'lax',
+    path: '/',
+    expires,
+  });
+}
+
+async function clearSessionCookie() {
+  const c = await cookies();
+  c.set(SESSION_COOKIE, '', {
+    httpOnly: true,
+    secure: isSecureContext(),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
 }
 
 

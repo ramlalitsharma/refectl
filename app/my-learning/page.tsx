@@ -108,7 +108,7 @@ export default async function MyLearningPage() {
                           <span className="text-slate-600">Progress</span>
                           <span className="font-semibold text-slate-800">{percent}%</span>
                         </div>
-                        <Progress value={percent} color="teal" />
+                        <Progress value={percent} color="green" />
                       </div>
                       <Button className="w-full" variant="inverse" asChild>
                         <Link href={`/courses/${course.slug}`}>Continue Learning</Link>

@@ -288,12 +288,12 @@ export function RoleManager({ initialRoles, users }: RoleManagerProps) {
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {role.permissions.length === 0 ? (
-                        <Badge variant="outline" size="sm">No permissions</Badge>
+                        <Badge variant="warning" size="sm">No permissions</Badge>
                       ) : (
                         role.permissions.map((perm) => {
                           const option = permissionOptions.find((item) => item.key === perm);
                           return (
-                            <Badge key={perm} variant="outline" size="sm">
+                            <Badge key={perm} variant="info" size="sm">
                               {option?.label || perm}
                             </Badge>
                           );

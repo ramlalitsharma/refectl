@@ -47,7 +47,7 @@ export function SchemaManager({ initialSchemas }: { initialSchemas: ContentSchem
     setName(selectedSchema.name);
     setKey(selectedSchema.key);
     setDescription(selectedSchema.description || '');
-  }, [selectedSchema?.id]);
+  }, [selectedSchema]);
 
   const resetForm = () => {
     setSelectedId(null);
@@ -72,8 +72,9 @@ export function SchemaManager({ initialSchemas }: { initialSchemas: ContentSchem
     try {
       parsedFields = JSON.parse(jsonDraft || '[]');
       if (!Array.isArray(parsedFields)) throw new Error('Fields JSON must be an array.');
-    } catch (err: any) {
-      setError(`Invalid JSON: ${err.message}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(`Invalid JSON: ${msg}`);
       return;
     }
 
@@ -101,8 +102,9 @@ export function SchemaManager({ initialSchemas }: { initialSchemas: ContentSchem
         setSelectedId(data.schema.id);
         setFeedback('Schema created successfully.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Unexpected error');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Unexpected error');
     } finally {
       setLoading(false);
     }
@@ -120,8 +122,9 @@ export function SchemaManager({ initialSchemas }: { initialSchemas: ContentSchem
       setSchemas((prev) => prev.filter((item) => item.id !== schema.id));
       if (selectedId === schema.id) resetForm();
       setFeedback('Schema deleted successfully.');
-    } catch (err: any) {
-      setError(err.message || 'Unexpected error');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg || 'Unexpected error');
     } finally {
       setLoading(false);
     }
@@ -164,7 +167,7 @@ export function SchemaManager({ initialSchemas }: { initialSchemas: ContentSchem
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="font-semibold">{schema.name}</div>
-                        <Badge variant="outline" size="sm">
+                        <Badge variant="default" size="sm">
                           v{schema.version}
                         </Badge>
                       </div>

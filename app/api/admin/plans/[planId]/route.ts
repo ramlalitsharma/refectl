@@ -46,7 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ plan
       .collection('subscriptionPlans')
       .findOneAndUpdate({ _id: new ObjectId(planId) }, { $set: update }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 
@@ -69,7 +69,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ p
       .collection('subscriptionPlans')
       .findOneAndUpdate({ _id: new ObjectId(planId) }, { $set: { active: false, updatedAt: new Date() } }, { returnDocument: 'after' });
 
-    if (!result.value) {
+    if (!result || !result.value) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
     }
 

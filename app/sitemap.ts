@@ -20,9 +20,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .filter((s: any) => s.slug)
       .map((s: any) => ({ url: `${baseUrl}/subjects/${s.slug}`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 }));
     const courses = await db.collection('courses').find({ status: { $ne: 'draft' } }).project({ slug: 1 }).toArray();
-    const courseRoutes = courses
+    const courseRoutes: MetadataRoute.Sitemap = courses
       .filter((c: any) => c.slug)
-      .map((c: any) => ({ url: `${baseUrl}/courses/${c.slug}`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 }));
+      .map((c: any) => ({ url: `${baseUrl}/courses/${c.slug}`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 })) as MetadataRoute.Sitemap;
     subjectRoutes = [...subjectRoutes, ...courseRoutes];
   } catch {
     subjectRoutes = [];

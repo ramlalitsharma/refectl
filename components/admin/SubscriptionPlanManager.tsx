@@ -108,9 +108,10 @@ export function SubscriptionPlanManager({ initialPlans }: SubscriptionPlanManage
       }
 
       resetForm();
-    } catch (error: any) {
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error(error);
-      alert(error.message || 'Something went wrong');
+      alert(msg || 'Something went wrong');
     } finally {
       setSaving(false);
     }
@@ -141,9 +142,10 @@ export function SubscriptionPlanManager({ initialPlans }: SubscriptionPlanManage
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update plan');
       setPlans((prev) => prev.map((item) => (item.id === plan.id ? data.plan : item)));
-    } catch (error: any) {
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error(error);
-      alert(error.message || 'Unable to toggle plan');
+      alert(msg || 'Unable to toggle plan');
     }
   };
 
@@ -154,9 +156,10 @@ export function SubscriptionPlanManager({ initialPlans }: SubscriptionPlanManage
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to archive plan');
       setPlans((prev) => prev.map((item) => (item.id === plan.id ? data.plan : item)));
-    } catch (error: any) {
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
       console.error(error);
-      alert(error.message || 'Unable to archive plan');
+      alert(msg || 'Unable to archive plan');
     }
   };
 

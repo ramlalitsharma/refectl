@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { getDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { requireAdmin } from '@/lib/admin-check';
+import { requireAdmin, getUserRole, requireSuperAdmin } from '@/lib/admin-check';
 
 export const runtime = 'nodejs';
 
@@ -84,29 +84,76 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ user
   }
 }
 
-// DELETE - Delete user (soft delete by banning)
+// DELETE - Delete user (hard delete for superadmin, soft delete for admin)
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
     const { userId: currentUserId } = await auth();
     if (!currentUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    await requireAdmin();
+    
+    const managerRole = await getUserRole();
+    if (!managerRole) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { userId } = await params;
     const db = await getDatabase();
-
     const query = normalizeUserQuery(userId);
 
-    const result = await db.collection('users').updateOne(query, {
-      $set: { isBanned: true, deletedAt: new Date() },
-    });
-
-    if (result.matchedCount === 0) {
+    // Get the target user to check their role
+    const targetUser = await db.collection('users').findOne(query);
+    if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, message: 'User banned successfully' });
+    const targetRole = (targetUser as any).role || 'student';
+
+    // Only superadmin can delete users
+    if (managerRole !== 'superadmin') {
+      return NextResponse.json({ error: 'Only superadmin can delete users' }, { status: 403 });
+    }
+
+    // Prevent deleting other superadmins
+    if (targetRole === 'superadmin') {
+      return NextResponse.json({ error: 'Cannot delete superadmin users' }, { status: 403 });
+    }
+
+    // Prevent deleting yourself
+    if (targetUser.clerkId === currentUserId) {
+      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 403 });
+    }
+
+    const client = await clerkClient();
+
+    // Hard delete: Remove from MongoDB and Clerk
+    try {
+      // Delete from Clerk
+      try {
+        await client.users.deleteUser(targetUser.clerkId);
+      } catch (clerkError: any) {
+        console.warn('Failed to delete user from Clerk:', clerkError.message);
+        // Continue with MongoDB deletion even if Clerk deletion fails
+      }
+
+      // Delete from MongoDB
+      const result = await db.collection('users').deleteOne(query);
+
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ error: 'User not found in database' }, { status: 404 });
+      }
+
+      // Also clean up related data (optional - you may want to keep enrollments, progress, etc.)
+      // Uncomment if you want to delete related data:
+      // await db.collection('enrollments').deleteMany({ userId: targetUser.clerkId });
+      // await db.collection('userProgress').deleteMany({ userId: targetUser.clerkId });
+
+      return NextResponse.json({ success: true, message: 'User deleted successfully' });
+    } catch (deleteError: any) {
+      console.error('Delete error:', deleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete user', message: deleteError.message },
+        { status: 500 }
+      );
+    }
   } catch (e: any) {
-    return NextResponse.json({ error: 'Failed to ban user', message: e.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete user', message: e.message }, { status: 500 });
   }
 }
 

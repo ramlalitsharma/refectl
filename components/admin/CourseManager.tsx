@@ -115,8 +115,8 @@ function CourseCard({ course }: { course: CourseSummary }) {
         <CardTitle className="line-clamp-2 text-lg font-semibold text-slate-900">{course.title}</CardTitle>
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
           <Badge variant={courseStatus === 'published' ? 'success' : courseStatus === 'in_review' ? 'info' : 'default'}>{courseStatus}</Badge>
-          {course.subject && <Badge variant="outline">{course.subject}</Badge>}
-          {course.level && <Badge variant="outline">{course.level}</Badge>}
+          {course.subject && <Badge variant="info">{course.subject}</Badge>}
+          {course.level && <Badge variant="info">{course.level}</Badge>}
           <span>{lessons} lessons</span>
         </div>
       </CardHeader>

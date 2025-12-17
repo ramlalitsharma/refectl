@@ -11,6 +11,13 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    try {
+      const { requireAdmin } = await import('@/lib/admin-check');
+      await requireAdmin();
+    } catch {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json();
     const {
       mode,
@@ -29,6 +36,7 @@ export async function POST(req: NextRequest) {
       resources,
       price,
       seo,
+      thumbnail,
     } = body as {
       mode: 'ai' | 'manual';
       title?: string;
@@ -46,6 +54,7 @@ export async function POST(req: NextRequest) {
       resources?: Course['resources'];
       price?: Course['price'];
       seo?: Course['seo'];
+      thumbnail?: string;
     };
 
     const db = await getDatabase();
@@ -76,6 +85,7 @@ export async function POST(req: NextRequest) {
         resources,
         price,
         seo,
+        thumbnail,
       });
     } else {
       if (!title) return NextResponse.json({ error: 'title required for AI mode' }, { status: 400 });
@@ -102,6 +112,7 @@ export async function POST(req: NextRequest) {
         resources,
         price,
         seo,
+        thumbnail,
       });
     }
 
@@ -126,6 +137,7 @@ function buildCourseFromOutline({
   resources,
   price,
   seo,
+  thumbnail,
 }: {
   authorId: string;
   title: string;
@@ -139,8 +151,10 @@ function buildCourseFromOutline({
   resources?: Course['resources'];
   price?: Course['price'];
   seo?: Course['seo'];
+  thumbnail?: string;
 }): Course {
   const now = new Date().toISOString();
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const modules = (outline.modules || outline || []).map((m: any, mi: number) => ({
     id: `m${mi + 1}`,
     title: m.title || `Module ${mi + 1}`,
