@@ -11,6 +11,7 @@ import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistr
 import "./globals.css";
 import "@/styles/md-editor.css";
 import { ToastProvider } from '@/components/ui/ToastManager';
+import { Analytics } from "@vercel/analytics/next";
 import { BRAND_NAME, BRAND_URL, BRAND_TWITTER, BRAND_OG_IMAGE, brandLogoUrl } from '@/lib/brand';
 
 const geistSans = Geist({
@@ -108,7 +109,7 @@ export default function RootLayout({
                 url: BRAND_URL,
                 logo: brandLogoUrl(),
                 sameAs: [
-                  `https://twitter.com/${BRAND_TWITTER.replace('@','')}`,
+                  `https://twitter.com/${BRAND_TWITTER.replace('@', '')}`,
                 ],
                 offers: {
                   '@type': 'Offer',
@@ -125,22 +126,25 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <ToastProvider>
-            <GlobalBackButton />
-            <div className="flex min-h-screen flex-col bg-[#f4f6f9] text-slate-900">
-              <Suspense>
-                <Navbar />
-              </Suspense>
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </div>
-            <CookieConsent />
-            <ServiceWorkerRegistration />
+              <GlobalBackButton />
+              <div className="flex min-h-screen flex-col bg-[#f4f6f9] text-slate-900">
+                <Suspense>
+                  <Navbar />
+                </Suspense>
+                <main className="flex-1">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+              <CookieConsent />
+              <ServiceWorkerRegistration />
             </ToastProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+            <ServiceWorkerRegistration />
+          </ToastProvider>
+        </ThemeProvider>
+        <Analytics />
+      </body>
+    </html>
+    </ClerkProvider >
   );
 }
