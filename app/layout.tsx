@@ -139,8 +139,7 @@ export default function RootLayout({
               <CookieConsent />
               <ServiceWorkerRegistration />
             </ToastProvider>
-            <ServiceWorkerRegistration />
-          </ToastProvider>
+          </ThemeProvider>
         </ThemeProvider>
         <Analytics />
       </body>
