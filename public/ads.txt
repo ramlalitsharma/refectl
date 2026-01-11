@@ -1,4 +1,1 @@
-# Add your AdSense publisher ID once approved. Example format:
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
-# Do not use placeholders in production.
-
+google.com, pub-8149507764464883, DIRECT, f08c47fec0942fa0

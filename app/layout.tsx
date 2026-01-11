@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Suspense } from "react";
+import Script from "next/script";
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
@@ -96,6 +97,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <head>
+          <meta name="google-adsense-account" content="ca-pub-8149507764464883" />
           <link rel="preconnect" href="https://api.openai.com" />
           <link rel="preconnect" href="https://img.clerk.com" />
           <script
