@@ -110,22 +110,64 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
     if (course && userId) {
       const courseId = String(course._id);
-      const enrollmentRecord = await db.collection('enrollments').findOne({ userId, courseId });
+      const enrollmentRecord = await db.collection('enrollments').findOne({
+        userId,
+        $or: [
+          { courseId: courseId },
+          { courseId: course.slug }
+        ]
+      });
       if (enrollmentRecord) {
         enrollmentStatus = enrollmentRecord.status || null;
       }
 
       // Check enrollment and completion
-      const completion = await db.collection('courseCompletions').findOne({ userId, courseId });
+      const completion = await db.collection('courseCompletions').findOne({
+        userId,
+        $or: [
+          { courseId: courseId },
+          { courseId: course.slug }
+        ]
+      });
       isCompleted = !!completion;
       completionCertificateId = completion?.certificateId || null;
       const hasProgress = (await db.collection('userProgress').countDocuments({ userId, courseId })) > 0;
       const isApproved = enrollmentRecord?.status === 'approved';
       isEnrolled = isCompleted || isApproved || hasProgress;
 
-      // Fetch reviews
-      const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/courses/${slug}/reviews`, { cache: 'no-store' });
-      reviews = reviewsRes.ok ? await reviewsRes.json() : { reviews: [], stats: { average: '0', total: 0 } };
+      // Fetch reviews directly from DB to avoid self-fetch overhead
+      const APPROVED_QUERY = {
+        $or: [{ status: 'approved' }, { status: { $exists: false } }],
+      };
+      const reviewsCollection = db.collection('reviews');
+      const reviewsList = await reviewsCollection
+        .find({ courseSlug: slug, ...APPROVED_QUERY })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+
+      const statsAgg = await reviewsCollection
+        .aggregate([
+          { $match: { courseSlug: slug, ...APPROVED_QUERY } },
+          {
+            $group: {
+              _id: '$courseSlug',
+              total: { $sum: 1 },
+              sum: { $sum: '$rating' },
+            },
+          },
+        ])
+        .toArray();
+
+      const statsRecord = statsAgg[0] || { total: 0, sum: 0 };
+      reviews = {
+        reviews: serializeDocument(reviewsList.map(r => ({ ...r, userName: r.userName || 'Learner' }))),
+        stats: {
+          total: statsRecord.total,
+          sum: statsRecord.sum,
+          average: statsRecord.total > 0 ? (statsRecord.sum / statsRecord.total).toFixed(1) : '0',
+        }
+      };
 
       // Fetch user progress
       const progress = await db.collection('userProgress').find({ userId, courseId }).toArray();
@@ -327,8 +369,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                     <EnrollButton
                       courseId={String(courseData._id)}
                       slug={slug}
-                      price={courseData.price?.amount || 0}
-                      currency={courseData.price?.currency}
+                      price={typeof courseData.price === 'number' ? courseData.price : (courseData.price?.amount || 0)}
+                      currency={courseData.currency || courseData.price?.currency}
                       userId={userId}
                       isEnrolled={isEnrolled}
                     />

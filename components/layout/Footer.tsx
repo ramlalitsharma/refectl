@@ -44,7 +44,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12 grid gap-10 lg:grid-cols-[minmax(0,1.2fr),minmax(0,1fr)]">
         <div className="space-y-4">
           <SiteBrand variant="light" />
-          <p className="max-w-md text-sm text-slate-400">
+          <p className="max-w-md text-sm text-slate-300">
             {BRAND_NAME} is the AI-native learning platform delivering adaptive learning paths, certification workflows, and real-time analytics for learners and administrators.
           </p>
           <div className="flex gap-4 text-sm">

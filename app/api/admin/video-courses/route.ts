@@ -45,7 +45,18 @@ export async function POST(req: NextRequest) {
         await requireAdmin();
 
         const body = await req.json();
-        const { title, description, thumbnail, categoryId, units, status = 'draft' } = body;
+        const {
+            title,
+            description,
+            thumbnail,
+            categoryId,
+            units,
+            status = 'draft',
+            price,
+            currency,
+            isPaid,
+            paymentType
+        } = body;
 
         if (!title) {
             return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -71,6 +82,10 @@ export async function POST(req: NextRequest) {
             authorId: userId,
             units: units || [],
             status,
+            price: price || 0,
+            currency: currency || 'USD',
+            isPaid: isPaid || false,
+            paymentType: paymentType || 'free',
             createdAt: new Date(),
             updatedAt: new Date(),
         };

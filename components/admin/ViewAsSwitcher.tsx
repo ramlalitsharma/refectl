@@ -102,11 +102,11 @@ export function ViewAsSwitcher({ currentRole, isSuperAdmin }: ViewAsSwitcherProp
           variant="outline"
           size="sm"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-slate-200 dark:border-white/20 bg-white/10 dark:bg-black/10 backdrop-blur-md rounded-xl font-bold text-slate-900 dark:text-white"
         >
           <span>👁️</span>
-          <span>View As</span>
-          <span className="text-xs">▼</span>
+          <span className="hidden sm:inline">View As</span>
+          <span className="text-xs transition-transform duration-200" style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
         </Button>
 
         {isOpen && (
@@ -115,44 +115,45 @@ export function ViewAsSwitcher({ currentRole, isSuperAdmin }: ViewAsSwitcherProp
               className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
             />
-            <Card className="absolute top-full right-0 mt-2 z-20 min-w-[200px] shadow-lg">
-              <CardContent className="p-2">
-                <div className="space-y-1">
-                  <button
-                    onClick={() => handleViewAs('superadmin')}
-                    className={`w-full text-left px-3 py-2 rounded text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 ${!viewAs ? 'bg-slate-100 dark:bg-slate-700 font-medium' : ''
-                      }`}
-                  >
-                    🛡️ Super Admin
-                  </button>
-                  <button
-                    onClick={() => handleViewAs('admin')}
-                    className={`w-full text-left px-3 py-2 rounded text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 ${viewAs === 'admin' ? 'bg-slate-100 dark:bg-slate-700 font-medium' : ''
-                      }`}
-                  >
-                    👨‍💼 Admin Dashboard
-                  </button>
-                  <button
-                    onClick={() => handleViewAs('teacher')}
-                    className={`w-full text-left px-3 py-2 rounded text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 ${viewAs === 'teacher' ? 'bg-slate-100 dark:bg-slate-700 font-medium' : ''
-                      }`}
-                  >
-                    👨‍🏫 Teacher Dashboard
-                  </button>
-                  <button
-                    onClick={() => handleViewAs('student')}
-                    className={`w-full text-left px-3 py-2 rounded text-sm text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 ${viewAs === 'student' ? 'bg-slate-100 dark:bg-slate-700 font-medium' : ''
-                      }`}
-                  >
-                    🎓 Student Dashboard
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="absolute top-full right-0 mt-2 z-20 min-w-[220px] glass-card rounded-2xl p-2 shadow-2xl border-white/20 dark:border-white/5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="px-3 py-1.5 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-white/5">
+                Identity Selection
+              </div>
+              <div className="space-y-1">
+                <button
+                  onClick={() => handleViewAs('superadmin')}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${!viewAs ? 'bg-indigo-500 text-white font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                    }`}
+                >
+                  🛡️ Super Admin
+                </button>
+                <button
+                  onClick={() => handleViewAs('admin')}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${viewAs === 'admin' ? 'bg-indigo-500 text-white font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                    }`}
+                >
+                  👨‍💼 Admin Dashboard
+                </button>
+                <button
+                  onClick={() => handleViewAs('teacher')}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${viewAs === 'teacher' ? 'bg-indigo-500 text-white font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                    }`}
+                >
+                  👨‍🏫 Teacher Dashboard
+                </button>
+                <button
+                  onClick={() => handleViewAs('student')}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${viewAs === 'student' ? 'bg-indigo-500 text-white font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                    }`}
+                >
+                  🎓 Student Dashboard
+                </button>
+              </div>
+            </div>
           </>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

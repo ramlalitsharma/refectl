@@ -192,8 +192,8 @@ export function CategorySearch({ categories, subjects, onSearch }: CategorySearc
                   type="button"
                   onClick={() => handleCategorySelect(category)}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition flex items-center justify-between ${selectedCategory === category
-                      ? 'bg-teal-50 text-teal-700 font-medium'
-                      : 'text-slate-700'
+                    ? 'bg-teal-50 text-teal-700 font-medium'
+                    : 'text-slate-700'
                     }`}
                 >
                   <span>{getCategoryDisplayName(category)}</span>
@@ -248,8 +248,8 @@ export function CategorySearch({ categories, subjects, onSearch }: CategorySearc
                   type="button"
                   onClick={() => handleSubjectSelect(subject.slug)}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition ${selectedSubject === subject.slug
-                      ? 'bg-teal-50 text-teal-700 font-medium'
-                      : 'text-slate-700'
+                    ? 'bg-teal-50 text-teal-700 font-medium'
+                    : 'text-slate-700'
                     }`}
                 >
                   {subject.name}
@@ -281,6 +281,7 @@ export function CategorySearch({ categories, subjects, onSearch }: CategorySearc
           onKeyDown={handleKeyDown}
           placeholder="Search courses, blogs, or exams"
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          aria-label="Search courses, blogs, or exams"
           aria-controls={listboxId}
           aria-autocomplete="list"
           aria-activedescendant={highlightIndex >= 0 ? `${listboxId}-option-${highlightIndex}` : undefined}

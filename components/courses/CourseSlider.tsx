@@ -206,12 +206,14 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                 e.preventDefault();
                 goToSlide(index);
               }}
-              className={`h-2 rounded-full transition-all ${index === currentIndex
-                ? 'w-8 bg-white'
-                : 'w-2 bg-white/50 hover:bg-white/75'
-                }`}
+              className="group relative h-4 w-4 flex items-center justify-center transition-all focus:outline-none"
               aria-label={`Go to slide ${index + 1}`}
-            />
+            >
+              <span className={`rounded-full transition-all ${index === currentIndex
+                ? 'h-2 w-8 bg-white'
+                : 'h-2 w-2 bg-white/50 group-hover:bg-white/75'
+                }`} />
+            </button>
           ))}
         </div>
       )}

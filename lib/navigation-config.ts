@@ -36,8 +36,26 @@ export interface RoleNavigationConfig {
 export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   superadmin: {
     primaryLinks: [
-      { href: '/courses', label: 'Courses', icon: '📚' },
-      { href: '/blog', label: 'Blogs', icon: '📰' },
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
+          { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
+        ],
+      },
+      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/pricing', label: 'Pricing', icon: '💎' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+          { href: '/forum', label: 'Forum', icon: '💬' },
+        ],
+      },
       {
         label: 'Resources',
         icon: '📚',
@@ -47,11 +65,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
       {
-        label: 'Community',
-        icon: '💬',
+        label: 'Tool',
+        icon: '🛠️',
         items: [
-          { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/forum', label: 'Forum', icon: '💬' },
+          { href: '/tools/code', label: 'Code Editor', icon: '💻' },
+          { href: '/tools/whiteboard', label: 'Whiteboard', icon: '🖍️' },
         ],
       },
       {
@@ -73,8 +91,26 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   },
   admin: {
     primaryLinks: [
-      { href: '/courses', label: 'Courses', icon: '📚' },
-      { href: '/blog', label: 'Blogs', icon: '📰' },
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
+          { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
+        ],
+      },
+      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/pricing', label: 'Pricing', icon: '💎' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+          { href: '/forum', label: 'Forum', icon: '💬' },
+        ],
+      },
       {
         label: 'Resources',
         icon: '📚',
@@ -84,11 +120,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
       {
-        label: 'Community',
-        icon: '💬',
+        label: 'Tool',
+        icon: '🛠️',
         items: [
-          { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/forum', label: 'Forum', icon: '💬' },
+          { href: '/tools/code', label: 'Code Editor', icon: '💻' },
+          { href: '/tools/whiteboard', label: 'Whiteboard', icon: '🖍️' },
         ],
       },
       {
@@ -110,8 +146,26 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   },
   teacher: {
     primaryLinks: [
-      { href: '/courses', label: 'Courses', icon: '📚' },
-      { href: '/blog', label: 'Blogs', icon: '📰' },
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
+          { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
+        ],
+      },
+      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/pricing', label: 'Pricing', icon: '💎' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+          { href: '/forum', label: 'Forum', icon: '💬' },
+        ],
+      },
       {
         label: 'Resources',
         icon: '📚',
@@ -121,11 +175,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
       {
-        label: 'Community',
-        icon: '💬',
+        label: 'Tool',
+        icon: '🛠️',
         items: [
-          { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/forum', label: 'Forum', icon: '💬' },
+          { href: '/tools/code', label: 'Code Editor', icon: '💻' },
+          { href: '/tools/whiteboard', label: 'Whiteboard', icon: '🖍️' },
         ],
       },
       {
@@ -146,8 +200,26 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   },
   student: {
     primaryLinks: [
-      { href: '/courses', label: 'Courses', icon: '📚' },
-      { href: '/blog', label: 'Blogs', icon: '📰' },
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
+          { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
+        ],
+      },
+      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/pricing', label: 'Pricing', icon: '💎' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+          { href: '/forum', label: 'Forum', icon: '💬' },
+        ],
+      },
       {
         label: 'Resources',
         icon: '📚',
@@ -157,12 +229,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
       {
-        label: 'Community',
-        icon: '💬',
+        label: 'Tool',
+        icon: '🛠️',
         items: [
-          { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/forum', label: 'Forum', icon: '💬' },
-          { href: '/contact', label: 'Contact', icon: '📧' },
+          { href: '/tools/code', label: 'Code Editor', icon: '💻' },
+          { href: '/tools/whiteboard', label: 'Whiteboard', icon: '🖍️' },
         ],
       },
       {
@@ -181,8 +252,26 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   },
   user: {
     primaryLinks: [
-      { href: '/courses', label: 'Courses', icon: '📚' },
-      { href: '/blog', label: 'Blogs', icon: '📰' },
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
+          { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
+        ],
+      },
+      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/pricing', label: 'Pricing', icon: '💎' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+          { href: '/forum', label: 'Forum', icon: '💬' },
+        ],
+      },
       {
         label: 'Resources',
         icon: '📚',
@@ -192,11 +281,11 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
       {
-        label: 'Community',
-        icon: '💬',
+        label: 'Tool',
+        icon: '🛠️',
         items: [
-          { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/forum', label: 'Forum', icon: '💬' },
+          { href: '/tools/code', label: 'Code Editor', icon: '💻' },
+          { href: '/tools/whiteboard', label: 'Whiteboard', icon: '🖍️' },
         ],
       },
       { href: '/subjects', label: 'Subjects', icon: '📚' },

@@ -11,6 +11,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: '**.clerk.com',
             },
+            {
+                protocol: 'https',
+                hostname: 'images.unsplash.com',
+            },
         ],
     },
     typescript: {

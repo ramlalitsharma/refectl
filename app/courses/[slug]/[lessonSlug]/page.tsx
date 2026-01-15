@@ -103,14 +103,20 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       // Check enrollment
       const enrollment = await db.collection('enrollments').findOne({
         userId,
-        courseId: course._id.toString(),
+        $or: [
+          { courseId: course._id.toString() },
+          { courseId: course.slug }
+        ],
         status: 'approved'
       });
 
       // Check completion (legacy support or alternative access)
       const completion = await db.collection('courseCompletions').findOne({
         userId,
-        courseId: course._id.toString()
+        $or: [
+          { courseId: course._id.toString() },
+          { courseId: course.slug }
+        ]
       });
 
       if (enrollment || completion) {

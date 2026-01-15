@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
 import Script from "next/script";
 import { CookieConsent } from '@/components/CookieConsent';
@@ -88,18 +89,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let user = null;
+  try {
+    user = await currentUser();
+  } catch (err) {
+    console.error('Clerk auth detection error in RootLayout:', err);
+  }
+  const isPro = user?.publicMetadata?.isPro === true;
+
   return (
     <ClerkProvider>
       <html lang="en">
         <head>
           <meta name="google-adsense-account" content="ca-pub-8149507764464883" />
+          <link rel="preconnect" href="https://polished-grouse-30.clerk.accounts.dev" />
           <link rel="preconnect" href="https://api.openai.com" />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
           <link rel="preconnect" href="https://img.clerk.com" />
+          <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+          <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -124,12 +138,12 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
         >
           <ThemeProvider>
             <ToastProvider>
               <GlobalBackButton />
-              <div className="flex min-h-screen flex-col bg-[#f4f6f9] text-slate-900">
+              <div className="flex min-h-screen flex-col">
                 <Suspense>
                   <Navbar />
                 </Suspense>
@@ -143,12 +157,14 @@ export default function RootLayout({
             </ToastProvider>
           </ThemeProvider>
           <Analytics />
-          <Script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8149507764464883"
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
+          {!isPro && (
+            <Script
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8149507764464883"
+              crossOrigin="anonymous"
+              strategy="afterInteractive"
+            />
+          )}
         </body>
       </html>
     </ClerkProvider >

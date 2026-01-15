@@ -43,7 +43,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ cour
 
         const { courseId } = await params;
         const body = await req.json();
-        const { title, description, thumbnail, categoryId, units, status, defaultLiveRoomId } = body;
+        const {
+            title,
+            description,
+            thumbnail,
+            categoryId,
+            units,
+            status,
+            defaultLiveRoomId,
+            price,
+            currency,
+            isPaid,
+            paymentType
+        } = body;
 
         const db = await getDatabase();
 
@@ -58,6 +70,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ cour
         if (units) updateData.units = units;
         if (status) updateData.status = status;
         if (defaultLiveRoomId !== undefined) updateData.defaultLiveRoomId = defaultLiveRoomId || null;
+        if (price !== undefined) updateData.price = price;
+        if (currency !== undefined) updateData.currency = currency;
+        if (isPaid !== undefined) updateData.isPaid = isPaid;
+        if (paymentType !== undefined) updateData.paymentType = paymentType;
 
         await db.collection('courses').updateOne(
             { _id: new ObjectId(courseId), type: 'live-course' },

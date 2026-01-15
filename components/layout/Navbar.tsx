@@ -18,6 +18,7 @@ export function Navbar() {
   const router = useRouter();
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [isPro, setIsPro] = useState(false);
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,6 +32,7 @@ export function Navbar() {
       .then((data) => {
         if (!mounted) return;
         setIsSuperAdmin(Boolean(data?.isSuperAdmin || data?.role === "superadmin"));
+        setIsPro(Boolean(data?.isPro));
 
         // Set user role
         if (data?.role && ['superadmin', 'admin', 'teacher', 'student', 'user'].includes(data.role)) {
@@ -42,6 +44,7 @@ export function Navbar() {
       .catch(() => {
         if (mounted) {
           setIsSuperAdmin(false);
+          setIsPro(false);
           setUserRole('user');
         }
       });
@@ -94,7 +97,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-[1000] bg-teal-700 text-white shadow-xl overflow-visible">
+    <header className="sticky top-0 z-[1000] glass-card text-slate-950 dark:text-white shadow-sm overflow-visible border-none">
       {!isOnline && (
         <div className="bg-red-500 text-white text-xs font-medium py-1.5 px-4 text-center">
           ⚠️ You appear to be offline.
@@ -134,7 +137,7 @@ export function Navbar() {
                   return (
                     <div key={idx} className="relative group">
                       <button
-                        className="px-2 py-1.5 rounded-full transition-colors hover:bg-white/10 flex items-center gap-1 text-white/80 hover:text-white text-sm"
+                        className="px-2 py-1.5 rounded-full transition-colors hover:bg-slate-200/50 dark:hover:bg-white/10 flex items-center gap-1 text-slate-700 dark:text-white/80 hover:text-slate-950 dark:hover:text-white text-sm font-bold"
                         aria-haspopup="true"
                         aria-expanded="false"
                       >
@@ -164,7 +167,6 @@ export function Navbar() {
                     </div>
                   );
                 }
-
                 // Regular link
                 const link = item as import('@/lib/navigation-config').NavLink;
                 const isActive = pathname?.startsWith(link.href.split("?")[0]);
@@ -172,7 +174,7 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-2 py-1.5 rounded-full transition-colors hover:bg-white/10 flex items-center gap-1 whitespace-nowrap text-sm ${isActive ? "bg-white/15 text-white" : "text-white/80 hover:text-white"
+                    className={`px-2 py-1.5 rounded-full transition-colors hover:bg-slate-200/50 dark:hover:bg-white/10 flex items-center gap-1 whitespace-nowrap text-sm font-bold ${isActive ? "bg-slate-900/10 dark:bg-white/15 text-slate-950 dark:text-white" : "text-slate-700 dark:text-white/90 hover:text-slate-950 dark:hover:text-white"
                       }`}
                     title={link.label}
                   >
@@ -189,23 +191,21 @@ export function Navbar() {
             </nav>
           </div>
 
-          {/* Desktop Search */}
-          <div className="hidden xl:block flex-1 max-w-md mx-2 min-w-0">
-            <div className="bg-white/95 text-slate-600 rounded-2xl border border-white/40 shadow-sm h-10 flex items-center overflow-visible">
-              <div className="w-full">
-                <GlobalSearch />
-              </div>
-            </div>
-          </div>
-
+          {/* Navigation Items and Search */}
           <div className="flex items-center gap-1.5 overflow-visible">
+            {/* Desktop Search */}
+            <div className="hidden md:block">
+              <GlobalSearch />
+            </div>
+
             <button
               aria-label="Open menu"
               className="lg:hidden inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 p-2"
               onClick={() => setMobileOpen((v) => !v)}
             >
-              <span className="text-lg">☰</span>
+              <span className="text-lg text-white">☰</span>
             </button>
+
             {showViewAs && (
               <ViewAsSwitcher
                 currentRole={userRole || 'student'}
@@ -226,7 +226,7 @@ export function Navbar() {
             <div className="relative hidden lg:block z-[1002]">
               <button
                 onClick={() => setActionsOpen((v) => !v)}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-slate-600 dark:text-white"
                 aria-label="Actions"
               >
                 <span className="text-lg">⚡</span>
@@ -303,6 +303,16 @@ export function Navbar() {
             </div>
             {mounted && (
               <SignedIn>
+                {!isPro && !isSuperAdmin && userRole !== 'admin' && userRole !== 'teacher' && (
+                  <Link href="/pricing" className="mr-2">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold border-0 shadow-lg animate-pulse whitespace-nowrap hidden sm:flex items-center gap-1.5"
+                    >
+                      <span className="text-sm">👑 Upgrade to Pro</span>
+                    </Button>
+                  </Link>
+                )}
                 <div className="flex items-center gap-2" suppressHydrationWarning={true}>
                   <NotificationBell />
                   <UserButton afterSignOutUrl="/" />
@@ -314,7 +324,7 @@ export function Navbar() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-white text-white hover:bg-white/10"
+                  className="border-slate-200 dark:border-white text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10"
                 >
                   Sign In
                 </Button>
@@ -404,10 +414,10 @@ export function Navbar() {
         )}
 
         {/* Mobile/Tablet Search (Row 2) */}
-        <div className="xl:hidden bg-white/95 text-slate-600 rounded-2xl border border-white/40 shadow-sm">
+        <div className="xl:hidden glass-effect rounded-2xl border-white/20 shadow-sm overflow-hidden">
           <GlobalSearch />
         </div>
       </div>
-    </header>
+    </header >
   );
 }

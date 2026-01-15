@@ -40,8 +40,13 @@ export default async function Checkout({ searchParams }: CheckoutPageProps) {
     redirect('/courses');
   }
 
-  const coursePrice = course.price?.amount || parseFloat(amount || '0');
-  const currency = course.price?.currency || 'USD';
+  const coursePrice = typeof course.price === 'number'
+    ? course.price
+    : (course.price?.amount || parseFloat(amount || '0'));
+
+  const currency = typeof course.price === 'number'
+    ? (course.currency || 'USD')
+    : (course.price?.currency || 'USD');
 
   return (
     <div className="bg-[#f4f6f9] min-h-screen">

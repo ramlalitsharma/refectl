@@ -24,6 +24,10 @@ interface Course {
     totalLessons?: number;
     totalSessions?: number;
     defaultLiveRoomId?: string;
+    price?: number;
+    currency?: string;
+    isPaid?: boolean;
+    paymentType?: 'free' | 'paid' | 'premium';
 }
 
 export function UnifiedContentStudio() {
@@ -53,6 +57,8 @@ export function UnifiedContentStudio() {
         },
         slug: '',
         defaultLiveRoomId: '' as string | undefined,
+        price: 0,
+        currency: 'USD',
     });
     const [units, setUnits] = useState<any[]>([]);
 
@@ -313,7 +319,9 @@ export function UnifiedContentStudio() {
             mode: mode,
             seo: { title: '', description: '', keywords: [] },
             slug: '',
-            defaultLiveRoomId: ''
+            defaultLiveRoomId: '',
+            price: 0,
+            currency: 'USD',
         });
         setUnits([
             {
@@ -346,7 +354,9 @@ export function UnifiedContentStudio() {
             mode: course.mode || 'curriculum',
             seo: (course as any).seo || { title: '', description: '', keywords: [] },
             slug: course.slug || '',
-            defaultLiveRoomId: course.defaultLiveRoomId || ''
+            defaultLiveRoomId: course.defaultLiveRoomId || '',
+            price: course.price || 0,
+            currency: course.currency || 'USD',
         });
         setUnits(course.units || []);
     };
@@ -358,7 +368,9 @@ export function UnifiedContentStudio() {
                 units,
                 status,
                 type: activeTab === 'video' ? 'video-course' : 'live-course',
-                ...courseForm, // This will now include seo and slug
+                isPaid: courseForm.price > 0,
+                paymentType: courseForm.price === 0 ? 'free' : 'paid',
+                ...courseForm, // This will now include seo and slug, and price/currency
             };
 
             const endpoint = activeTab === 'video'
@@ -483,29 +495,29 @@ export function UnifiedContentStudio() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <h2 className="text-2xl font-black text-slate-900">
-                            {view === 'create' ? 'Create' : 'Edit'} {activeTab === 'video' ? 'Video' : 'Live'} Course
-                        </h2>
-                        <Badge
-                            variant={courseForm.mode === 'curriculum' ? 'default' : 'secondary'}
-                            className={courseForm.mode === 'curriculum' ? 'bg-blue-500' : 'bg-indigo-500'}
-                        >
-                            {courseForm.mode === 'curriculum' ? '📚 Curriculum-Based' : '💼 Professional'}
-                        </Badge>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h2 className="text-2xl font-black text-slate-900">
+                                {view === 'create' ? 'Create' : 'Edit'} {activeTab === 'video' ? 'Video' : 'Live'} Course
+                            </h2>
+                            <Badge
+                                variant={courseForm.mode === 'curriculum' ? 'default' : 'secondary'}
+                                className={courseForm.mode === 'curriculum' ? 'bg-blue-500' : 'bg-indigo-500'}
+                            >
+                                {courseForm.mode === 'curriculum' ? '📚 Curriculum-Based' : '💼 Professional'}
+                            </Badge>
+                        </div>
+                        <p className="text-slate-500">
+                            {courseForm.mode === 'curriculum'
+                                ? 'Build your structured curriculum'
+                                : 'Create skills-focused professional training'}
+                        </p>
                     </div>
-                    <p className="text-slate-500">
-                        {courseForm.mode === 'curriculum'
-                            ? 'Build your structured curriculum'
-                            : 'Create skills-focused professional training'}
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => setView('list')}>
+                            ← Back to Courses
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={() => setView('list')}>
-                        ← Back to Courses
-                    </Button>
-                </div>
-            </div>
 
                 <div className="grid lg:grid-cols-3 gap-6">
                     {/* Left: Course Metadata */}
@@ -704,6 +716,34 @@ export function UnifiedContentStudio() {
                                             placeholder="course-url-slug"
                                             className="h-8 text-sm font-mono text-slate-600"
                                         />
+                                    </div>
+
+                                    <div className="pt-2 border-t border-slate-100 mt-2">
+                                        <label className="block text-xs font-medium text-slate-700 mb-2 font-bold">Pricing</label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={courseForm.currency}
+                                                onChange={(e) => setCourseForm({ ...courseForm, currency: e.target.value })}
+                                                className="w-20 rounded-md border border-slate-200 px-2 py-1 text-[10px]"
+                                            >
+                                                <option value="USD">USD</option>
+                                                <option value="EUR">EUR</option>
+                                                <option value="INR">INR</option>
+                                                <option value="GBP">GBP</option>
+                                            </select>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={courseForm.price}
+                                                onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) || 0 })}
+                                                placeholder="0.00"
+                                                className="h-7 text-xs flex-1"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 mt-1">
+                                            {courseForm.price === 0 ? '✓ Free for students' : `💰 Paid: ${courseForm.currency} ${courseForm.price.toFixed(2)}`}
+                                        </p>
                                     </div>
                                 </div>
                             </div>

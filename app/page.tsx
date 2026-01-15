@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -10,6 +11,7 @@ import { CategorySearch } from '@/components/search/CategorySearch';
 import { BentoFeatures } from '@/components/home/BentoFeatures';
 import * as motion from 'framer-motion/client';
 import { BRAND_NAME } from '@/lib/brand';
+import { FadeIn, ScaleIn } from '@/components/ui/Motion';
 
 export const dynamic = 'force-dynamic';
 
@@ -282,55 +284,69 @@ export default async function Home() {
   }));
 
   return (
-    <div className="bg-white text-slate-900 min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen bg-dot-grid overflow-x-hidden">
       {/* Ultra HD Hero Section */}
-      <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden bg-slate-950 pb-32">
+      <section className="relative min-h-[95vh] flex flex-col items-center justify-center overflow-hidden noise-texture bg-mesh pb-32 border-b border-slate-200 dark:border-white/5" aria-labelledby="hero-title">
         {/* Animated Background Blobs */}
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-teal-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 -left-20 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[120px] animate-pulse" aria-hidden="true" />
+        <div className="absolute top-40 -right-20 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse delay-1000" aria-hidden="true" />
 
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <Badge variant="outline" className="text-blue-400 border-blue-400/30 px-4 py-1 rounded-full bg-blue-400/10 backdrop-blur-sm">
-              ✨ The Future of Learning is Here
-            </Badge>
-
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tight">
-              Master Your Future with <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-teal-400 to-indigo-400">
-                Ultra-Adaptive AI
+          <div className="max-w-5xl mx-auto space-y-10">
+            <FadeIn>
+              <span className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-6 py-2.5 text-xs font-black uppercase tracking-[0.25em] text-indigo-600 dark:text-indigo-400 backdrop-blur-xl">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+                </span>
+                Intelligence Redefined
               </span>
-            </h1>
+            </FadeIn>
 
-            <p className="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Experience the world's most advanced learning platform. Real-time 4K classes, AI-personalized paths, and master-level certifications.
-            </p>
+            <FadeIn delay={0.1}>
+              <h1 id="hero-title" className="text-6xl md:text-8xl lg:text-9xl font-black leading-[1] tracking-tighter text-slate-900 dark:text-white">
+                Shape Your <br />
+                <span className="bg-gradient-to-r from-teal-600 via-indigo-600 to-indigo-700 bg-clip-text text-transparent">
+                  Infinite Potential.
+                </span>
+              </h1>
+            </FadeIn>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-8">
+            <FadeIn delay={0.2}>
+              <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-medium">
+                Experience world-class education powered by ultra-adaptive AI. Personalized learning paths, interactive 4K environments, and industry-master certifications.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={0.3} className="flex flex-wrap items-center justify-center gap-6 pt-10">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button size="lg" className="px-10 py-7 text-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] border-none rounded-2xl">
-                    Start Learning Free
+                  <Button size="lg" className="h-16 rounded-2xl px-12 py-8 text-xl font-black bg-slate-900 hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-slate-200 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_40px_-10px_rgba(255,255,255,0.1)] transition-all hover:scale-105 active:scale-95" aria-label="Begin your journey">
+                    Begin Journey
                   </Button>
                 </SignInButton>
               </SignedOut>
               <SignedIn>
                 <Link href="/dashboard">
-                  <Button size="lg" className="px-10 py-7 text-xl font-bold bg-white text-slate-950 hover:bg-slate-50 border-none rounded-2xl shadow-2xl">
-                    Open Dashboard
+                  <Button size="lg" className="h-16 rounded-2xl px-12 py-8 text-xl font-black bg-slate-900 hover:bg-black text-white dark:bg-white dark:text-black dark:hover:bg-slate-200 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] transition-all hover:scale-105" aria-label="Open portal">
+                    Open Portal
                   </Button>
                 </Link>
               </SignedIn>
-              <Button size="lg" variant="ghost" className="text-white hover:bg-white/10 px-8 py-7 text-xl font-semibold border border-white/10 rounded-2xl backdrop-blur-md">
-                View 4K Demos
+              <Button size="lg" variant="outline" className="h-16 rounded-2xl px-10 py-8 text-xl font-black border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 backdrop-blur-md transition-all active:scale-95">
+                Explore 4K Demos
               </Button>
-            </div>
+            </FadeIn>
           </div>
         </div>
 
-        {/* Hero Bottom Fade */}
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#f8fafc] to-transparent"></div>
+        {/* Floating Stat Widgets for Depth */}
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-full max-w-7xl px-4 grid grid-cols-2 md:grid-cols-4 gap-4 opacity-40 hover:opacity-100 transition-opacity duration-1000">
+          <HeroStat icon="💎" label="Premium Courses" value="500+" />
+          <HeroStat icon="⚡" label="Active Learners" value="50k+" />
+          <HeroStat icon="🎯" label="Certified Paths" value="120+" />
+          <HeroStat icon="🧩" label="Skill Modules" value="2.5k+" />
+        </div>
       </section>
 
       {/* Glassmorphic Search & Features Showcase */}
@@ -482,12 +498,14 @@ export default async function Home() {
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none z-10"></div>
 
                               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
-                                <img
+                                <Image
                                   src={
                                     course.thumbnail ||
                                     'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80'
                                   }
                                   alt={course.title}
+                                  fill
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
                                 />
                                 <div className="absolute top-3 right-3 flex flex-col gap-2">
@@ -568,5 +586,19 @@ export default async function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+function HeroStat({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <ScaleIn>
+      <div className="glass-card rounded-2xl p-4 flex items-center gap-4 border-white/10">
+        <div className="text-3xl">{icon}</div>
+        <div>
+          <div className="text-lg font-black text-slate-900 dark:text-white leading-none">{value}</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-1">{label}</div>
+        </div>
+      </div>
+    </ScaleIn>
   );
 }

@@ -191,11 +191,61 @@ body {
   box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.15);
 }
 
-/* Gradient Presets */
-.bg-vibrant-gradient {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1e40af 100%);
+/* UltraHD Background Patterns */
+.bg-mesh {
+  background-color: hsla(0, 0%, 100%, 1);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(186, 100%, 39%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(242, 100%, 70%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(202, 100%, 50%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(142, 100%, 50%, 0.15) 0px, transparent 50%);
 }
 
-.bg-aurora-gradient {
-  background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #8b5cf6 100%);
+.dark .bg-mesh {
+  background-color: hsla(240, 10%, 4%, 1);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(186, 100%, 39%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(242, 100%, 70%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(202, 100%, 50%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(142, 100%, 50%, 0.12) 0px, transparent 50%);
+}
+
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .bg-dot-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass-card {
+  background: rgba(15, 15, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Textures */
+.noise-texture {
+  position: relative;
+}
+.noise-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.dark .noise-texture::after {
+  opacity: 0.05;
 }

@@ -32,7 +32,7 @@ export function NotificationBell(_props: NotificationBellProps = {}) {
 
   const fetchNotifications = async () => {
     if (!userId) return;
-    
+
     try {
       const res = await fetch('/api/notifications?limit=10');
 
@@ -113,11 +113,11 @@ export function NotificationBell(_props: NotificationBellProps = {}) {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-slate-100 transition-colors"
+        className="relative p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors"
         aria-label="Notifications"
       >
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-white/80"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -157,7 +157,7 @@ export function NotificationBell(_props: NotificationBellProps = {}) {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-[600px] flex flex-col"
+              className="absolute right-0 mt-2 w-96 glass-card rounded-2xl shadow-2xl border-white/20 dark:border-white/5 z-50 max-h-[600px] flex flex-col overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-slate-200">

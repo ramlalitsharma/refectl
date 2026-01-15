@@ -16,20 +16,27 @@ interface Course {
   modules?: Array<{ id?: string; title?: string; lessons?: unknown[] }>;
   createdAt?: string;
   icon?: string;
+  price?: number;
+  currency?: string;
+  isPaid?: boolean;
+  paymentType?: 'free' | 'paid' | 'premium';
 }
 
 interface CourseLibraryProps {
   courses: Course[];
   initialEnrollmentStatuses?: Record<string, string>;
   isAuthenticated?: boolean;
+  isProUser?: boolean; // Added for revenue gating
 }
 
 export function CourseLibrary({
   courses: initialCourses,
   initialEnrollmentStatuses = {},
   isAuthenticated = false,
+  isProUser: initialIsPro = false,
 }: CourseLibraryProps) {
   const [courses, setCourses] = useState(initialCourses);
+  const [isPro, setIsPro] = useState(initialIsPro);
   const [search, setSearch] = useState('');
   const [filterSubject, setFilterSubject] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
@@ -47,7 +54,15 @@ export function CourseLibrary({
         }
       })
       .catch(() => undefined);
-  }, []);
+
+    // Fetch pro status if not provided
+    if (!initialIsPro && isAuthenticated) {
+      fetch('/api/admin/status')
+        .then(r => r.json())
+        .then(data => setIsPro(Boolean(data.isPro)))
+        .catch(() => setIsPro(false));
+    }
+  }, [initialIsPro, isAuthenticated]);
 
   useEffect(() => {
     setEnrollmentStatuses(initialEnrollmentStatuses);
@@ -110,9 +125,20 @@ export function CourseLibrary({
     }
   };
 
-  const requestEnrollment = async (course: Course) => {
+  const enroll = async (course: Course) => {
     if (!isAuthenticated) {
       window.location.href = `/sign-in?redirect_url=${encodeURIComponent('/courses')}`;
+      return;
+    }
+
+    // Revenue Gating: Redirect to pricing if non-pro trying to enroll in premium course
+    if (course.isPaid && course.price && course.price > 0 && !isPro) {
+      window.location.href = `/checkout?courseId=${course._id}&courseSlug=${course.slug}&amount=${course.price}`;
+      return;
+    }
+
+    if (course.isPremium && !isPro) {
+      window.location.href = '/pricing';
       return;
     }
 
@@ -141,95 +167,76 @@ export function CourseLibrary({
   };
 
   return (
-    <div className="space-y-10">
-      <Card className="border border-slate-200 bg-white/90 shadow-xl">
-        <CardContent className="space-y-4 p-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Smart filters</h3>
-              <p className="text-sm text-slate-500">Search across {initialCourses.length} courses with instant filtering.</p>
+    <div className="space-y-12">
+      <FadeIn delay={0.2}>
+        <div className="relative rounded-[32px] overflow-hidden border border-slate-200/60 dark:border-white/5 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+          <CardContent className="space-y-6 p-8">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Intelligence Discovery</h3>
+                <p className="text-sm text-slate-500 font-medium">Deep-search through {initialCourses.length} high-fidelity courses.</p>
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-600 dark:text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
+                {courses.length} match{courses.length === 1 ? '' : 'es'}
+              </div>
             </div>
-            <div className="text-xs uppercase tracking-wide text-slate-400">
-              {courses.length} match{courses.length === 1 ? '' : 'es'}
-            </div>
-          </div>
 
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr),minmax(0,0.5fr),minmax(0,0.5fr)]">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-sm text-slate-700 shadow-inner focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
-              />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr),minmax(0,0.5fr),minmax(0,0.5fr)]">
+              <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Search your future skill..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200/60 bg-white/50 dark:bg-slate-800/50 px-5 py-4 text-sm text-slate-700 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                />
+                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">🔍</span>
+              </div>
+              <select
+                value={filterSubject}
+                onChange={(e) => setFilterSubject(e.target.value)}
+                className="rounded-2xl border border-slate-200/60 bg-white/50 dark:bg-slate-800/50 px-5 py-4 text-sm text-slate-700 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold appearance-none cursor-pointer"
+              >
+                <option value="">All Subjects</option>
+                {subjects.map((subject) => (
+                  <option key={subject} value={subject}>{subject}</option>
+                ))}
+              </select>
+              <select
+                value={filterLevel}
+                onChange={(e) => setFilterLevel(e.target.value)}
+                className="rounded-2xl border border-slate-200/60 bg-white/50 dark:bg-slate-800/50 px-5 py-4 text-sm text-slate-700 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold appearance-none cursor-pointer"
+              >
+                <option value="">All Levels</option>
+                {levels.map((level) => (
+                  <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
+                ))}
+              </select>
             </div>
-            <select
-              value={filterSubject}
-              onChange={(e) => setFilterSubject(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-sm text-slate-700 shadow-inner focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
-            >
-              <option value="">All Subjects</option>
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white/60 px-4 py-3 text-sm text-slate-700 shadow-inner focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
-            >
-              <option value="">All Levels</option>
-              {levels.map((level) => (
-                <option key={level} value={level}>
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </div>
+      </FadeIn>
 
       {courses.length === 0 ? (
-        <Card className="border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl">
-          <CardContent className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <span className="text-5xl">🔍</span>
-            <h3 className="text-xl font-semibold">No courses found</h3>
-            <p className="text-sm text-white/70">
-              Try adjusting your search keywords or selecting different filters to discover more courses.
-            </p>
-          </CardContent>
-        </Card>
+        <FadeIn>
+          <div className="relative rounded-[40px] overflow-hidden border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 py-20 text-center shadow-xl">
+            <div className="absolute inset-0 bg-mesh opacity-30" />
+            <div className="relative z-10 space-y-4">
+              <span className="text-6xl block mb-6 animate-bounce">🔭</span>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Coordinate Not Found</h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto font-medium">
+                We couldn't locate any courses matching your specific search parameters. Try broad criteria.
+              </p>
+              <Button variant="outline" className="rounded-2xl mt-4" onClick={() => { setSearch(''); setFilterSubject(''); setFilterLevel(''); }}>Reset Filters</Button>
+            </div>
+          </div>
+        </FadeIn>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
           {courses.map((course, idx) => {
             const courseId = course._id || course.slug;
             const isBookmarked = bookmarked.has(courseId);
             const enrollmentStatus = enrollmentStatuses[courseId];
-
-            // Content Type Detection
-            const hasVideo = course.modules?.some(m => m.lessons?.some((l: any) =>
-              l.resources?.some((r: any) => r.type === 'video') || l.videoUrl
-            ));
-            const hasText = course.modules?.some(m => m.lessons?.some((l: any) =>
-              (l.content && typeof l.content === 'string' && l.content.trim().length > 0) || l.description
-            ));
-
-            let formatLabel = '';
-            let formatIcon = '';
-            if (hasVideo && hasText) {
-              formatLabel = 'Text & Video';
-              formatIcon = '📽️+📝';
-            } else if (hasVideo) {
-              formatLabel = 'Video';
-              formatIcon = '📽️';
-            } else if (hasText) {
-              formatLabel = 'Text';
-              formatIcon = '📝';
-            }
 
             const statusLabel =
               enrollmentStatus === 'approved'
@@ -237,28 +244,26 @@ export function CourseLibrary({
                 : enrollmentStatus === 'completed'
                   ? 'Completed'
                   : enrollmentStatus === 'pending'
-                    ? 'Awaiting Approval'
+                    ? 'Awaiting Access'
                     : null;
 
             const isNew = course.createdAt && (new Date().getTime() - new Date(course.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000);
 
             return (
-              <FadeIn key={course.slug} delay={idx * 0.05}>
+              <FadeIn key={courseId} delay={idx * 0.05}>
                 <ScaleOnHover>
-                  <Card className="group relative flex h-full flex-col overflow-hidden border border-slate-200 bg-white transition-all hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900 rounded-3xl">
-                    {/* Thumbnail Section */}
-                    <div className="relative aspect-video overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-teal-500/20" />
-                      <div className="absolute inset-0 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-500 opacity-20">
+                  <Card className="group relative flex h-full flex-col overflow-hidden border border-slate-200/60 dark:border-white/5 bg-white dark:bg-slate-900 transition-all hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] rounded-[32px]">
+                    <div className="relative aspect-[16/10] overflow-hidden">
+                      <div className="absolute inset-0 bg-mesh scale-150 group-hover:scale-100 transition-transform duration-1000 opacity-40" />
+                      <div className="absolute inset-0 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform duration-700 opacity-30 blur-[2px] group-hover:blur-0">
                         {course.icon || '📘'}
                       </div>
 
-                      {/* Enrolled Badge (Top Left) */}
                       {statusLabel && (
-                        <div className="absolute left-3 top-3 z-10">
-                          <span className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold backdrop-blur-md shadow-lg border ${enrollmentStatus === 'approved' || enrollmentStatus === 'completed'
-                            ? 'bg-emerald-100/90 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-100/90 text-amber-700 border-amber-200'
+                        <div className="absolute left-4 top-4 z-10">
+                          <span className={`flex items-center gap-2 rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest backdrop-blur-xl shadow-2xl border ${enrollmentStatus === 'approved' || enrollmentStatus === 'completed'
+                            ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                             }`}>
                             <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
                             {statusLabel}
@@ -266,91 +271,81 @@ export function CourseLibrary({
                         </div>
                       )}
 
-                      {/* New Badge (Top Right) */}
-                      {isNew && (
-                        <div className="absolute right-3 top-3 z-10">
-                          <span className="rounded-full bg-teal-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-teal-500/30">
-                            NEW
+                      <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 items-end">
+                        {(course as any).isPremium && (
+                          <span className="rounded-full bg-indigo-600 px-4 py-2 text-[10px] font-black text-white shadow-xl shadow-indigo-600/20 uppercase tracking-[0.15em] border border-indigo-500/30">
+                            👑 Premium
                           </span>
-                        </div>
-                      )}
+                        )}
+                        {isNew && (
+                          <span className="rounded-full bg-white dark:bg-slate-800 px-4 py-2 text-[10px] font-black text-indigo-600 dark:text-indigo-400 shadow-xl uppercase tracking-[0.15em] border border-slate-100 dark:border-white/5">
+                            Elite Access
+                          </span>
+                        )}
+                      </div>
 
                       <button
                         onClick={(e) => { e.preventDefault(); toggleBookmark(course); }}
-                        className="absolute bottom-3 right-3 z-10 h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-teal-600 dark:bg-slate-800/90 dark:text-slate-400 hidden group-hover:flex"
+                        className={`absolute bottom-4 right-4 z-10 h-10 w-10 items-center justify-center rounded-2xl backdrop-blur-xl shadow-2xl transition-all ${isBookmarked ? 'bg-indigo-600 text-white' : 'bg-white/80 dark:bg-slate-800/80 text-slate-400 hover:text-indigo-600'
+                          } hidden group-hover:flex`}
                       >
                         {isBookmarked ? '★' : '☆'}
                       </button>
                     </div>
 
-                    <CardContent className="flex flex-1 flex-col p-6">
-                      <CardHeader className="p-0 mb-2">
+                    <CardContent className="flex flex-1 flex-col p-8">
+                      <div className="mb-4">
                         <Link href={`/courses/${course.slug}`}>
-                          <CardTitle className="text-xl font-bold leading-tight text-slate-900 group-hover:text-indigo-600 dark:text-white transition-colors">
+                          <h4 className="text-xl font-black leading-tight text-slate-950 dark:text-white group-hover:text-indigo-600 transition-colors tracking-tight">
                             {course.title}
-                          </CardTitle>
+                          </h4>
                         </Link>
-                      </CardHeader>
-
-                      {/* Avoid Double Title: Only show summary if it's distinct from title */}
-                      {course.summary &&
-                        course.summary.toLowerCase().trim() !== course.title.toLowerCase().trim() &&
-                        !course.title.toLowerCase().includes(course.summary.toLowerCase()) && (
-                          <p className="mb-4 line-clamp-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                            {course.summary}
-                          </p>
-                        )}
-
-                      <div className="mt-auto mb-6 flex flex-wrap items-center gap-y-2 text-[11px] font-semibold text-slate-500">
-                        {formatLabel && (
-                          <>
-                            <span className="flex items-center gap-1 text-indigo-500 dark:text-indigo-400">
-                              {formatLabel === 'Video' ? '🎬' : formatLabel === 'Text' ? '📄' : '📽️+📄'} {formatLabel}
-                            </span>
-                            <span className="mx-2 text-slate-300">•</span>
-                          </>
-                        )}
-                        <span className="text-slate-600 dark:text-slate-300 truncate">
-                          {course.subject || 'General'}
-                        </span>
-                        {course.level && (
-                          <>
-                            <span className="mx-2 text-slate-300">•</span>
-                            <span className="text-indigo-500/80 dark:text-indigo-400/80">
-                              {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
-                            </span>
-                          </>
-                        )}
                       </div>
 
-                      <div className="pt-5 border-t border-slate-50 dark:border-slate-800">
+                      {course.summary && (
+                        <p className="mb-6 line-clamp-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold opacity-80">
+                          {course.summary}
+                        </p>
+                      )}
+
+                      <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5">
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Investment</span>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-lg font-black text-slate-900 dark:text-white">Free</span>
+                            <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1.5">
+                              {course.subject || 'General Discipline'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-slate-900 dark:text-white">Verified Content</span>
+                              <div className="h-1 w-1 rounded-full bg-slate-300" />
+                              <span className="text-xs font-bold text-slate-400">{course.modules?.length || 0} Modules</span>
                             </div>
+                            {course.price && course.price > 0 ? (
+                              <div className="mt-2 flex items-center gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-tighter text-teal-600 dark:text-teal-400">Invest:</span>
+                                <span className="text-sm font-black text-slate-900 dark:text-white">
+                                  {course.currency || 'USD'} {course.price.toFixed(2)}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="mt-2 flex items-center gap-1.5">
+                                <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-600">Access:</span>
+                                <span className="text-sm font-black text-emerald-600">FREE</span>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex gap-2">
                             {isAuthenticated && (enrollmentStatus === 'approved' || enrollmentStatus === 'completed') ? (
-                              <Link href={`/courses/${course.slug}`} className="group/btn flex items-center gap-2 rounded-2xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 leading-none">
-                                {enrollmentStatus === 'completed' ? 'Review' : 'Continue'}
-                                <span className="text-base transition-transform group-hover/btn:translate-x-1 font-normal opacity-70">→</span>
+                              <Link href={`/courses/${course.slug}`} className="group/btn flex items-center justify-center h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all shadow-sm">
+                                <span className="text-xl">→</span>
                               </Link>
                             ) : (
                               <Button
-                                variant="inverse"
-                                className="rounded-2xl px-6 py-5 font-bold shadow-xl shadow-indigo-500/20 bg-indigo-600 hover:bg-indigo-700 border-none"
-                                onClick={() => requestEnrollment(course)}
+                                className="h-12 rounded-2xl px-6 font-black shadow-lg shadow-indigo-600/10 bg-indigo-600 hover:bg-indigo-700 text-white border-none transition-all active:scale-95"
+                                onClick={() => enroll(course)}
                                 disabled={requestingCourse === courseId}
                               >
-                                {requestingCourse === courseId ? (
-                                  <span className="flex items-center gap-2">
-                                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-                                    Joining...
-                                  </span>
-                                ) : 'Enroll Now'}
+                                {requestingCourse === courseId ? '...' : 'Enroll'}
                               </Button>
                             )}
                           </div>
@@ -367,4 +362,5 @@ export function CourseLibrary({
     </div>
   );
 }
+
 

@@ -15,35 +15,33 @@ interface LiveRoom {
   courseTitle?: string;
 }
 
-import { VaultBrowser } from '@/components/live/VaultBrowser';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LiveClassesPage() {
   const db = await getDatabase();
 
-  // Parallel fetch for optimal performance
-  const [categories, courses, liveRooms] = await Promise.all([
-    db.collection('categories').find({}).toArray(),
-    db.collection('courses').find({
-      status: 'published',
-      type: { $in: ['video-course', 'live-course'] }
-    }).sort({ updatedAt: -1 }).toArray(),
+  // Fetch published live courses and their associated rooms
+  const [liveCourses, allLiveRooms] = await Promise.all([
+    db.collection('courses')
+      .find({ type: 'live-course', status: 'published' })
+      .toArray(),
     db.collection('liveRooms')
       .find({ status: { $in: ['active', 'scheduled', 'ready'] }, contentType: { $ne: 'video' } })
       .sort({ createdAt: -1 })
-      .limit(12)
       .toArray()
-  ]).catch(() => [[], [], []]);
+  ]).catch(() => [[], []]);
 
-  const serializedCourses = courses.map((course: any) => ({
-    ...course,
-    _id: course._id.toString(),
-    createdAt: course.createdAt ? new Date(course.createdAt).toISOString() : null,
-    updatedAt: course.updatedAt ? new Date(course.updatedAt).toISOString() : null,
-    authorId: course.authorId ? course.authorId.toString() : null,
-    categoryId: course.categoryId ? course.categoryId.toString() : null,
-  }));
+  // Get course IDs from published live courses
+  const publishedCourseIds = new Set(liveCourses.map((c: any) => String(c._id)));
+
+  // Filter rooms to only include those associated with published live courses
+  const liveRooms = allLiveRooms.filter((room: any) => {
+    const courseId = room.courseId;
+    // Include room if it's associated with a published live course
+    // Exclude draft sessions and rooms without valid course IDs
+    return courseId && courseId !== 'draft-session' && publishedCourseIds.has(courseId);
+  });
 
   const liveContent = liveRooms.map((room: any) => ({
     id: String(room._id),
@@ -54,18 +52,6 @@ export default async function LiveClassesPage() {
     createdAt: room.createdAt instanceof Date ? room.createdAt.toISOString() : room.createdAt || new Date().toISOString(),
     scheduledStartTime: room.scheduledStartTime instanceof Date ? room.scheduledStartTime.toISOString() : room.scheduledStartTime || null,
   }));
-
-  // Organize courses by their category
-  const categorizedCourses = categories.map((cat: any) => ({
-    id: String(cat._id),
-    name: cat.name,
-    courses: serializedCourses.filter((c: any) => c.categoryId === String(cat._id))
-  })).filter(cat => cat.courses.length > 0);
-
-  // Courses without categories or with invalid ones
-  const uncategorizedCourses = serializedCourses.filter((c: any) =>
-    !c.categoryId || !categories.some(cat => String(cat._id) === c.categoryId)
-  );
 
   return (
     <div className="min-h-screen bg-[#0a0c10] text-white">
@@ -92,17 +78,12 @@ export default async function LiveClassesPage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">Level: Expert.</span>
             </h1>
             <p className="text-xl text-slate-400 font-medium max-w-xl leading-relaxed">
-              Explore a 5-level architectural curriculum designed for cognitive impact. Join live sessions or descend into our archived masterclass vault.
+              Join real-time interactive sessions with expert instructors. Experience live Q&A, collaborative learning, and instant feedback in our premium virtual classrooms.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Link href="#live-grid">
                 <Button className="bg-white text-black hover:bg-slate-200 px-10 py-7 rounded-full font-black text-sm uppercase tracking-widest transition-all">
                   Join Live
-                </Button>
-              </Link>
-              <Link href="#vault">
-                <Button variant="outline" className="border-white/20 text-white bg-white/5 hover:bg-white/10 px-10 py-7 rounded-full font-black text-sm uppercase tracking-widest transition-all backdrop-blur-md">
-                  Video Courses
                 </Button>
               </Link>
             </div>
@@ -170,14 +151,6 @@ export default async function LiveClassesPage() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Masterclass Vault - Hierarchical Categories */}
-        <section id="vault">
-          <VaultBrowser 
-            categories={categorizedCourses} 
-            uncategorizedCourses={uncategorizedCourses} 
-          />
         </section>
       </div>
 

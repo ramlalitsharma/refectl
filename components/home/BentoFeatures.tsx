@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 const features = [
@@ -60,7 +61,13 @@ export function BentoFeatures() {
                         >
                             {feature.image && (
                                 <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
-                                    <img src={feature.image} alt="" className="w-full h-full object-cover" />
+                                    <Image
+                                        src={feature.image}
+                                        alt={feature.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    />
                                 </div>
                             )}
                             <div className="relative z-10">

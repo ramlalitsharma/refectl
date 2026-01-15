@@ -16,27 +16,14 @@ export default function PricingPage() {
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      // Simulate processing time
-      await new Promise(r => setTimeout(r, 1500));
-
-      const res = await fetch('/api/user/subscription/upgrade', { method: 'POST' });
-      if (!res.ok) throw new Error('Upgrade failed');
-
-      addToast({
-        type: 'success',
-        title: 'Welcome to Pro! 🌟',
-        message: 'Your account has been upgraded. Enjoy unlimited access!',
-        duration: 5000
-      });
-
-      // Redirect to dashboard after short delay
-      setTimeout(() => router.push('/dashboard'), 1000);
-
+      // Direct redirect to our active payment gateway
+      window.location.href = '/api/subscriptions/checkout';
     } catch (error) {
+      console.error('Checkout redirect failed', error);
       addToast({
         type: 'warning',
         title: 'Error',
-        message: 'Could not process upgrade. Please try again.',
+        message: 'Could not initiate checkout. Please check your connection.',
       });
       setLoading(false);
     }

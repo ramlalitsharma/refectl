@@ -21,6 +21,10 @@ interface VideoCourse {
     createdAt: string;
     totalLessons?: number;
     totalDuration?: number;
+    price?: number;
+    currency?: string;
+    isPaid?: boolean;
+    paymentType?: 'free' | 'paid' | 'premium';
 }
 
 export function VideoCourseStudio() {
@@ -37,6 +41,8 @@ export function VideoCourseStudio() {
         description: '',
         thumbnail: '',
         categoryId: '',
+        price: 0,
+        currency: 'USD',
     });
     const [units, setUnits] = useState<any[]>([
         {
@@ -83,7 +89,7 @@ export function VideoCourseStudio() {
     const handleCreateCourse = () => {
         setView('create');
         setEditingCourse(null);
-        setCourseForm({ title: '', description: '', thumbnail: '', categoryId: '' });
+        setCourseForm({ title: '', description: '', thumbnail: '', categoryId: '', price: 0, currency: 'USD' });
         setUnits([
             {
                 title: 'Introduction',
@@ -107,6 +113,8 @@ export function VideoCourseStudio() {
             description: course.description,
             thumbnail: course.thumbnail || '',
             categoryId: course.categoryId || '',
+            price: course.price || 0,
+            currency: course.currency || 'USD',
         });
         setUnits(course.units || []);
     };
@@ -118,6 +126,8 @@ export function VideoCourseStudio() {
                 units,
                 status,
                 type: 'video-course',
+                isPaid: courseForm.price > 0,
+                paymentType: courseForm.price === 0 ? 'free' : 'paid',
             };
 
             const url = editingCourse
@@ -218,6 +228,36 @@ export function VideoCourseStudio() {
                                     onChange={(url) => setCourseForm({ ...courseForm, thumbnail: url })}
                                     label="Course Thumbnail"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Course Price
+                                </label>
+                                <div className="flex gap-2">
+                                    <select
+                                        value={courseForm.currency}
+                                        onChange={(e) => setCourseForm({ ...courseForm, currency: e.target.value })}
+                                        className="w-24 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                    >
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="INR">INR</option>
+                                        <option value="GBP">GBP</option>
+                                    </select>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={courseForm.price}
+                                        onChange={(e) => setCourseForm({ ...courseForm, price: parseFloat(e.target.value) || 0 })}
+                                        placeholder="0.00"
+                                        className="flex-1"
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    {courseForm.price === 0 ? '✓ Free course' : `💰 Paid course - ${courseForm.currency} ${courseForm.price.toFixed(2)}`}
+                                </p>
                             </div>
 
                             <div className="pt-4 space-y-2">
