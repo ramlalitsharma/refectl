@@ -17,12 +17,12 @@ const isProtectedRoute = createRouteMatcher([
 function addSecurityHeaders(response: NextResponse) {
     const csp = [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.com https://*.clerk.accounts.dev https://clerk.refectl.com https://cdn.jsdelivr.net https://*.meet.jit.si https://pagead2.googlesyndication.com https://adservice.google.com https://va.vercel-scripts.com https://www.googletagmanager.com https://app.posthog.com",
+        "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.com https://*.clerk.accounts.dev https://clerk.refectl.com https://refectl.com https://www.refectl.com https://cdn.jsdelivr.net https://*.meet.jit.si https://pagead2.googlesyndication.com https://adservice.google.com https://va.vercel-scripts.com https://www.googletagmanager.com https://app.posthog.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com data:",
         "img-src 'self' data: https: blob: https://*.clerk.com https://img.clerk.com https://pagead2.googlesyndication.com https://www.google-analytics.com",
-        "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk.refectl.com https://clerk-telemetry.com https://api.openai.com https://*.openai.com wss://*.clerk.com https://*.meet.jit.si wss://*.meet.jit.si https://*.jitsi.net https://va.vercel-scripts.com https://vitals.vercel-analytics.com https://www.google-analytics.com https://app.posthog.com",
-        "frame-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://*.meet.jit.si https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
+        "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk.refectl.com https://clerk-telemetry.com https://api.openai.com https://*.openai.com wss://*.clerk.com https://*.meet.jit.si wss://*.meet.jit.si https://*.jitsi.net https://va.vercel-scripts.com https://vitals.vercel-analytics.com https://www.google-analytics.com https://app.posthog.com https://refectl.com https://www.refectl.com",
+        "frame-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk.refectl.com https://*.meet.jit.si https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
         "media-src 'self' https://*.meet.jit.si https://*.jitsi.net",
         "worker-src 'self' blob:",
         "object-src 'none'",

@@ -172,7 +172,7 @@ export default async function RootLayout({
           />
           <link
             rel="preconnect"
-            href="https://polished-grouse-30.clerk.accounts.dev"
+            href="https://clerk.refectl.com"
           />
           <link rel="preconnect" href="https://api.openai.com" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />

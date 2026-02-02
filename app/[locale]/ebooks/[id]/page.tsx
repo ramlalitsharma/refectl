@@ -79,7 +79,15 @@ export default async function EbookReaderPage({ params }: { params: Promise<{ id
             <div className="w-48 aspect-[3/4] rounded-3xl bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl relative group shrink-0">
               {ebook.coverImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={ebook.coverImageUrl} alt={ebook.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img
+                  src={ebook.coverImageUrl}
+                  alt={ebook.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=400&q=80';
+                  }}
+                />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-100 dark:from-white/5 to-transparent">
                   <span className="text-4xl text-slate-400">📚</span>

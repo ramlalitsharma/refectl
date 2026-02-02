@@ -617,6 +617,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                                   fill
                                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                  unoptimized={course.thumbnail?.startsWith('/uploads')}
                                 />
                                 <div className="absolute top-3 right-3 flex flex-col gap-2">
                                   {badges.map((badge) => (

@@ -103,6 +103,7 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   priority
+                  unoptimized={currentCourse.thumbnail.startsWith('/uploads')}
                 />
               ) : (
                 <div className="h-full w-full bg-gradient-to-br from-teal-500 via-emerald-500 to-teal-600 flex items-center justify-center">
@@ -236,6 +237,7 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                   alt={course.title}
                   fill
                   className="object-cover"
+                  unoptimized={course.thumbnail.startsWith('/uploads')}
                 />
               ) : (
                 <div className="h-full w-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xl">
