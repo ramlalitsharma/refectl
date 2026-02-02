@@ -8,6 +8,7 @@ import { getDatabase } from '@/lib/mongodb';
 import { CourseServiceNeon } from '@/lib/course-service-neon';
 import { auth } from '@/lib/auth';
 import { CourseSlider } from '@/components/courses/CourseSlider';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { CategorySearch } from '@/components/search/CategorySearch';
 import { BentoFeatures } from '@/components/home/BentoFeatures';
 import * as motion from 'framer-motion/client';
@@ -608,7 +609,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none z-10"></div>
 
                               <div className="relative h-48 w-full overflow-hidden bg-slate-100">
-                                <Image
+                                <FallbackImage
                                   src={
                                     course.thumbnail ||
                                     'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80'

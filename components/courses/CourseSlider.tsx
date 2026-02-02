@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -97,7 +98,7 @@ export function CourseSlider({ courses }: CourseSliderProps) {
           <Link href={`/courses/${currentCourse.slug}`} className="block group">
             <div className="relative h-96 w-full overflow-hidden bg-gradient-to-br from-teal-500 to-emerald-500">
               {currentCourse.thumbnail ? (
-                <Image
+                <FallbackImage
                   src={currentCourse.thumbnail}
                   alt={currentCourse.title}
                   fill
@@ -232,7 +233,7 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                 }`}
             >
               {course.thumbnail ? (
-                <Image
+                <FallbackImage
                   src={course.thumbnail}
                   alt={course.title}
                   fill
