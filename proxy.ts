@@ -63,6 +63,12 @@ export default clerkMiddleware(async (auth, req) => {
     const duration = Date.now() - start;
     finalResponse.headers.set('X-Response-Time', `${duration}ms`);
     return finalResponse;
+}, {
+    authorizedParties: [
+        'https://refectl.com',
+        'https://www.refectl.com',
+        'http://localhost:3000'
+    ]
 });
 
 export const config = {
