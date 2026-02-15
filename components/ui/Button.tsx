@@ -6,16 +6,16 @@ import { twMerge } from 'tailwind-merge';
 const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-xl text-sm font-bold transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  'ui-animate inline-flex items-center justify-center rounded-xl text-sm font-semibold tracking-[0.01em] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)] disabled:opacity-50 disabled:pointer-events-none',
   {
     variants: {
       variant: {
-        default: 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:to-teal-600',
-        outline: 'border-2 border-slate-200 text-slate-700 hover:border-teal-600 hover:text-teal-600 hover:bg-teal-50',
-        ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-        inverse: 'bg-white text-teal-600 hover:bg-slate-50 border border-slate-100 shadow-sm',
-        destructive: 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/20 hover:shadow-red-500/40',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
+        default: 'bg-[var(--color-accent)] text-white shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-3)] hover:brightness-110',
+        outline: 'border border-[var(--color-border)] text-[var(--foreground)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] hover:bg-[var(--color-surface-2)]',
+        ghost: 'text-[var(--color-muted-strong)] hover:text-[var(--foreground)] hover:bg-[var(--color-surface-2)]',
+        inverse: 'bg-[var(--color-surface)] text-[var(--color-accent)] border border-[var(--color-border)] hover:bg-[var(--color-surface-2)]',
+        destructive: 'bg-[var(--color-error)] text-white shadow-[var(--shadow-2)] hover:shadow-[var(--shadow-3)]',
+        secondary: 'bg-[var(--color-surface-2)] text-[var(--foreground)] hover:bg-[var(--color-surface-3)]',
       },
       size: {
         default: 'px-5 py-2.5',

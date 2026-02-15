@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { AlertTriangle, FileText, Flame, GraduationCap, Target, Zap } from 'lucide-react';
 
 interface XPSystemProps {
     // Props are optional now - will fetch from API
@@ -125,7 +126,9 @@ export function XPSystem({ currentXP: propXP, currentLevel: propLevel }: XPSyste
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">XP Synchrony Failed</div>
             </div>
         );
@@ -182,10 +185,10 @@ export function XPSystem({ currentXP: propXP, currentLevel: propLevel }: XPSyste
             {/* XP Earning Tips */}
             <div className="grid grid-cols-2 gap-4 pt-10 border-t border-white/5">
                 {[
-                    { icon: '📝', xp: '+50', label: 'CYCLE COMPLETED' },
-                    { icon: '🎯', xp: '+100', label: 'PERFECT FEEDBACK' },
-                    { icon: '🔥', xp: '+25', label: 'DAILY STREAK' },
-                    { icon: '🎓', xp: '+200', label: 'DOMAIN MASTERY' }
+                    { icon: <FileText className="h-6 w-6 text-slate-300" />, xp: '+50', label: 'CYCLE COMPLETED' },
+                    { icon: <Target className="h-6 w-6 text-emerald-400" />, xp: '+100', label: 'PERFECT FEEDBACK' },
+                    { icon: <Flame className="h-6 w-6 text-orange-400" />, xp: '+25', label: 'DAILY STREAK' },
+                    { icon: <GraduationCap className="h-6 w-6 text-elite-accent-purple" />, xp: '+200', label: 'DOMAIN MASTERY' }
                 ].map((tip, i) => (
                     <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 group/tip hover:border-white/20 transition-all">
                         <span className="text-2xl grayscale group-hover/tip:grayscale-0 transition-all">{tip.icon}</span>
@@ -220,7 +223,7 @@ export function XPSystem({ currentXP: propXP, currentLevel: propLevel }: XPSyste
                                 animate={{ rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] }}
                                 transition={{ repeat: Infinity, duration: 2 }}
                             >
-                                ⚡
+                                <Zap className="h-10 w-10 text-elite-accent-cyan" />
                             </motion.div>
                             <div className="space-y-2">
                                 <div className="text-[10px] font-black text-elite-accent-cyan uppercase tracking-[0.8em]">Level Ascended</div>

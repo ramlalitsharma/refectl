@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import Hls from 'hls.js';
 
 interface MuxVideoPlayerProps {
@@ -104,7 +105,9 @@ export function MuxVideoPlayer({
     return (
       <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
         <div className="text-center text-white">
-          <p className="text-lg mb-2">⚠️</p>
+          <div className="flex justify-center mb-2">
+            <AlertTriangle className="h-6 w-6 text-red-400" />
+          </div>
           <p>{error}</p>
         </div>
       </div>
@@ -131,4 +134,3 @@ export function MuxVideoPlayer({
     </div>
   );
 }
-

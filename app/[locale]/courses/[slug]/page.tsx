@@ -62,7 +62,7 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://adaptiq.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.refectl.com';
 
   try {
     const db = await getDatabase();
@@ -220,7 +220,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
   const courseData = serializeDocument(course);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://adaptiq.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.refectl.com';
 
   // Support both legacy modules and new units
   const units = courseData.units || courseData.modules || [];
@@ -236,10 +236,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     '@context': 'https://schema.org',
     '@type': 'Course',
     name: courseData.title,
-    description: courseData.summary || 'An adaptive course by AdaptIQ',
+    description: courseData.summary || 'An adaptive course by Refectl',
     provider: {
       '@type': 'Organization',
-      name: 'AdaptIQ',
+      name: 'Refectl',
       sameAs: baseUrl,
       logo: {
         '@type': 'ImageObject',
@@ -249,7 +249,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     educationalLevel: courseData.level || 'Intermediate',
     author: {
       '@type': 'Organization',
-      name: 'AdaptIQ Editorial'
+      name: 'Refectl Editorial'
     },
     aggregateRating: reviews?.stats?.average ? {
       '@type': 'AggregateRating',
@@ -277,37 +277,75 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
       ]} />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-12">
-        <div className="container mx-auto px-4">
+      <section className="relative overflow-hidden bg-slate-900 text-white py-16 md:py-24">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse delay-700" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.05)_0,transparent_70%)]" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
-              <h1 className="text-4xl md:text-5xl font-bold">{courseData.title}</h1>
-              <div className="flex-shrink-0">
-                <SocialShare
-                  url={`${BRAND_URL}/courses/${slug}`}
-                  title={courseData.title}
-                  contentType="course"
-                  contentId={String(courseData._id)}
-                />
+            <div className="flex flex-col gap-6">
+              {/* Breadcrumbs / Back navigation */}
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.2em] text-blue-400/80 animate-in fade-in slide-in-from-left duration-700">
+                <Link href="/courses" className="hover:text-blue-400 transition-colors">Courses</Link>
+                <span className="text-white/20">/</span>
+                <span className="text-white/60 truncate max-w-[200px]">{courseData.subject || 'General'}</span>
               </div>
-            </div>
-            <p className="text-xl opacity-90 mb-4">{courseData.summary || 'Master this subject with our adaptive learning platform'}</p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              {reviews?.stats?.average && (
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⭐</span>
-                  <span className="font-semibold">{reviews.stats.average}</span>
-                  <span className="opacity-80">({reviews.stats.total} reviews)</span>
+
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                  <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight animate-in fade-in slide-in-from-top duration-700 delay-100">
+                    {courseData.title}
+                  </h1>
+                  <div className="flex-shrink-0 animate-in fade-in zoom-in duration-700 delay-300">
+                    <SocialShare
+                      url={`${BRAND_URL}/courses/${slug}`}
+                      title={courseData.title}
+                      contentType="course"
+                      contentId={String(courseData._id)}
+                    />
+                  </div>
                 </div>
-              )}
-              <span>•</span>
-              <span>{totalLessons} lessons</span>
-              {courseData.level && (
-                <>
-                  <span>•</span>
-                  <span className="capitalize">{courseData.level}</span>
-                </>
-              )}
+
+                <p className="text-xl md:text-2xl text-slate-300 leading-relaxed max-w-3xl animate-in fade-in slide-in-from-bottom duration-700 delay-200">
+                  {courseData.summary || 'Master this subject with our adaptive learning platform'}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 pt-4 animate-in fade-in slide-in-from-bottom duration-700 delay-400">
+                {reviews?.stats?.average && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                    <span className="text-amber-400 text-lg">★</span>
+                    <span className="font-black text-lg tracking-tight">{reviews.stats.average}</span>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest ml-1">
+                      ({reviews.stats.total} Reviews)
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl">
+                  <span className="text-blue-400 text-lg">📚</span>
+                  <span className="font-black text-lg tracking-tight">{totalLessons}</span>
+                  <span className="text-xs text-white/40 font-bold uppercase tracking-widest ml-1">Lessons</span>
+                </div>
+
+                {courseData.level && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl capitalize">
+                    <span className="text-purple-400 text-lg">⚡</span>
+                    <span className="font-black text-lg tracking-tight">{courseData.level}</span>
+                    <span className="text-xs text-white/40 font-bold uppercase tracking-widest ml-1">Intensity</span>
+                  </div>
+                )}
+
+                {courseData.subject && (
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-500/10 border border-blue-500/20 backdrop-blur-md shadow-xl text-blue-400">
+                    <span className="text-xs font-black uppercase tracking-[0.2em]">{courseData.subject}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -317,19 +355,32 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Celebration Banner */}
           {isCompleted && (
-            <div className="lg:col-span-3">
-              <Card className="border-none shadow-md bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
-                <CardContent className="p-6 flex items-center justify-between flex-wrap gap-4">
-                  <div className="space-y-1">
-                    <div className="text-sm uppercase tracking-wide text-white/80">Achievement Unlocked</div>
-                    <div className="text-2xl font-semibold">Course Completed 🎉</div>
-                    <div className="text-white/80 text-sm">Great work finishing {courseData.title}. Your certificate is ready.</div>
+            <div className="lg:col-span-3 animate-in fade-in zoom-in duration-700">
+              <Card className="border-none shadow-2xl bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 text-white relative overflow-hidden group">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.2),transparent)] opacity-50 transition-opacity group-hover:opacity-80" />
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+
+                <CardContent className="p-8 relative z-10 flex items-center justify-between flex-wrap gap-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-[0.2em] backdrop-blur-md">
+                        Achievement Unlocked
+                      </span>
+                    </div>
+                    <div className="text-4xl font-black tracking-tight">Mastery Attained 🎉</div>
+                    <div className="text-white/80 text-lg font-medium max-w-xl">
+                      Exceptional work! You've successfully conquered <span className="text-white font-black underline decoration-white/30 decoration-2 underline-offset-4">{courseData.title}</span>.
+                    </div>
                   </div>
-                  {completionCertificateId && (
-                    <Link href={`/certificates/${completionCertificateId}`}>
-                      <Button variant="inverse" className="px-6">View Certificate</Button>
-                    </Link>
-                  )}
+                  <div className="flex items-center gap-4">
+                    {completionCertificateId && (
+                      <Link href={`/certificates/${completionCertificateId}`}>
+                        <Button className="px-8 py-6 bg-white text-emerald-700 hover:bg-emerald-50 font-black uppercase tracking-widest text-[11px] shadow-xl hover:scale-105 active:scale-95 transition-all">
+                          Claim Certificate
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -388,34 +439,54 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            <Card className="sticky top-24">
-              <CardContent className="pt-6">
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg mb-4 flex items-center justify-center">
-                  <span className="text-6xl text-white opacity-90">📚</span>
+            <Card className="sticky top-24 border-none shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-white/10">
+              <CardContent className="p-0">
+                <div className="aspect-[4/3] bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                      <span className="text-8xl relative z-10 filter drop-shadow-2xl brightness-110 group-hover:scale-110 transition-transform duration-700">📚</span>
+                    </div>
+                  </div>
+
+                  {/* Floating Metadata Overlays */}
+                  <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+                    <div className="px-3 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-black text-white uppercase tracking-widest">
+                      Refectl Elite
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">What you'll learn</h3>
-                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      <li>• Master {courseData.subject || 'the subject'}</li>
-                      <li>• {totalLessons} comprehensive lessons</li>
-                      <li>• Adaptive quizzes and assessments</li>
-                      <li>• Certificate of completion</li>
+
+                <div className="p-8 space-y-8">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+                      Curriculum Highlights
+                    </h3>
+                    <ul className="space-y-3">
+                      {[
+                        { label: `Master ${courseData.subject || 'the subject'}`, icon: '🎯' },
+                        { label: `${totalLessons} Elite Lessons`, icon: '💎' },
+                        { label: 'Adaptive Assessments', icon: '🧠' },
+                        { label: 'Certified Credential', icon: '📜' }
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-sm font-medium text-slate-600 dark:text-slate-400 group/item">
+                          <span className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-sm group-hover/item:scale-110 transition-transform">{item.icon}</span>
+                          {item.label}
+                        </li>
+                      ))}
                     </ul>
                   </div>
-                  <div className="pt-4 border-t">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Subject:</span>
-                        <span className="font-medium">{courseData.subject || 'General'}</span>
+
+                  <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Subject</div>
+                        <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{courseData.subject || 'General'}</div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Level:</span>
-                        <span className="font-medium capitalize">{courseData.level || 'All'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Lessons:</span>
-                        <span className="font-medium">{totalLessons}</span>
+                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Intensity</div>
+                        <div className="text-sm font-bold text-slate-900 dark:text-white truncate capitalize">{courseData.level || 'Adaptive'}</div>
                       </div>
                     </div>
                   </div>

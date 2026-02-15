@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { AlertTriangle, BookOpen, Clock, Flame, Target, Video } from 'lucide-react';
 
 interface Quest {
     id: string;
@@ -112,6 +113,22 @@ export function DailyQuests({ quests: propQuests }: DailyQuestsProps = {}) {
 
     const quests = data?.quests || [];
     const stats = data?.stats || { completed: 0, total: 0, earnedXP: 0, possibleXP: 0, completionRate: 0 };
+    const getQuestIcon = (quest: Quest) => {
+        switch (quest.type) {
+            case 'quiz':
+                return <Target className="h-7 w-7 text-elite-accent-cyan" />;
+            case 'study_time':
+                return <Clock className="h-7 w-7 text-elite-accent-purple" />;
+            case 'video':
+                return <Video className="h-7 w-7 text-emerald-400" />;
+            case 'course':
+                return <BookOpen className="h-7 w-7 text-amber-400" />;
+            case 'streak':
+                return <Flame className="h-7 w-7 text-orange-400" />;
+            default:
+                return <span className="text-lg">{quest.icon}</span>;
+        }
+    };
 
     if (loading) {
         return (
@@ -129,7 +146,9 @@ export function DailyQuests({ quests: propQuests }: DailyQuestsProps = {}) {
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Quest Synchronization Severed</div>
             </div>
         );
@@ -165,7 +184,9 @@ export function DailyQuests({ quests: propQuests }: DailyQuestsProps = {}) {
                             transition={{ delay: index * 0.1 }}
                         >
                             <div className="flex items-center gap-6">
-                                <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">{quest.icon}</div>
+                                <div className="text-3xl grayscale group-hover:grayscale-0 transition-all">
+                                    {getQuestIcon(quest)}
+                                </div>
 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-4 mb-2">

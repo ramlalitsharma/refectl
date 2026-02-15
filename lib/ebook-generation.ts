@@ -60,13 +60,13 @@ ${audience ? `Audience: ${audience}
 ` : ''}
 Chapters: ${chapters}
 Each chapter MUST include:
-- Executive Summary (2–3 paragraphs)
-- Deep Background with domain specifics and context
-- Case Studies or Examples with realistic details
-- Named Frameworks or Checklists with steps and criteria
-- Advanced Techniques and future-proof recommendations
-- References or resources list (can be generic if none)
-Return JSON: {"chapters":[{"title":"","summary":"","keyTakeaways":[""],"resources":[""],"content":""}]}. Content must be high-quality prose (10000–2000 words per chapter), multi-paragraph, precise and actionable.`;
+- Executive Summary (wrapped in <p> tags)
+- Deep Background with <h2> subheadings
+- Case Studies or Examples with <blockquote> and <ul> lists
+- Named Frameworks or Checklists with <ol> or <ul>
+- Advanced Techniques with <strong> emphasis
+- References or resources list as a <ul>
+Return JSON: {"chapters":[{"title":"","summary":"","keyTakeaways":[""],"resources":[""],"content":""}]}. Content MUST be valid, semantic HTML prose. Ensure high-quality, precise and actionable text.`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -92,20 +92,20 @@ Return JSON: {"chapters":[{"title":"","summary":"","keyTakeaways":[""],"resource
         ],
         resources: [],
         content:
-          `Executive Summary\n\n` +
-          `This chapter establishes a rigorous foundation for ${base.toLowerCase()}${focus ? ` in the context of ${focus.toLowerCase()}` : ''}, defining objectives, scope, and outcomes for ${audience || 'modern learners'}.\n\n` +
-          `Deep Background\n\n` +
-          `We outline historical and technical context, key terminology, and constraints that shape decision-making. Nuanced trade-offs are discussed with realistic scenarios.\n\n` +
-          `Case Studies\n\n` +
-          `Example A: A practical scenario demonstrating ${base.toLowerCase()} adoption, metrics observed, and lessons learned.\n` +
-          `Example B: A contrasting environment highlighting pitfalls, mitigations, and governance.\n\n` +
-          `Frameworks & Checklists\n\n` +
-          `Framework 1: A named model with steps and criteria to evaluate options.\n` +
-          `Framework 2: Deployment checklist focusing on quality, efficiency, and resilience.\n\n` +
-          `Advanced Techniques\n\n` +
-          `Actionable methods, templates, and decision trees to operationalize ${base.toLowerCase()} while staying future-proof.\n\n` +
-          `References\n\n` +
-          `Curated resources for ongoing practice and deeper exploration.`,
+          `<h2>Executive Summary</h2>` +
+          `<p>This chapter establishes a rigorous foundation for ${base.toLowerCase()}${focus ? ` in the context of ${focus.toLowerCase()}` : ''}, defining objectives, scope, and outcomes for ${audience || 'modern learners'}.</p>` +
+          `<h2>Deep Background</h2>` +
+          `<p>We outline historical and technical context, key terminology, and constraints that shape decision-making. Nuanced trade-offs are discussed with realistic scenarios.</p>` +
+          `<h2>Case Studies</h2>` +
+          `<ul><li><strong>Example A:</strong> A practical scenario demonstrating ${base.toLowerCase()} adoption, metrics observed, and lessons learned.</li>` +
+          `<li><strong>Example B:</strong> A contrasting environment highlighting pitfalls, mitigations, and governance.</li></ul>` +
+          `<h2>Frameworks & Checklists</h2>` +
+          `<p><strong>Framework 1:</strong> A named model with steps and criteria to evaluate options.</p>` +
+          `<p><strong>Deployment Checklist:</strong> Focusing on quality, efficiency, and resilience.</p>` +
+          `<h2>Advanced Techniques</h2>` +
+          `<p>Actionable methods, templates, and decision trees to operationalize ${base.toLowerCase()} while staying future-proof.</p>` +
+          `<h2>References</h2>` +
+          `<ul><li>Curated resources for ongoing practice and deeper exploration.</li></ul>`,
       };
     });
     return { chapters: gen };
@@ -122,13 +122,13 @@ ${audience ? `Audience: ${audience}
 ` : ''}
 Chapter number: ${Number(chapterIndex) + 1}
 Each chapter MUST include:
-- Executive Summary (2–3 paragraphs)
-- Deep Background with domain specifics and context
-- Case Studies or Examples with realistic details
-- Named Frameworks or Checklists with steps and criteria
-- Advanced Techniques and future-proof recommendations
-- References or resources list
-Return JSON: {"chapters":[{"title":"","summary":"","keyTakeaways":[""],"resources":[""],"content":""}]}. Use 800–1200 words of high-quality, precise prose.`;
+- Executive Summary (wrapped in <p> tags)
+- Deep Background with <h2> subheadings
+- Case Studies or Examples with <blockquote> and <ul> lists
+- Named Frameworks or Checklists with <ol> or <ul>
+- Advanced Techniques with <strong> emphasis
+- References or resources list as a <ul>
+Return JSON: {"chapters":[{"title":"","summary":"","keyTakeaways":[""],"resources":[""],"content":""}]}. Content MUST be valid, semantic HTML prose. Use 800–1200 words of high-quality, precise text.`;
 
   try {
     const response = await openai.chat.completions.create({

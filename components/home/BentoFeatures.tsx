@@ -3,31 +3,32 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Bot, Video, ClipboardCheck, Globe2 } from 'lucide-react';
 
 const features = [
     {
         title: 'AI Personalization',
         description: 'Our AI engine adapts to your learning pace, identifying gaps before you even notice them.',
-        icon: '🤖',
+        icon: <Bot className="h-9 w-9" />,
         className: 'md:col-span-2 md:row-span-2 bg-vibrant-gradient text-white p-8',
-        image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80',
+        image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=80',
     },
     {
         title: 'Live 4K Classes',
         description: 'Join real-time interactive classrooms with 4K video and low latency.',
-        icon: '🎥',
+        icon: <Video className="h-9 w-9" />,
         className: 'md:col-span-2 bg-white p-6 border border-slate-200',
     },
     {
         title: 'Adaptive Quizzes',
         description: 'Tests that evolve with your performance to master any subject.',
-        icon: '📝',
+        icon: <ClipboardCheck className="h-9 w-9" />,
         className: 'md:col-span-1 bg-slate-900 text-white p-6',
     },
     {
         title: 'Global Community',
         description: 'Learn with peers from over 120 countries.',
-        icon: '🌍',
+        icon: <Globe2 className="h-9 w-9" />,
         className: 'md:col-span-1 bg-aurora-gradient text-white p-6',
     },
 ];
@@ -71,7 +72,7 @@ export function BentoFeatures() {
                                 </div>
                             )}
                             <div className="relative z-10">
-                                <div className="text-4xl mb-4">{feature.icon}</div>
+                                <div className="mb-4 text-white/90">{feature.icon}</div>
                                 <h3 className="text-2xl font-bold mb-2">{feature.title}</h3>
                                 <p className={feature.className.includes('bg-white') ? 'text-slate-600' : 'text-blue-50 opacity-90'}>
                                     {feature.description}

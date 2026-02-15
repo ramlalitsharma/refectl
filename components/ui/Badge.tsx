@@ -13,18 +13,18 @@ export const Badge: React.FC<BadgeProps> = ({
   size = 'md',
   className = '',
 }) => {
-  const baseClasses = 'inline-flex items-center font-medium rounded-full';
+  const baseClasses = 'ui-animate inline-flex items-center font-medium rounded-full';
   
   const variantClasses = {
-    default: 'bg-gray-100 text-gray-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    error: 'bg-red-100 text-red-800',
-    info: 'bg-blue-100 text-blue-800',
-    destructive: 'bg-red-100 text-red-800',
-    outline: 'border border-slate-300 text-slate-700',
-    secondary: 'bg-indigo-100 text-indigo-800',
-    inverse: 'bg-slate-900 text-white',
+    default: 'bg-[var(--color-surface-2)] text-[var(--foreground)]',
+    success: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+    warning: 'bg-amber-500/15 text-amber-700 dark:text-amber-300',
+    error: 'bg-rose-500/15 text-rose-700 dark:text-rose-300',
+    info: 'bg-sky-500/15 text-sky-700 dark:text-sky-300',
+    destructive: 'bg-rose-500/15 text-rose-700 dark:text-rose-300',
+    outline: 'border border-[var(--color-border)] text-[var(--color-muted-strong)]',
+    secondary: 'bg-[var(--color-surface-3)] text-[var(--foreground)]',
+    inverse: 'bg-[var(--foreground)] text-[var(--background)]',
   };
   
   const sizeClasses = {

@@ -2,14 +2,21 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { isAdmin, updateUserRole } from '@/lib/admin-service';
+import { isAdmin, isSuperAdmin, updateUserRole } from '@/lib/admin-check';
 
 export async function PATCH(request: NextRequest) {
     try {
         const { userId } = await auth();
 
-        // Security Check
-        if (!userId || !(await isAdmin(userId))) {
+        // V-002 FIX: Privilege Escalation Prevention
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const isUserAdmin = await isAdmin();
+        const isUserSuperAdmin = await isSuperAdmin();
+
+        if (!isUserAdmin) {
             return NextResponse.json(
                 { error: 'Unauthorized: Admin access required' },
                 { status: 403 }

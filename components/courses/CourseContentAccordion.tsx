@@ -154,20 +154,31 @@ export function CourseContentAccordion({ units, slug, userId, completedLessonIds
                                                         const LessonItem = (
                                                             <div
                                                                 key={lesson.id || `lesson-${uIdx}-${cIdx}-${lIdx}`}
-                                                                className={`flex items-center gap-4 p-4 transition-colors ${isAccessible ? 'hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer' : 'opacity-75 cursor-not-allowed'} ${isCompleted ? 'bg-emerald-50/20 dark:bg-emerald-900/5' : ''}`}
+                                                                className={`flex items-center gap-4 p-5 transition-all duration-300 ${isAccessible ? 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50 cursor-pointer group/lesson' : 'opacity-75 cursor-not-allowed'} ${isCompleted ? 'bg-emerald-50/10 dark:bg-emerald-900/5' : ''}`}
                                                             >
-                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isCompleted ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                                                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : (
+                                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm ${isCompleted ? 'bg-emerald-100 text-emerald-600 shadow-emerald-500/20 animate-pulse' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover/lesson:bg-white dark:group-hover/lesson:bg-slate-700'}`}>
+                                                                    {isCompleted ? <CheckCircle2 className="w-6 h-6" /> : (
                                                                         !isAccessible ? <Lock className="w-4 h-4 text-slate-400" /> : getIconForType(lesson.contentType)
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className={`text-sm font-medium truncate ${isCompleted ? 'text-emerald-800 dark:text-emerald-300 line-through opacity-80' : 'text-slate-700 dark:text-slate-200'}`}>
+                                                                    <div className={`text-base font-bold tracking-tight transition-colors ${isCompleted ? 'text-emerald-800 dark:text-emerald-300 line-through opacity-60' : 'text-slate-700 dark:text-slate-200 group-hover/lesson:text-blue-600 dark:group-hover/lesson:text-blue-400'}`}>
                                                                         {lesson.title}
                                                                     </div>
-                                                                    <div className="flex items-center gap-2 mt-1">
-                                                                        <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">{lesson.contentType || 'text'}</span>
-                                                                        {!isAccessible && <span className="text-[10px] text-amber-600 dark:text-amber-500 font-medium flex items-center gap-1"><Lock className="w-3 h-3" /> Locked</span>}
+                                                                    <div className="flex items-center gap-3 mt-1.5">
+                                                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 group-hover/lesson:border-blue-500/30 transition-colors">
+                                                                            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-widest">{lesson.contentType || 'text'}</span>
+                                                                        </div>
+                                                                        {!isAccessible && (
+                                                                            <span className="text-[10px] text-amber-600 dark:text-amber-500 font-black uppercase tracking-wider flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
+                                                                                <Lock className="w-3 h-3" /> Locked
+                                                                            </span>
+                                                                        )}
+                                                                        {isCompleted && (
+                                                                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50">
+                                                                                Mastered
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>

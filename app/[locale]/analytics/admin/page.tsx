@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { StatCard } from '@/components/ui/StatCard';
 import { Progress } from '@/components/ui/Progress';
 import { Badge } from '@/components/ui/Badge';
+import { AlertTriangle, DollarSign, TrendingUp, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,28 +134,28 @@ export default async function AdminAnalyticsPage() {
             title="Monthly Recurring Revenue"
             value={`$${(stats.totals.mrr || 0).toLocaleString()}`}
             subtitle="Current month"
-            icon={<span>💰</span>}
+            icon={<DollarSign className="h-8 w-8" />}
             color="green"
           />
           <StatCard
             title="Annual Run Rate"
             value={`$${(stats.totals.arr || 0).toLocaleString()}`}
             subtitle="Projected"
-            icon={<span>📈</span>}
+            icon={<TrendingUp className="h-8 w-8" />}
             color="blue"
           />
           <StatCard
             title="Active Subscribers"
             value={stats.totals.customers.toLocaleString()}
             subtitle="Premium tiers"
-            icon={<span>👥</span>}
+            icon={<Users className="h-8 w-8" />}
             color="purple"
           />
           <StatCard
             title="Churn Rate"
             value={`${stats.totals.churnRate}%`}
             subtitle="This quarter"
-            icon={<span>⚠️</span>}
+            icon={<AlertTriangle className="h-8 w-8" />}
             color="red"
           />
         </section>

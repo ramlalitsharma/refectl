@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { FadeIn, ScaleIn } from '@/components/ui/Motion';
-import { Search, X, Command, Loader2 } from 'lucide-react';
+import { Book, BookOpen, Loader2, PenSquare, Search, X, Command } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface SearchResult {
@@ -85,10 +86,14 @@ export function GlobalSearch() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'course': return '📚';
-      case 'blog': return '📝';
-      case 'subject': return '📖';
-      default: return '🔍';
+      case 'course':
+        return <BookOpen className="h-5 w-5 text-elite-accent-cyan" />;
+      case 'blog':
+        return <PenSquare className="h-5 w-5 text-elite-accent-purple" />;
+      case 'subject':
+        return <Book className="h-5 w-5 text-emerald-500" />;
+      default:
+        return <Search className="h-5 w-5 text-slate-400" />;
     }
   };
 
@@ -106,11 +111,11 @@ export function GlobalSearch() {
       {/* Search Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="group relative flex items-center justify-center h-10 w-10 sm:w-48 sm:justify-start sm:px-3 rounded-xl bg-slate-900/5 dark:bg-white/10 hover:bg-slate-900/10 dark:hover:bg-white/20 border border-slate-200 dark:border-white/20 transition-all duration-200 group"
+        className="group relative flex items-center justify-center h-9 w-9 sm:h-10 sm:w-48 sm:justify-start sm:px-3 rounded-xl bg-slate-900/5 dark:bg-white/10 hover:bg-slate-900/10 dark:hover:bg-white/20 border border-slate-200 dark:border-white/20 transition-all duration-200 shrink-0 min-w-[2.25rem]"
         aria-label="Search site"
       >
-        <Search className="h-4 w-4 text-slate-500 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white" />
-        <span className="hidden sm:inline-block ml-2 text-xs text-slate-400 dark:text-white/50 group-hover:text-slate-600 dark:group-hover:text-white/80 transition-colors">
+        <Search className="h-4 w-4 text-slate-500 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white shrink-0" />
+        <span className="hidden sm:inline-block ml-2 text-xs text-slate-400 dark:text-white/50 group-hover:text-slate-600 dark:group-hover:text-white/80 transition-colors truncate">
           Search...
         </span>
         <kbd className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 h-5 w-8 items-center justify-center rounded border border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-white/5 text-[10px] font-medium text-slate-400 dark:text-white/50 pointer-events-none">
@@ -119,7 +124,7 @@ export function GlobalSearch() {
       </button>
 
       {/* Search Overlay */}
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4 sm:p-8 pt-[10vh] overflow-hidden">
           {/* Backdrop */}
           <div
@@ -186,7 +191,7 @@ export function GlobalSearch() {
                         onClick={() => handleNavigation(result.url)}
                         className="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-start gap-4 group"
                       >
-                        <span className="text-2xl mt-1 block transform group-hover:scale-125 transition-transform duration-200">
+                        <span className="mt-1 block transform group-hover:scale-110 transition-transform duration-200">
                           {getTypeIcon(result.type)}
                         </span>
                         <div className="flex-1 min-w-0">
@@ -245,6 +250,7 @@ export function GlobalSearch() {
             </div>
           </ScaleIn>
         </div>
+        , document.body
       )}
     </>
   );

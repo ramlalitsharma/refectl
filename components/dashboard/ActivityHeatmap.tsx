@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { format, eachDayOfInterval, subMonths } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
 
 interface HeatmapData {
     heatmapData: Array<{
@@ -88,7 +89,9 @@ export function ActivityHeatmap({ months = 3 }: ActivityHeatmapProps = {}) {
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Neural Sync Interrupted</div>
             </div>
         );

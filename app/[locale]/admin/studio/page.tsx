@@ -1,7 +1,7 @@
 import { Link } from '@/lib/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Newspaper, FileText, Video, PenTool, LayoutDashboard, Database, Activity, Target } from 'lucide-react';
+import { Newspaper, FileText, Video, PenTool, LayoutDashboard, Database, Activity, Target, Book, GraduationCap, Brain, Play, CalendarDays } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { FadeIn } from '@/components/ui/Motion';
 
@@ -18,6 +18,14 @@ export default async function StudioPage() {
       action: 'Enter Newsroom'
     },
     {
+      title: 'Event Command',
+      description: 'Create special event banners with global or country-specific visibility.',
+      icon: CalendarDays,
+      href: '/admin/studio/events',
+      color: 'text-amber-300 border-amber-300/20 bg-amber-300/10',
+      action: 'Manage Events'
+    },
+    {
       title: 'Knowledge Base',
       description: 'Synchronize blog posts and share vertical insights with the network.',
       icon: PenTool,
@@ -28,10 +36,18 @@ export default async function StudioPage() {
     {
       title: 'Curriculum Hub',
       description: 'Engineers comprehensive courses, modules, and intellectual paths.',
-      icon: Video,
+      icon: GraduationCap,
       href: '/admin/studio/courses',
       color: 'text-emerald-400 border-emerald-400/20 bg-emerald-400/10',
       action: 'Design Paths'
+    },
+    {
+      title: 'Ebook Studio',
+      description: 'Create and distribute interactive digital texts and research papers.',
+      icon: Book,
+      href: '/admin/studio/ebooks',
+      color: 'text-amber-400 border-amber-400/20 bg-amber-400/10',
+      action: 'Publish Texts'
     },
     {
       title: 'Neural Archives',
@@ -40,6 +56,22 @@ export default async function StudioPage() {
       href: '/admin/questions',
       color: 'text-blue-400 border-blue-400/20 bg-blue-400/10',
       action: 'Configure Logic'
+    },
+    {
+      title: 'Flashcard Forge',
+      description: 'Design spaced-repetition memory modules and neural decks.',
+      icon: Brain,
+      href: '/admin/studio/flashcards',
+      color: 'text-pink-400 border-pink-400/20 bg-pink-400/10',
+      action: 'Forge Decks'
+    },
+    {
+      title: 'Media Vault',
+      description: 'Manage centralized video assets, streaming, and VOD delivery.',
+      icon: Play,
+      href: '/admin/videos',
+      color: 'text-indigo-400 border-indigo-400/20 bg-indigo-400/10',
+      action: 'Access Vault'
     },
     {
       title: 'Network Pulse',

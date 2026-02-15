@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { AlertTriangle } from 'lucide-react';
 
 interface Badge {
     id: string;
@@ -140,7 +141,9 @@ export function BadgeShowcase({ badges: propBadges }: BadgeShowcaseProps = {}) {
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Asset Manifest Corrupted</div>
             </div>
         );

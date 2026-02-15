@@ -11,14 +11,18 @@ import { getUserRole } from '@/lib/admin-check';
 import { FadeIn, ScaleIn } from '@/components/ui/Motion';
 import { Metadata } from 'next';
 import { BRAND_URL } from '@/lib/brand';
+import { Gem, Layers, Target, Zap } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: "Courses | AdaptIQ Library",
-  description: "Browse our expansive library of AI-powered adaptive courses and video classes.",
-  alternates: {
-    canonical: `${BRAND_URL}/courses`,
-  },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "Courses | Refectl Library",
+    description: "Browse our expansive library of AI-powered adaptive courses and video classes.",
+    alternates: {
+      canonical: `/${locale}/courses`,
+    },
+  };
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +36,7 @@ const sanitizeCourse = (course: any) => ({
   type: course.type, // Include type field for filtering
   modules: course.modules,
   createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : course.createdAt,
-  icon: course.metadata?.icon || '📘',
+  icon: course.metadata?.icon,
   price: course.price,
   thumbnail: course.thumbnail,
   tags: Array.isArray(course.tags) ? course.tags : [],
@@ -194,20 +198,43 @@ export default async function CoursesIndexPage({ searchParams }: { searchParams:
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 bg-dot-grid">
-      <div className="container mx-auto px-4 py-12 space-y-12 relative overflow-visible">
-        {/* Animated Background Blob */}
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-teal-500/20 rounded-full blur-[128px] pointer-events-none" />
-        <div className="absolute top-40 -right-4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[128px] pointer-events-none" />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 space-y-8 sm:space-y-10 lg:space-y-12 relative overflow-visible">
+        {/* Animated Background Blob - Reduced on mobile */}
+        <div className="absolute top-0 -left-4 w-48 sm:w-72 h-48 sm:h-72 bg-teal-500/20 rounded-full blur-[80px] sm:blur-[128px] pointer-events-none" />
+        <div className="absolute top-40 -right-4 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-500/10 rounded-full blur-[80px] sm:blur-[128px] pointer-events-none" />
 
         <FadeIn delay={0.1}>
-          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Courses' }]} className="mb-6 opacity-60 hover:opacity-100 transition-opacity" />
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Courses' }]} className="mb-4 sm:mb-6 opacity-60 hover:opacity-100 transition-opacity" />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": BRAND_URL
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Courses",
+                    "item": `${BRAND_URL}/courses`
+                  }
+                ]
+              })
+            }}
+          />
         </FadeIn>
 
-        <section className="relative rounded-[40px] overflow-hidden border border-white/40 dark:border-white/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] noise-texture bg-mesh">
-          <CardContent className="grid gap-12 lg:grid-cols-[minmax(0,1.2fr),minmax(0,0.8fr)] items-center p-8 md:p-14 relative z-10">
-            <div className="space-y-8">
+        <section className="relative rounded-2xl sm:rounded-3xl lg:rounded-[40px] overflow-hidden border border-white/40 dark:border-white/5 shadow-[0_16px_32px_-8px_rgba(0,0,0,0.1)] sm:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] noise-texture bg-mesh">
+          <CardContent className="grid gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1.2fr),minmax(0,0.8fr)] lg:gap-12 items-center p-6 sm:p-8 md:p-10 lg:p-14 relative z-10">
+            <div className="space-y-6 sm:space-y-8">
               <FadeIn delay={0.2}>
-                <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-teal-600 dark:text-teal-400 backdrop-blur-md">
+                <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-teal-600 dark:text-teal-400 backdrop-blur-md">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
@@ -217,7 +244,7 @@ export default async function CoursesIndexPage({ searchParams }: { searchParams:
               </FadeIn>
 
               <FadeIn delay={0.3}>
-                <h1 className="text-4xl md:text-6xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-slate-900 dark:text-white">
                   {selectedType === 'video' ? (
                     <>Master Skills with <span className="bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">Video Classes</span></>
                   ) : selectedType === 'text' ? (
@@ -233,7 +260,7 @@ export default async function CoursesIndexPage({ searchParams }: { searchParams:
               </FadeIn>
 
               <FadeIn delay={0.4}>
-                <p className="text-slate-600 dark:text-slate-400 text-lg md:text-xl max-w-xl font-medium leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg md:text-xl max-w-xl font-medium leading-relaxed">
                   {selectedType === 'video'
                     ? `Explore our curated collection of ${filteredCourses.length} video courses with expert instructors and interactive content.`
                     : selectedType === 'text'
@@ -257,10 +284,10 @@ export default async function CoursesIndexPage({ searchParams }: { searchParams:
             </div>
 
             <div className="grid w-full gap-4 grid-cols-2">
-              <StatCard label="Live Courses" value={totalCourses} icon="💎" delay={0.6} />
-              <StatCard label="Active Now" value={publishedCourses} icon="⚡" delay={0.7} />
-              <StatCard label="Disciplines" value={uniqueCategories.length} icon="🎯" delay={0.8} />
-              <StatCard label="Modules" value={totalLessons} icon="🧩" delay={0.9} />
+              <StatCard label="Live Courses" value={totalCourses} icon={<Gem className="h-6 w-6 text-teal-400" />} delay={0.6} />
+              <StatCard label="Active Now" value={publishedCourses} icon={<Zap className="h-6 w-6 text-emerald-400" />} delay={0.7} />
+              <StatCard label="Disciplines" value={uniqueCategories.length} icon={<Target className="h-6 w-6 text-purple-400" />} delay={0.8} />
+              <StatCard label="Modules" value={totalLessons} icon={<Layers className="h-6 w-6 text-blue-400" />} delay={0.9} />
             </div>
           </CardContent>
         </section>
@@ -307,7 +334,7 @@ export default async function CoursesIndexPage({ searchParams }: { searchParams:
   );
 }
 
-function StatCard({ label, value, icon, delay }: { label: string; value: number; icon: string; delay: number }) {
+function StatCard({ label, value, icon, delay }: { label: string; value: number; icon: React.ReactNode; delay: number }) {
   return (
     <ScaleIn delay={delay}>
       <div className="group relative rounded-3xl border border-white/20 bg-white/10 p-5 backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40">

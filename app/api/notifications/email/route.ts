@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // For now, we'll log and store the notification
     const db = await getDatabase();
     const notifications = db.collection('notifications');
-    
+
     const notification = {
       userId,
       email: user.email,
@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
 
     try {
       if ((process.env.EMAIL_PROVIDER || 'none').toLowerCase() === 'resend') {
-        const subject = type === 'course_completion' ? `You completed ${courseTitle}` : 'AdaptIQ Notification';
+        const { BRAND_NAME } = await import('@/lib/brand');
+        const subject = type === 'course_completion' ? `You completed ${courseTitle}` : `${BRAND_NAME} Notification`;
         const html = type === 'course_completion' ? renderCompletionEmail(courseTitle) : renderCompletionEmail();
         await sendEmail({ to: user.email, subject, html });
       }

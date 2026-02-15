@@ -205,7 +205,7 @@ export async function generateMetadata({ params }: { params: Promise<{ examType?
   const type = String(examType || 'sat').toUpperCase();
   const kws = await getLatestKeywords();
   return {
-    title: `${type} Preparation | AdaptIQ`,
+    title: `${type} Preparation | Refectl`,
     description: `AI-adaptive prep for ${type}. Section practice, score tracking, and personalized recommendations.`,
     keywords: kws.length ? kws : undefined,
   };

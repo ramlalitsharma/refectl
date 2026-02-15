@@ -5,13 +5,16 @@ import { BlogClientList } from '@/components/blog/BlogClientList';
 import { BRAND_URL } from '@/lib/brand';
 import { AdBlockerDetector } from '@/components/ads/AdBlockerDetector';
 
-export const metadata: Metadata = {
-  title: "Blog | AdaptIQ Insights",
-  description: "Deep dives into AI pedagogy, adaptive learning, and platform updates.",
-  alternates: {
-    canonical: `${BRAND_URL}/blog`,
-  },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: "Blog | Refectl Insights",
+    description: "Deep dives into AI pedagogy, adaptive learning, and platform updates.",
+    alternates: {
+      canonical: `/${locale}/blog`,
+    },
+  };
+}
 
 export default async function BlogIndexPage() {
   const db = await getDatabase();
@@ -24,6 +27,29 @@ export default async function BlogIndexPage() {
 
   return (
     <AdBlockerDetector>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": BRAND_URL
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Blog",
+                "item": `${BRAND_URL}/blog`
+              }
+            ]
+          })
+        }}
+      />
       <BlogClientList initialPosts={serializedPosts} />
     </AdBlockerDetector>
   );

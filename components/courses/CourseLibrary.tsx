@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { FadeIn, ScaleOnHover } from '@/components/ui/Motion';
+import { BookOpen, Crown } from 'lucide-react';
 
 interface Course {
   _id: string;
@@ -256,7 +257,7 @@ export function CourseLibrary({
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <div className="absolute inset-0 bg-mesh scale-150 group-hover:scale-100 transition-transform duration-1000 opacity-40" />
                       <div className="absolute inset-0 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform duration-700 opacity-30 blur-[2px] group-hover:blur-0">
-                        {course.icon || '📘'}
+                        {course.icon ? course.icon : <BookOpen className="h-14 w-14 text-white/80" />}
                       </div>
 
                       {statusLabel && (
@@ -274,7 +275,10 @@ export function CourseLibrary({
                       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 items-end">
                         {(course as any).isPremium && (
                           <span className="rounded-full bg-indigo-600 px-4 py-2 text-[10px] font-black text-white shadow-xl shadow-indigo-600/20 uppercase tracking-[0.15em] border border-indigo-500/30">
-                            👑 Premium
+                            <span className="inline-flex items-center gap-2">
+                              <Crown className="h-4 w-4" />
+                              Premium
+                            </span>
                           </span>
                         )}
                         {isNew && (

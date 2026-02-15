@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 const CHANNELS = [
   {
     label: 'Email',
-    value: 'support@adaptiq.io',
+    value: 'support@refectl.com',
     hint: 'We reply within 24 hours on business days.',
   },
   {
@@ -20,7 +20,7 @@ const CHANNELS = [
   },
   {
     label: 'Enterprise Inquiries',
-    value: 'enterprise@adaptiq.io',
+    value: 'enterprise@refectl.com',
     hint: 'For partnerships, campus programs, and resellers.',
   },
 ];
@@ -76,7 +76,7 @@ export default function ContactPage() {
       <div className="container mx-auto px-4 py-12 space-y-8">
         <div className="max-w-3xl space-y-4">
           <p className="text-sm uppercase tracking-widest text-teal-600 font-semibold">Need a hand?</p>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Talk to the AdaptIQ team</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900">Talk to the {BRAND_NAME} team</h1>
           <p className="text-lg text-slate-600">
             We’re here for students, teachers, and enterprise partners. Reach out for onboarding help, billing
             questions, learning-path guidance, or just to say hello.
@@ -141,11 +141,10 @@ export default function ContactPage() {
                 </div>
                 {status && (
                   <div
-                    className={`rounded-2xl px-4 py-3 text-sm ${
-                      status.type === 'success'
+                    className={`rounded-2xl px-4 py-3 text-sm ${status.type === 'success'
                         ? 'bg-emerald-50 text-emerald-700'
                         : 'bg-rose-50 text-rose-700'
-                    }`}
+                      }`}
                   >
                     {status.message}
                   </div>
@@ -180,7 +179,7 @@ export default function ContactPage() {
                 <p className="text-sm uppercase tracking-widest text-white/80">Prefer live?</p>
                 <h3 className="text-2xl font-semibold">Book a live onboarding call</h3>
                 <p className="text-sm text-white/90">
-                  Perfect for schools, creators, and teams migrating to AdaptIQ.
+                  Perfect for schools, creators, and teams migrating to {BRAND_NAME}.
                 </p>
                 <Link href="/live" className="inline-flex">
                   <Button variant="inverse" className="bg-white text-teal-700 hover:bg-white/90">

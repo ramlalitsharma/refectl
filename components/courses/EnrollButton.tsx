@@ -101,20 +101,29 @@ export function EnrollButton({
 
     return (
         <Button
-            className={`w-full bg-teal-600 hover:bg-teal-700 font-bold ${className}`}
+            className={`w-full bg-teal-600 hover:bg-teal-700 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-2xl py-7 ${className}`}
             size={size}
             onClick={handleEnroll}
             disabled={isLoading}
         >
             {isLoading ? (
-                <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Enrolling...
-                </>
+                <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin text-white/70" />
+                    <span>Processing...</span>
+                </div>
             ) : (
-                price > 0
-                    ? `Enroll for ${currency === 'USD' ? '$' : currency}${price}`
-                    : 'Enroll for Free'
+                <span className="flex items-center gap-2">
+                    {price > 0
+                        ? (
+                            <>
+                                <span className="opacity-70">Enroll for</span>
+                                <span className="text-sm">{currency === 'USD' ? '$' : currency}{price}</span>
+                            </>
+                        )
+                        : 'Begin for Free'
+                    }
+                    <span className="ml-2 opacity-40 group-hover:translate-x-1 transition-transform">→</span>
+                </span>
             )}
         </Button>
     );

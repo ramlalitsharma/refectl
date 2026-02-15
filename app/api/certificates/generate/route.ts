@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       courseTitle,
       issuedAt,
       expiresAt,
-      verificationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://adaptiq.com'}/certificates/verify/${certId}`,
+      verificationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.refectl.com'}/certificates/verify/${certId}`,
       createdAt: issuedAt,
     };
 

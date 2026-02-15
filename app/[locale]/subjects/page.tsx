@@ -6,6 +6,22 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { SiteBrand } from '@/components/layout/SiteBrand';
 import { getLatestKeywords } from '@/lib/seo';
+import type { ReactNode } from 'react';
+import { BookOpen, Folder, Globe2, GraduationCap, Target, Flag } from 'lucide-react';
+
+const renderIcon = (icon: string, className = 'h-10 w-10') => {
+  const map: Record<string, ReactNode> = {
+    '📚': <BookOpen className={className} />,
+    '📖': <BookOpen className={className} />,
+    '🎓': <GraduationCap className={className} />,
+    '🎯': <Target className={className} />,
+    '🗂️': <Folder className={className} />,
+    '🌍': <Globe2 className={className} />,
+    '🌐': <Globe2 className={className} />,
+    '🇬🇧': <Flag className={className} />,
+  };
+  return map[icon] ?? <span className="text-4xl">{icon}</span>;
+};
 
 export default async function SubjectsPage() {
   const { userId } = await auth();
@@ -42,7 +58,7 @@ export default async function SubjectsPage() {
               <Card hover className="h-full">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <div className="text-5xl">{subject.icon || '📚'}</div>
+                    <div className="text-5xl">{renderIcon(subject.icon || '📚')}</div>
                     <Badge variant={subject.category === 'test-prep' ? 'warning' : 'info'} size="sm">
                       {(subject.category || 'academic').replace('-', ' ')}
                     </Badge>
@@ -71,7 +87,7 @@ export default async function SubjectsPage() {
             <Link href="/blog">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">📖</span>Study Guides</CardTitle>
+                  <CardTitle className="flex items-center gap-2">{renderIcon('📖', 'h-5 w-5')}Study Guides</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Concept explainers, solved examples, and tips</p>
@@ -81,7 +97,7 @@ export default async function SubjectsPage() {
             <Link href="/preparations">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">🎯</span>Guided Preparations</CardTitle>
+                  <CardTitle className="flex items-center gap-2">{renderIcon('🎯', 'h-5 w-5')}Guided Preparations</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Basic → Advanced tracks with embedded quizzes</p>
@@ -91,7 +107,7 @@ export default async function SubjectsPage() {
             <Link href="/exams">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">🗂️</span>Exam Resources</CardTitle>
+                  <CardTitle className="flex items-center gap-2">{renderIcon('🗂️', 'h-5 w-5')}Exam Resources</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Syllabi, patterns, and timed practice sets</p>
@@ -165,7 +181,7 @@ export default async function SubjectsPage() {
                   <Link key={id} href={`/exams/${id}`}>
                     <Card hover>
                       <CardContent className="pt-6 text-center">
-                        <div className="text-3xl mb-2">🌍</div>
+                        <div className="text-3xl mb-2">{renderIcon('🌍', 'h-7 w-7')}</div>
                         <div className="font-semibold text-gray-900">{name}</div>
                         <div className="text-sm text-gray-500 mt-1">International</div>
                       </CardContent>
@@ -192,7 +208,7 @@ export default async function SubjectsPage() {
               <Card hover key={curriculum.name}>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3">
-                    <div className="text-3xl">{curriculum.icon}</div>
+                    <div className="text-3xl">{renderIcon(curriculum.icon, 'h-7 w-7')}</div>
                     <div>
                       <div className="font-semibold text-gray-900">{curriculum.name}</div>
                       <div className="text-sm text-gray-500">{curriculum.description}</div>

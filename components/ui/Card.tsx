@@ -9,8 +9,8 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, className = '', hover = false, onClick }) => {
-  const base = 'bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all';
-  const hoverCls = hover ? 'hover:shadow-md cursor-pointer' : '';
+  const base = 'ui-card ui-animate p-6';
+  const hoverCls = hover ? 'ui-card--interactive cursor-pointer' : '';
   const composed = `${base} ${hoverCls} ${className}`;
   if (hover) {
     return (
@@ -33,14 +33,14 @@ export const CardTitle: React.FC<{ children: React.ReactNode; className?: string
   children,
   className = '',
 }) => {
-  return <h3 className={`text-xl font-semibold text-slate-900 ${className}`}>{children}</h3>;
+  return <h3 className={`text-xl font-semibold text-[var(--foreground)] ${className}`}>{children}</h3>;
 };
 
 export const CardDescription: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className = '',
 }) => {
-  return <p className={`text-slate-600 mt-1 ${className}`}>{children}</p>;
+  return <p className={`text-[var(--color-muted)] mt-1 ${className}`}>{children}</p>;
 };
 
 export const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({

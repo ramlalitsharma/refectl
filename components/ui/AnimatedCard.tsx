@@ -35,7 +35,7 @@ interface AnimatedListProps {
 export function AnimatedList({ children, className }: AnimatedListProps) {
   return (
     <motion.div
-      initial="hidden"
+      initial="visible"
       animate="visible"
       variants={{
         visible: {
@@ -60,7 +60,7 @@ export function AnimatedItem({ children, className }: AnimatedItemProps) {
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 1, y: 0 },
         visible: { opacity: 1, y: 0 },
       }}
       className={className}

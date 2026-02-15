@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server';
 /**
  * Sanitize string input to prevent XSS and injection attacks
  */
-export function sanitizeString(input: string, maxLength = 1000): string {
+export function sanitizeString(input: string, maxLength = 10000): string {
   if (typeof input !== 'string') {
     return '';
   }
@@ -13,14 +13,14 @@ export function sanitizeString(input: string, maxLength = 1000): string {
   return input
     .trim()
     .slice(0, maxLength)
-    // Remove script tags
+    // Remove script tags and their content
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove other potentially dangerous tags
+    .replace(/<(iframe|object|embed|applet|meta|link|base|style)\b[^>]*>|<\/(iframe|object|embed|applet|meta|link|base|style)>/gi, '')
     // Remove event handlers
-    .replace(/on\w+\s*=/gi, '')
-    // Remove javascript: protocol
-    .replace(/javascript:/gi, '')
-    // Remove data: protocol (except for images)
-    .replace(/data:(?!image\/)/gi, '')
+    .replace(/\bon\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]*)/gi, '')
+    // Remove javascript: and other dangerous pseudo-protocols
+    .replace(/(javascript|vbscript|data):/gi, '')
     // Remove potentially dangerous characters
     .replace(/[<>]/g, '');
 }
@@ -34,6 +34,7 @@ export function escapeRegex(input: string): string {
 
 /**
  * Validate and sanitize MongoDB query parameters
+ * Deeply sanitizes objects and prevents top-level $ operators
  */
 export function sanitizeMongoQuery(query: any): any {
   if (typeof query !== 'object' || query === null) {
@@ -41,25 +42,26 @@ export function sanitizeMongoQuery(query: any): any {
   }
 
   const sanitized: any = {};
-  
+
   for (const [key, value] of Object.entries(query)) {
-    // Prevent NoSQL injection by ensuring keys don't contain operators
+    // V-004 FIX: Block all $ prefixed keys at ANY level to prevent operator injection
     if (key.startsWith('$')) {
-      continue; // Skip operator keys unless explicitly allowed
+      console.warn(`Blocked potential NoSQL injection key: ${key}`);
+      continue;
     }
 
     if (typeof value === 'string') {
       sanitized[key] = sanitizeString(value);
     } else if (typeof value === 'number') {
-      // Prevent NaN and Infinity
       if (isFinite(value)) {
         sanitized[key] = value;
       }
     } else if (value instanceof Date) {
       sanitized[key] = value;
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map(item => 
-        typeof item === 'string' ? sanitizeString(item) : item
+      sanitized[key] = value.map(item =>
+        (typeof item === 'object' && item !== null) ? sanitizeMongoQuery(item) :
+          (typeof item === 'string' ? sanitizeString(item) : item)
       );
     } else if (typeof value === 'object' && value !== null) {
       sanitized[key] = sanitizeMongoQuery(value);
@@ -166,4 +168,3 @@ export function sanitizeFilename(filename: string): string {
     .replace(/\.\./g, '_')
     .slice(0, 255);
 }
-

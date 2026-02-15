@@ -7,6 +7,7 @@ import { FallbackImage } from '@/components/ui/FallbackImage';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { BookOpen } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -108,7 +109,7 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                 />
               ) : (
                 <div className="h-full w-full bg-gradient-to-br from-teal-500 via-emerald-500 to-teal-600 flex items-center justify-center">
-                  <div className="text-white text-6xl">📚</div>
+                  <BookOpen className="h-14 w-14 text-white" />
                 </div>
               )}
 
@@ -241,8 +242,8 @@ export function CourseSlider({ courses }: CourseSliderProps) {
                   unoptimized={course.thumbnail.startsWith('/uploads')}
                 />
               ) : (
-                <div className="h-full w-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-xl">
-                  📚
+                <div className="h-full w-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center">
+                  <BookOpen className="h-6 w-6 text-white" />
                 </div>
               )}
               {index === currentIndex && (

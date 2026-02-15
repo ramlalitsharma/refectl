@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const { messages, context } = await req.json();
 
-    const systemPrompt = `You are a helpful AI Learning Tutor for the AdaptiQ LMS platform. 
+    const systemPrompt = `You are a helpful AI Learning Tutor for the Refectl LMS platform. 
 Your goal is to assist students with their lessons. 
 Current Lesson Context: ${context || 'General learning session'}
 

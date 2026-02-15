@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { AlertTriangle, BookOpen, CheckCircle2, Lightbulb, WifiOff, Zap } from 'lucide-react';
 
 export default function OfflinePage() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
@@ -39,8 +40,8 @@ export default function OfflinePage() {
       <header className="border-b border-white/20 bg-teal-700/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🧠</span>
-            <span className="text-lg font-semibold">AdaptIQ</span>
+            <Zap className="h-5 w-5" />
+            <span className="text-lg font-semibold">Refectl</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="border-white text-white hover:bg-white/10" onClick={handleRetry}>
@@ -57,7 +58,9 @@ export default function OfflinePage() {
 
       <main className="container mx-auto px-4 py-12 space-y-8">
         <section className="rounded-2xl bg-white/10 backdrop-blur border border-white/20 p-8 text-center shadow-xl">
-          <div className="text-5xl mb-4">📡</div>
+          <div className="flex justify-center mb-4">
+            <WifiOff className="h-12 w-12 text-white/90" />
+          </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-3">You&apos;re Offline</h1>
           <p className="text-white/90 max-w-2xl mx-auto">
             It looks like you&apos;ve lost your internet connection. Please check your network and try again.
@@ -75,11 +78,11 @@ export default function OfflinePage() {
           <div className="mt-4 text-sm">
             {isOnline ? (
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100/80 px-3 py-1 text-emerald-700">
-                <span>✅</span> Back online
+                <CheckCircle2 className="h-4 w-4" /> Back online
               </span>
             ) : (
               <span className="inline-flex items-center gap-2 rounded-full bg-red-100/80 px-3 py-1 text-red-700">
-                <span>⚠️</span> Still offline
+                <AlertTriangle className="h-4 w-4" /> Still offline
               </span>
             )}
           </div>
@@ -89,7 +92,7 @@ export default function OfflinePage() {
           <Card className="bg-white/95 border-none shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-teal-800">
-                <span className="text-2xl">💡</span>
+                <Lightbulb className="h-5 w-5" />
                 Quick Tips
               </CardTitle>
             </CardHeader>
@@ -106,7 +109,7 @@ export default function OfflinePage() {
           <Card className="bg-white/95 border-none shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-teal-800">
-                <span className="text-2xl">📚</span>
+                <BookOpen className="h-5 w-5" />
                 Explore Offline-Friendly Areas
               </CardTitle>
             </CardHeader>
@@ -124,7 +127,7 @@ export default function OfflinePage() {
 
         <section className="rounded-2xl bg-white/10 backdrop-blur border border-white/20 p-6 shadow-xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="text-white/90 text-sm">AdaptIQ is the AI-native learning platform delivering adaptive learning paths, certification workflows, and real‑time analytics.</div>
+            <div className="text-white/90 text-sm">Refectl is the AI-native learning platform delivering adaptive learning paths, certification workflows, and real‑time analytics.</div>
             <div className="flex gap-2">
               <a href="https://www.linkedin.com" className="text-white/90 hover:text-white">LinkedIn</a>
               <a href="https://twitter.com" className="text-white/90 hover:text-white">Twitter</a>

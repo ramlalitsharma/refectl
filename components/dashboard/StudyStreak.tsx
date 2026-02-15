@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { AlertTriangle, Flame, Sparkles } from 'lucide-react';
 
 interface StudyStreakProps {
     currentStreak?: number;
@@ -102,7 +103,9 @@ export function StudyStreak(props: StudyStreakProps = {}) {
         return (
             <div className="glass-card-premium rounded-[2.5rem] p-8 border border-red-500/20 bg-red-500/5 h-full">
                 <div className="text-center space-y-4">
-                    <div className="text-4xl">⚠️</div>
+                    <div className="flex justify-center">
+                        <AlertTriangle className="h-9 w-9 text-red-500" />
+                    </div>
                     <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Telemetry Sync Failed</div>
                     <div className="text-[9px] text-slate-500 font-bold uppercase">{error}</div>
                 </div>
@@ -146,7 +149,9 @@ export function StudyStreak(props: StudyStreakProps = {}) {
                         transition={{ duration: 2, repeat: Infinity }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-elite-accent-cyan/10 to-transparent opacity-50" />
-                        <span className="relative z-10">🔥</span>
+                        <span className="relative z-10">
+                            <Flame className="h-8 w-8 text-elite-accent-cyan" />
+                        </span>
                     </motion.div>
 
                     <div className="space-y-1">
@@ -180,7 +185,7 @@ export function StudyStreak(props: StudyStreakProps = {}) {
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                         >
-                            <span>💠</span>
+                            <Sparkles className="h-4 w-4" />
                             <span>Aesthetic Record Set</span>
                         </motion.div>
                     )}

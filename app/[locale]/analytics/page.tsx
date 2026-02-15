@@ -6,6 +6,7 @@ import { SiteBrand } from '@/components/layout/SiteBrand';
 import { StatCard } from '@/components/ui/StatCard';
 import { Progress } from '@/components/ui/Progress';
 import Link from 'next/link';
+import { BookOpen, ChartColumn, TrendingUp } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,9 +69,9 @@ export default async function AnalyticsPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Insights</h1>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <StatCard title="Total Quizzes" value={stats.cohorts.reduce((n: number, c: any) => n + c.count, 0)} subtitle="Completed" icon={<span>📊</span>} color="blue" />
-          <StatCard title="Avg Score" value={`${Math.round(stats.cohorts.reduce((s: number, c: any) => s + c.avgScore, 0) / (stats.cohorts.length || 1))}%`} subtitle="Overall" icon={<span>📈</span>} color="green" />
-          <StatCard title="Subjects" value={stats.mastery.length} subtitle="Tracked" icon={<span>📚</span>} color="purple" />
+          <StatCard title="Total Quizzes" value={stats.cohorts.reduce((n: number, c: any) => n + c.count, 0)} subtitle="Completed" icon={<ChartColumn className="h-8 w-8" />} color="blue" />
+          <StatCard title="Avg Score" value={`${Math.round(stats.cohorts.reduce((s: number, c: any) => s + c.avgScore, 0) / (stats.cohorts.length || 1))}%`} subtitle="Overall" icon={<TrendingUp className="h-8 w-8" />} color="green" />
+          <StatCard title="Subjects" value={stats.mastery.length} subtitle="Tracked" icon={<BookOpen className="h-8 w-8" />} color="purple" />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 mb-8">

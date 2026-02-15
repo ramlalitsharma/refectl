@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -9,6 +10,8 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { CategoryNavigation } from '@/components/layout/CategoryNavigation';
 import { getLatestKeywords } from '@/lib/seo';
 import { getDatabase } from '@/lib/mongodb';
+import type { ReactNode } from 'react';
+import { BookOpen, Briefcase, ChartColumn, FileText, Globe2, GraduationCap, HeartPulse, MessageCircle, Scale, Target, Zap } from 'lucide-react';
 
 const exams = [
   {
@@ -110,6 +113,20 @@ const exams = [
   { id: 'mecce', name: 'MECEE', fullName: 'Medical Education Commission - Entrance Exam', description: 'Medical entrance (Nepal)', duration: 'Varies', scoring: 'Percentile', sections: 1, icon: '🇳🇵' },
 ];
 
+const renderExamIcon = (icon: string, className = 'h-10 w-10') => {
+  const map: Record<string, ReactNode> = {
+    '🎓': <GraduationCap className={className} />,
+    '📝': <FileText className={className} />,
+    '🎯': <Target className={className} />,
+    '💼': <Briefcase className={className} />,
+    '🌍': <Globe2 className={className} />,
+    '🗣️': <MessageCircle className={className} />,
+    '⚕️': <HeartPulse className={className} />,
+    '⚖️': <Scale className={className} />,
+  };
+  return map[icon] ?? <span className="text-4xl">{icon}</span>;
+};
+
 export default async function ExamsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { userId } = await auth();
   const params = await searchParams;
@@ -195,7 +212,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
           <CardContent className="p-10">
             <div className="space-y-5">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-sm font-semibold uppercase tracking-wide">
-                <span>📝</span> Exam Preparation
+                <FileText className="h-4 w-4" /> Exam Preparation
               </span>
               <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
                 {selectedCategory ? `${selectedCategory} Exams` : 'Prepare for Your Exams'}
@@ -245,7 +262,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
               <Card className="h-full hover:shadow-lg transition-all border-none shadow-md">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-3">
-                    <div className="text-5xl">{exam.icon}</div>
+                    <div className="text-5xl">{renderExamIcon(exam.icon)}</div>
                     <Badge variant="warning" size="sm">Test Prep</Badge>
                   </div>
                   <CardTitle className="text-xl">{exam.name}</CardTitle>
@@ -274,24 +291,24 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
         </div>
 
         <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
-          <h3 className="text-2xl font-bold mb-4">Why Use AdaptIQ for Exam Prep?</h3>
+          <h3 className="text-2xl font-bold mb-4">Why Use Refectl for Exam Prep?</h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div>
-              <div className="text-3xl mb-2">🎯</div>
+              <div className="mb-2"><Target className="h-7 w-7" /></div>
               <h4 className="font-semibold mb-2">Targeted Practice</h4>
               <p className="text-blue-100 text-sm">
                 Focus on your weak areas with AI-powered recommendations
               </p>
             </div>
             <div>
-              <div className="text-3xl mb-2">📊</div>
+              <div className="mb-2"><ChartColumn className="h-7 w-7" /></div>
               <h4 className="font-semibold mb-2">Score Prediction</h4>
               <p className="text-blue-100 text-sm">
                 Get accurate score predictions using ML models
               </p>
             </div>
             <div>
-              <div className="text-3xl mb-2">⚡</div>
+              <div className="mb-2"><Zap className="h-7 w-7" /></div>
               <h4 className="font-semibold mb-2">Adaptive Learning</h4>
               <p className="text-blue-100 text-sm">
                 Questions adjust to your level for optimal practice
@@ -307,7 +324,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
             <Link href="/blog">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">📖</span>Exam Tips & Tutorials</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" />Exam Tips & Tutorials</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Timing strategies, section primers, and do/don’t lists</p>
@@ -317,7 +334,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
             <Link href="/preparations">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">🎯</span>Guided Preparations</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Target className="h-5 w-5" />Guided Preparations</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Step-by-step tracks with materials and adaptive quizzes</p>
@@ -327,7 +344,7 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
             <Link href="/subjects">
               <Card hover>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><span className="text-2xl">🧩</span>Practice by Subject</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" />Practice by Subject</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 text-sm">Drill topics and chapters aligned to each exam</p>
@@ -341,14 +358,16 @@ export default async function ExamsPage({ searchParams }: { searchParams: Promis
   );
 }
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
   const kws = await getLatestKeywords();
+  const { BRAND_NAME } = await import('@/lib/brand');
   return {
-    title: 'Exam Preparation | ' + (await import('@/lib/brand')).BRAND_NAME,
+    title: `Exam Preparation | ${BRAND_NAME}`,
     description: 'Prepare for SAT, ACT, GRE, GMAT, IELTS and more with AI-adaptive practice and analytics.',
     keywords: kws.length ? kws : undefined,
     alternates: {
-      canonical: (await import('@/lib/brand')).BRAND_URL + '/exams',
+      canonical: `/${locale}/exams`,
     },
   };
 }

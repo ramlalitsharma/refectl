@@ -1,17 +1,49 @@
 "use client";
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { Calendar, Clock, ChevronLeft, Share2, Bookmark, CheckCircle } from 'lucide-react';
-import Link from 'lucide-react'; // Wait, Link should be from next/link
-import { BlogComments } from '@/components/blog/BlogComments';
-
-// Fix Link import
+import { Calendar, Clock, ChevronLeft, CheckCircle } from 'lucide-react';
 import NextLink from 'next/link';
 import { SocialShare } from '@/components/ui/SocialShare';
 import { BRAND_URL } from '@/lib/brand';
+import { BlogComments } from '@/components/blog/BlogComments';
 
-export function BlogPostClient({ post, slug, children }: { post: any, slug: string, children: React.ReactNode }) {
+const MarkdownPreview = dynamic(
+    () => import('@uiw/react-markdown-preview').then((mod) => mod.default),
+    { ssr: false }
+);
+
+export function BlogPostClient({ post, slug, content }: { post: any, slug: string, content: string }) {
+    const [activeId, setActiveId] = React.useState<string>('');
+    const toc = React.useMemo(() => {
+        const matches = content.match(/^##\s+(.*)$/gm) || [];
+        return matches.map(match => {
+            const text = match.slice(3).trim();
+            const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+            return { id, text };
+        });
+    }, [content]);
+
+    // Dynamic Reading Time
+    const readingTime = React.useMemo(() => {
+        const wordsPerMinute = 200;
+        const words = content.split(/\s+/).length;
+        return Math.ceil(words / wordsPerMinute);
+    }, [content]);
+
+    React.useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveId(entry.target.id);
+                }
+            });
+        }, { rootMargin: '-10% 0px -80% 0px' });
+
+        document.querySelectorAll('h2').forEach((h) => observer.observe(h));
+        return () => observer.disconnect();
+    }, [content]);
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
@@ -60,7 +92,7 @@ export function BlogPostClient({ post, slug, children }: { post: any, slug: stri
                             </div>
                             <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 text-white">
                                 <Clock className="w-4 h-4" />
-                                <span>8 min read</span>
+                                <span>{readingTime} min read</span>
                             </div>
                         </div>
 
@@ -81,17 +113,57 @@ export function BlogPostClient({ post, slug, children }: { post: any, slug: stri
                 </div>
             </header>
 
-            <main className="container mx-auto px-4 -mt-10 pb-32">
-                <div className="grid lg:grid-cols-[1fr,minmax(0,100px)] gap-16">
+            <main className="container mx-auto px-4 py-20 relative z-20">
+                <div className="grid lg:grid-cols-[250px,1fr] gap-16">
+                    {/* Sticky Sidebar ToC */}
+                    <aside className="hidden lg:block">
+                        <div className="sticky top-24 space-y-8">
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">
+                                    Table of Contents
+                                </h3>
+                                <nav className="flex flex-col gap-3">
+                                    {toc.map((item) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' })}
+                                            className={`text-sm font-bold text-left transition-all duration-300 border-l-2 pl-4 py-1 hover:text-white ${activeId === item.id ? 'border-indigo-500 text-white translate-x-1' : 'border-slate-800 text-slate-500 hover:border-slate-700'}`}
+                                        >
+                                            {item.text}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
+
+                            <div className="pt-8 border-t border-slate-800 space-y-6">
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
+                                        Share Insight
+                                    </h3>
+                                    <SocialShare
+                                        url={`${BRAND_URL}/blog/${slug}`}
+                                        title={post.title}
+                                        contentType="blog"
+                                        contentId={slug}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.8 }}
-                        className="max-w-3xl mx-auto w-full"
+                        className="max-w-4xl w-full"
                     >
-                        <article className="prose prose-invert prose-indigo lg:prose-xl max-w-none">
-                            {children}
-                        </article>
+                        <div className="prose prose-invert prose-indigo prose-lg md:prose-xl max-w-none remark-markdown bg-transparent">
+                            <MarkdownPreview
+                                source={content}
+                                wrapperElement={{ "data-color-mode": "dark" }}
+                                style={{ backgroundColor: 'transparent', fontSize: 'inherit', color: 'inherit' }}
+                            />
+                        </div>
 
                         <div className="mt-20 pt-12 border-t border-slate-800 flex flex-col md:flex-row items-center gap-8 bg-slate-900/40 p-10 rounded-[2.5rem] border border-slate-800">
                             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">

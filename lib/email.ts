@@ -16,7 +16,7 @@ export async function sendEmail(payload: EmailPayload) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'AdaptIQ <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL || 'Refectl <onboarding@resend.dev>',
         to: payload.to,
         subject: payload.subject,
         html: payload.html,
@@ -33,12 +33,13 @@ export async function sendEmail(payload: EmailPayload) {
 }
 
 export function renderCompletionEmail(courseTitle?: string) {
+  const { BRAND_NAME } = require('./brand');
   return `
     <div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6">
       <h2>🎉 Congratulations!</h2>
-      <p>You completed ${courseTitle || 'your course'} on AdaptIQ.</p>
+      <p>You completed ${courseTitle || 'your course'} on ${BRAND_NAME}.</p>
       <p>Keep up the momentum—new lessons and adaptive quizzes await.</p>
-      <p style="margin-top:24px;color:#6b7280;font-size:12px">© AdaptIQ</p>
+      <p style="margin-top:24px;color:#6b7280;font-size:12px">© ${BRAND_NAME}</p>
     </div>
   `;
 }

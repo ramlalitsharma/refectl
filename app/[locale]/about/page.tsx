@@ -4,19 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-    title: `About Us | ${BRAND_NAME}`,
-    description: `Learn about ${BRAND_NAME}, our mission to revolutionize adaptive learning with AI-powered education, and the team behind the platform.`,
-    alternates: {
-        canonical: `${BRAND_URL}/about`,
-    },
-    openGraph: {
-        title: `About ${BRAND_NAME} - AI-Powered Adaptive Learning`,
-        description: `Discover how ${BRAND_NAME} is transforming education with AI-orchestrated adaptive quizzes and personalized learning paths.`,
-        url: `${BRAND_URL}/about`,
-        type: "website",
-    },
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+    const { locale } = await params;
+    return {
+        title: `About Us | ${BRAND_NAME}`,
+        description: `Learn about ${BRAND_NAME}, our mission to revolutionize adaptive learning with AI-powered education, and the team behind the platform.`,
+        alternates: {
+            canonical: `/${locale}/about`,
+        },
+        openGraph: {
+            title: `About ${BRAND_NAME} - AI-Powered Adaptive Learning`,
+            description: `Discover how ${BRAND_NAME} is transforming education with AI-orchestrated adaptive quizzes and personalized learning paths.`,
+            url: `/${locale}/about`,
+            type: "website",
+        },
+    };
+}
 
 export default function AboutPage() {
     return (

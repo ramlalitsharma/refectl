@@ -35,7 +35,7 @@ export default async function LeaderboardPage() {
             <p className="text-sm uppercase tracking-wide text-teal-700">Performance Rankings</p>
             <h1 className="text-3xl font-semibold text-slate-900">Global Leaderboard</h1>
             <p className="text-slate-600 max-w-2xl">
-              Track top performers across AdaptIQ. Rankings update in real-time as learners complete quizzes and earn mastery streaks.
+              Track top performers across Refectl. Rankings update in real-time as learners complete quizzes and earn mastery streaks.
             </p>
           </div>
           <Button asChild variant="outline" size="sm" className="self-start md:self-auto px-6">
@@ -58,13 +58,12 @@ export default async function LeaderboardPage() {
                 {entries.map((entry) => (
                   <div
                     key={entry.rank}
-                    className={`flex flex-col gap-4 rounded-2xl border p-4 transition-all md:flex-row md:items-center md:justify-between ${
-                      entry.rank === 1
+                    className={`flex flex-col gap-4 rounded-2xl border p-4 transition-all md:flex-row md:items-center md:justify-between ${entry.rank === 1
                         ? 'border-amber-200 bg-gradient-to-r from-amber-50 via-white to-emerald-50 shadow-lg'
                         : entry.rank <= 3
-                        ? 'border-blue-200 bg-gradient-to-r from-blue-50 via-white to-purple-50'
-                        : 'border-slate-200 bg-white'
-                    }`}
+                          ? 'border-blue-200 bg-gradient-to-r from-blue-50 via-white to-purple-50'
+                          : 'border-slate-200 bg-white'
+                      }`}
                   >
                     <div className="flex items-start gap-4">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl shadow-inner">

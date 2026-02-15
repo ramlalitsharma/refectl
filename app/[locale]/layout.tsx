@@ -49,85 +49,90 @@ const lora = Lora({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
-    template: `%s | ${BRAND_NAME}`,
-  },
-  description: `Transform your learning with AI-orchestrated adaptive quizzes that evolve in real-time. Get personalized learning paths, predict knowledge gaps with 95% accuracy, and master any subject faster with ${BRAND_NAME}.`,
-  keywords: [
-    "adaptive learning",
-    "AI quizzes",
-    "online education",
-    "learning platform",
-    "adaptive testing",
-    "personalized learning",
-    "quiz generator",
-    "education technology",
-  ],
-  authors: [{ name: BRAND_NAME }],
-  creator: BRAND_NAME,
-  publisher: BRAND_NAME,
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL(BRAND_URL),
-  alternates: {
-    canonical: "/",
-    languages: Object.fromEntries(
-      locales.map((l) => [l, `/${l}`])
-    ),
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: BRAND_URL,
-    title: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
-    description:
-      "Transform your learning with AI-orchestrated adaptive quizzes, real-time performance tracking, and personalized learning paths.",
-    siteName: BRAND_NAME,
-    images: [
-      {
-        url: BRAND_OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: `${BRAND_NAME} - Adaptive Learning Platform`,
-      },
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const baseUrl = BRAND_URL;
+
+  return {
+    title: {
+      default: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
+      template: `%s | ${BRAND_NAME}`,
+    },
+    description: `Transform your learning with AI-orchestrated adaptive quizzes that evolve in real-time. Get personalized learning paths, predict knowledge gaps with 95% accuracy, and master any subject faster with ${BRAND_NAME}.`,
+    keywords: [
+      "adaptive learning",
+      "AI quizzes",
+      "online education",
+      "learning platform",
+      "adaptive testing",
+      "personalized learning",
+      "quiz generator",
+      "education technology",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
-    description:
-      "Transform your learning with AI-orchestrated adaptive quizzes and personalized learning paths.",
-    images: [BRAND_OG_IMAGE],
-    creator: BRAND_TWITTER,
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    authors: [{ name: BRAND_NAME }],
+    creator: BRAND_NAME,
+    publisher: BRAND_NAME,
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: Object.fromEntries(
+        locales.map((l) => [l, `/${l}`])
+      ),
+    },
+    openGraph: {
+      type: "website",
+      locale: locale === 'en' ? 'en_US' : locale,
+      url: `${baseUrl}/${locale}`,
+      title: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
+      description:
+        "Transform your learning with AI-orchestrated adaptive quizzes, real-time performance tracking, and personalized learning paths.",
+      siteName: BRAND_NAME,
+      images: [
+        {
+          url: BRAND_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: `${BRAND_NAME} - Adaptive Learning Platform`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${BRAND_NAME} - AI-Powered Adaptive Learning Platform`,
+      description:
+        "Transform your learning with AI-orchestrated adaptive quizzes and personalized learning paths.",
+      images: [BRAND_OG_IMAGE],
+      creator: BRAND_TWITTER,
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  verification: {
-    google: process.env.GOOGLE_VERIFICATION,
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: BRAND_OG_IMAGE, type: "image/svg+xml" },
-    ],
-    shortcut: ["/favicon.svg"],
-    apple: [{ url: BRAND_OG_IMAGE }],
-  },
-};
+    verification: {
+      google: process.env.GOOGLE_VERIFICATION,
+    },
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+        { url: BRAND_OG_IMAGE, type: "image/svg+xml" },
+      ],
+      shortcut: ["/favicon.svg"],
+      apple: [{ url: BRAND_OG_IMAGE }],
+    },
+  };
+}
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -161,11 +166,27 @@ export default async function RootLayout({
     console.error("Clerk auth detection error in RootLayout:", err);
   }
   const isPro = user?.publicMetadata?.isPro === true;
+  const enableProdAnalytics = process.env.NODE_ENV === "production" && isAnalyticsConfigured();
 
   return (
     <ClerkProvider>
       <html lang={locale} suppressHydrationWarning>
         <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function () {
+                  try {
+                    var stored = localStorage.getItem('theme');
+                    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var isDark = stored === 'dark' || (!stored && systemDark);
+                    document.documentElement.classList.toggle('dark', isDark);
+                    document.documentElement.classList.toggle('light', !isDark);
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
           <meta
             name="google-adsense-account"
             content="ca-pub-8149507764464883"
@@ -176,13 +197,35 @@ export default async function RootLayout({
           />
           <link rel="preconnect" href="https://api.openai.com" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="preconnect" href="https://img.clerk.com" />
           <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
           <meta
             httpEquiv="Content-Security-Policy"
             content="upgrade-insecure-requests"
           />
+          {process.env.NODE_ENV !== "production" && (
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (function () {
+                    try {
+                      if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.getRegistrations().then(function (regs) {
+                          regs.forEach(function (r) { r.unregister(); });
+                        });
+                      }
+                      if (window.caches && caches.keys) {
+                        caches.keys().then(function (keys) {
+                          keys.forEach(function (k) { caches.delete(k); });
+                        });
+                      }
+                    } catch (e) {}
+                  })();
+                `,
+              }}
+            />
+          )}
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -206,21 +249,25 @@ export default async function RootLayout({
               }),
             }}
           />
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
-            `}
-          </Script>
+          {enableProdAnalytics && (
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">
+                {`
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+                `}
+              </Script>
+            </>
+          )}
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} antialiased bg-slate-50 dark:bg-elite-bg text-slate-900 dark:text-slate-100 transition-colors duration-300 selection:bg-elite-accent-cyan/30 custom-scrollbar`}
+          className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} antialiased bg-background text-foreground transition-colors duration-300 selection:bg-elite-accent-cyan/30 custom-scrollbar`}
         >
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ErrorBoundary>
@@ -231,11 +278,7 @@ export default async function RootLayout({
                     <Suspense>
                       <Navbar />
                     </Suspense>
-                    <main className="flex-1">
-                      <Suspense>
-                        {children}
-                      </Suspense>
-                    </main>
+                    <main className="flex-1">{children}</main>
                     <Footer />
                   </div>
                   <CookieConsent />
@@ -245,8 +288,12 @@ export default async function RootLayout({
             </ErrorBoundary>
           </NextIntlClientProvider>
           <PostHogProvider>
-            <Analytics />
-            <SpeedInsights />
+            {process.env.NODE_ENV === "production" && (
+              <>
+                <Analytics />
+                <SpeedInsights />
+              </>
+            )}
           </PostHogProvider>
           {!isPro && <AdSenseScript />}
         </body>

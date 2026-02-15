@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AlertTriangle, BookOpen } from 'lucide-react';
 
 interface StudyTimeData {
     chartData: Array<{
@@ -75,7 +76,9 @@ export function StudyTimeChart({ days = 14 }: StudyTimeChartProps = {}) {
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Flow Telemetry Error</div>
             </div>
         );
@@ -84,7 +87,9 @@ export function StudyTimeChart({ days = 14 }: StudyTimeChartProps = {}) {
     if (!data || data.chartData.length === 0) {
         return (
             <div className="p-12 text-center bg-white/5 border border-white/5 rounded-[2rem]">
-                <div className="text-4xl mb-4">📚</div>
+                <div className="flex justify-center mb-4">
+                    <BookOpen className="h-9 w-9 text-slate-400" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">No Temporal Data</div>
             </div>
         );

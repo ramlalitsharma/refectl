@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -54,7 +55,7 @@ export default async function SubjectDetailPage({ params }: SubjectPageProps) {
       await db.collection('subjects').updateOne({ slug }, { $setOnInsert: newDoc }, { upsert: true });
       // Read back with _id guaranteed
       subject = await db.collection('subjects').findOne({ slug });
-    } catch {}
+    } catch { }
     if (!subject) subject = newDoc as any;
   }
 
@@ -64,7 +65,7 @@ export default async function SubjectDetailPage({ params }: SubjectPageProps) {
     const findId = subject._id ? String(subject._id) : subject.slug;
     const topicsRes = await fetch(`${baseUrl}/api/syllabus?subjectId=${findId}`, { cache: 'no-store' });
     topics = topicsRes.ok ? await topicsRes.json() : [];
-  } catch {}
+  } catch { }
 
   // If no topics exist yet, try to generate a sensible syllabus (AI if available; fallback to defaults), then persist
   if (!topics.length) {
@@ -88,22 +89,22 @@ export default async function SubjectDetailPage({ params }: SubjectPageProps) {
     }
     if (!generated) {
       generated = {
-        Basic: ['Introduction','Core Concepts','Key Terms','Fundamentals Practice','Quick Review'],
-        Intermediate: ['Applied Concepts','Problem Solving','Case Studies','Mixed Practice','Checkpoint'],
-        Advanced: ['Advanced Topics','Edge Cases','Projects','Mock Test','Final Review'],
+        Basic: ['Introduction', 'Core Concepts', 'Key Terms', 'Fundamentals Practice', 'Quick Review'],
+        Intermediate: ['Applied Concepts', 'Problem Solving', 'Case Studies', 'Mixed Practice', 'Checkpoint'],
+        Advanced: ['Advanced Topics', 'Edge Cases', 'Projects', 'Mock Test', 'Final Review'],
       } as any;
     }
     const toInsert: any[] = [];
-    const levelMap: Record<string,string> = { Basic: 'basic', Intermediate: 'intermediate', Advanced: 'advanced' };
+    const levelMap: Record<string, string> = { Basic: 'basic', Intermediate: 'intermediate', Advanced: 'advanced' };
     const generatedTopics = generated as Record<string, string[]>;
     Object.entries(generatedTopics).forEach(([lvlName, arr]) => {
       const levelId = levelMap[lvlName] || lvlName.toLowerCase();
       (arr as string[]).forEach((title, idx) => {
-        toInsert.push({ subjectId: subject._id ? String(subject._id) : subject.slug, levelId, name: title, slug: title.toLowerCase().replace(/[^a-z0-9]+/g,'-'), order: idx+1, createdAt: new Date(), updatedAt: new Date() });
+        toInsert.push({ subjectId: subject._id ? String(subject._id) : subject.slug, levelId, name: title, slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'), order: idx + 1, createdAt: new Date(), updatedAt: new Date() });
       });
     });
     if (toInsert.length) {
-      try { await topicsCol.insertMany(toInsert); } catch {}
+      try { await topicsCol.insertMany(toInsert); } catch { }
       topics = toInsert;
     }
   }
@@ -142,31 +143,39 @@ export default async function SubjectDetailPage({ params }: SubjectPageProps) {
         <SubjectHeader name={subject.name} description={subject.description} chaptersCount={topics.length} />
         <Tabs
           tabs={[
-            { id: 'overview', label: 'Overview', content: (
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="p-4 border rounded-xl bg-white">
-                  <h3 className="font-semibold mb-2">Syllabus Summary</h3>
-                  <p className="text-sm text-gray-600">Explore levels and chapters from the sidebar. Your mastery updates as you practice.</p>
+            {
+              id: 'overview', label: 'Overview', content: (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="p-4 border rounded-xl bg-white">
+                    <h3 className="font-semibold mb-2">Syllabus Summary</h3>
+                    <p className="text-sm text-gray-600">Explore levels and chapters from the sidebar. Your mastery updates as you practice.</p>
+                  </div>
+                  <div className="p-4 border rounded-xl bg-white">
+                    <h3 className="font-semibold mb-2">Recommendations</h3>
+                    <p className="text-sm text-gray-600">Use Daily Set or Weak Areas in the Practice tab for targeted improvement.</p>
+                  </div>
                 </div>
-                <div className="p-4 border rounded-xl bg-white">
-                  <h3 className="font-semibold mb-2">Recommendations</h3>
-                  <p className="text-sm text-gray-600">Use Daily Set or Weak Areas in the Practice tab for targeted improvement.</p>
+              )
+            },
+            {
+              id: 'practice', label: 'Practice', content: (
+                <div className="grid lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-3">
+                    <SubjectPractice subjectName={subject.name} levels={subject.levels || []} topicsByLevel={topicsByLevel} />
+                  </div>
                 </div>
-              </div>
-            ) },
-            { id: 'practice', label: 'Practice', content: (
-              <div className="grid lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-3">
-                  <SubjectPractice subjectName={subject.name} levels={subject.levels || []} topicsByLevel={topicsByLevel} />
-                </div>
-              </div>
-            ) },
-            { id: 'resources', label: 'Resources', content: (
-              <Resources subjectName={subject.name} />
-            ) },
-            { id: 'analytics', label: 'Analytics', content: (
-              <SubjectAnalytics subjectName={subject.name} />
-            ) },
+              )
+            },
+            {
+              id: 'resources', label: 'Resources', content: (
+                <Resources subjectName={subject.name} />
+              )
+            },
+            {
+              id: 'analytics', label: 'Analytics', content: (
+                <SubjectAnalytics subjectName={subject.name} />
+              )
+            },
           ]}
         />
       </main>
@@ -174,7 +183,7 @@ export default async function SubjectDetailPage({ params }: SubjectPageProps) {
   );
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ subjectId: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ subjectId: string }> }): Promise<Metadata> {
   const { subjectId } = await params;
   let name = 'Subject';
   try {
@@ -190,7 +199,7 @@ export async function generateMetadata({ params }: { params: Promise<{ subjectId
   }
   const kws = await getLatestKeywords().catch(() => []);
   return {
-    title: `${name} | AdaptIQ`,
+    title: `${name} | Refectl`,
     description: `Learn ${name} with AI-adaptive quizzes. Choose level and chapters to master topics.`,
     keywords: kws.length ? kws : undefined,
   };

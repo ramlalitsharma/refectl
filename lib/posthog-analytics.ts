@@ -36,7 +36,6 @@ export function initializePostHog(
   },
 ) {
   if (!apiKey) {
-    console.warn("PostHog API key not configured");
     return null;
   }
 
@@ -84,10 +83,7 @@ export function trackEvent(
   properties?: Record<string, any>,
 ) {
   const ph = getPostHog();
-  if (!ph) {
-    console.warn("PostHog not initialized");
-    return;
-  }
+  if (!ph) return;
 
   ph.capture(eventName, {
     ...properties,

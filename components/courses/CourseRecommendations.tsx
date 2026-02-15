@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 // Button retained if used elsewhere
 import { FadeIn, ScaleOnHover } from '@/components/ui/Motion';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { BookOpen } from 'lucide-react';
 
 type RecCourse = {
   _id: string;
@@ -77,7 +78,7 @@ export function CourseRecommendations() {
                 <Link href={`/courses/${course.slug}`}>
                   <div className="p-4 border rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                     <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-4xl text-white opacity-90">📚</span>
+                      <BookOpen className="h-10 w-10 text-white opacity-90" />
                     </div>
                     <div className="font-medium text-slate-900 dark:text-white line-clamp-2 mb-1">
                       {course.title}

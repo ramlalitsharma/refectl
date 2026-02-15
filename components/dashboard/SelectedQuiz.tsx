@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AdaptiveQuiz } from '@/components/quiz/AdaptiveQuiz';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { Target } from 'lucide-react';
 
 export function SelectedQuiz() {
   const [selection] = useState<{ subjectName?: string } | null>(() => {
@@ -18,7 +19,9 @@ export function SelectedQuiz() {
   if (!selection?.subjectName) {
     return (
       <div className="glass-card-premium rounded-[2.5rem] p-12 text-center border border-white/5">
-        <div className="text-4xl mb-6 grayscale opacity-40">🎯</div>
+        <div className="flex justify-center mb-6">
+          <Target className="h-10 w-10 text-slate-400" />
+        </div>
         <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">Subject Selection Required</h3>
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-8 leading-relaxed max-w-[240px] mx-auto">
           INITIALIZE A SPECIFIC NEURAL PATHWAY TO BEGIN ADAPTIVE EVALUATION

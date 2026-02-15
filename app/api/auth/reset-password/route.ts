@@ -46,12 +46,12 @@ export async function POST(req: NextRequest) {
           <p>Click the link below to reset your password:</p>
           <p><a href="${resetUrl}" style="background:#2563eb;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block">Reset Password</a></p>
           <p style="color:#6b7280;font-size:12px">This link expires in 1 hour.</p>
-          <p style="margin-top:24px;color:#6b7280;font-size:12px">© AdaptIQ</p>
+          <p style="margin-top:24px;color:#6b7280;font-size:12px">© Refectl</p>
         </div>
       `;
 
       try {
-        await sendEmail({ to: email, subject: 'Reset your AdaptIQ password', html });
+        await sendEmail({ to: email, subject: 'Reset your Refectl password', html });
       } catch (e) {
         console.warn('Failed to send reset email:', e);
       }

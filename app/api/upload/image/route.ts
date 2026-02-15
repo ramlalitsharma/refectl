@@ -86,7 +86,19 @@ export async function POST(req: NextRequest) {
     const filePath = join(uploadsDir, safeFilename);
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    let buffer = Buffer.from(bytes);
+
+    // V-003 FIX: Basic SVG Sanitization
+    if (file.type === 'image/svg+xml') {
+      const content = buffer.toString('utf8');
+      const sanitized = content
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove <script> tags
+        .replace(/on\w+\s*=/gi, '') // Remove event handlers (e.g., onload)
+        .replace(/javascript:/gi, ''); // Remove javascript: pseudo-protocol
+
+      buffer = Buffer.from(sanitized, 'utf8');
+    }
+
     await writeFile(filePath, buffer);
 
     // Return public URL

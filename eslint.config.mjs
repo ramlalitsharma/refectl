@@ -17,6 +17,10 @@ const eslintConfig = defineConfig([
     "*.js",
     "netlify/functions/**",
     "temp-LearnToday/**",
+    "generated/**",
+    "generated-prisma/**",
+    "public/sw.js",
+    "public/workbox-*.js",
   ]),
   {
     rules: {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { AlertTriangle, FileText } from 'lucide-react';
 import Hls from 'hls.js';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -239,7 +240,9 @@ export const EnhancedVideoPlayer = forwardRef(({
         return (
           <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
             <div className="text-center text-white">
-              <p className="text-lg mb-2">⚠️</p>
+              <div className="flex justify-center mb-2">
+                <AlertTriangle className="h-6 w-6 text-red-400" />
+              </div>
               <p>{error}</p>
             </div>
           </div>
@@ -356,7 +359,8 @@ export const EnhancedVideoPlayer = forwardRef(({
                   onClick={() => setShowNoteForm(!showNoteForm)}
                   className="text-white hover:bg-white/20 text-xs gap-1.5"
                 >
-                  📝 Note
+                  <FileText className="h-4 w-4" />
+                  <span>Note</span>
                 </Button>
               )}
 
@@ -424,4 +428,3 @@ export const EnhancedVideoPlayer = forwardRef(({
     });
 
 EnhancedVideoPlayer.displayName = 'EnhancedVideoPlayer';
-

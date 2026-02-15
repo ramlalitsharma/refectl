@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { motion } from 'framer-motion';
+import { AlertTriangle, Award, Gem, Medal, Trophy } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface LeaderboardEntry {
     rank: number;
@@ -20,7 +22,7 @@ interface LeaderboardEntry {
 interface TierInfo {
     name: string;
     color: string;
-    icon: string;
+    icon: ReactNode;
     textColor: string;
 }
 
@@ -45,10 +47,10 @@ interface UserRankData {
 }
 
 const getTier = (rank: number): TierInfo => {
-    if (rank === 1) return { name: 'EXECUTIVE', color: 'from-elite-accent-cyan/20 to-elite-accent-cyan/40', icon: '💎', textColor: 'text-elite-accent-cyan' };
-    if (rank <= 10) return { name: 'ELITE', color: 'from-elite-accent-purple/20 to-elite-accent-purple/40', icon: '🥇', textColor: 'text-elite-accent-purple' };
-    if (rank <= 50) return { name: 'PROFICIENT', color: 'from-elite-accent-blue/20 to-elite-accent-blue/40', icon: '🥈', textColor: 'text-elite-accent-blue' };
-    return { name: 'OPERATIVE', color: 'from-slate-500/20 to-slate-500/40', icon: '🥉', textColor: 'text-slate-400' };
+    if (rank === 1) return { name: 'EXECUTIVE', color: 'from-elite-accent-cyan/20 to-elite-accent-cyan/40', icon: <Gem className="h-5 w-5 text-elite-accent-cyan" />, textColor: 'text-elite-accent-cyan' };
+    if (rank <= 10) return { name: 'ELITE', color: 'from-elite-accent-purple/20 to-elite-accent-purple/40', icon: <Trophy className="h-5 w-5 text-elite-accent-purple" />, textColor: 'text-elite-accent-purple' };
+    if (rank <= 50) return { name: 'PROFICIENT', color: 'from-elite-accent-blue/20 to-elite-accent-blue/40', icon: <Medal className="h-5 w-5 text-elite-accent-blue" />, textColor: 'text-elite-accent-blue' };
+    return { name: 'OPERATIVE', color: 'from-slate-500/20 to-slate-500/40', icon: <Award className="h-5 w-5 text-slate-400" />, textColor: 'text-slate-400' };
 };
 
 export function TieredLeaderboard({ entries: propEntries, currentUserRank: propRank }: TieredLeaderboardProps = {}) {
@@ -130,7 +132,9 @@ export function TieredLeaderboard({ entries: propEntries, currentUserRank: propR
     if (error) {
         return (
             <div className="p-12 text-center bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                <div className="text-3xl mb-4">⚠️</div>
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-red-500">Ranking Synchrony Lost</div>
             </div>
         );
@@ -157,8 +161,9 @@ export function TieredLeaderboard({ entries: propEntries, currentUserRank: propR
                         <span className="text-[8px] font-black tracking-widest text-red-500 uppercase">Live Pulse</span>
                     </div>
                 </div>
-                <div className={`text-[10px] font-black uppercase tracking-widest ${currentUserTier.textColor}`}>
-                    {currentUserTier.icon} {currentUserTier.name} GRADE
+                <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${currentUserTier.textColor}`}>
+                    {currentUserTier.icon}
+                    <span>{currentUserTier.name} GRADE</span>
                 </div>
             </div>
 
@@ -181,13 +186,13 @@ export function TieredLeaderboard({ entries: propEntries, currentUserRank: propR
             {/* Tier Legend */}
             <div className="grid grid-cols-4 gap-2 mb-8 p-4 bg-white/5 rounded-2xl border border-white/5">
                 {[
-                    { icon: '💎', label: 'EXEC', color: 'text-elite-accent-cyan' },
-                    { icon: '🥇', label: 'ELITE', color: 'text-elite-accent-purple' },
-                    { icon: '🥈', label: 'PROF', color: 'text-elite-accent-blue' },
-                    { icon: '🥉', label: 'OPER', color: 'text-slate-500' }
+                    { icon: <Gem className="h-5 w-5 text-elite-accent-cyan" />, label: 'EXEC', color: 'text-elite-accent-cyan' },
+                    { icon: <Trophy className="h-5 w-5 text-elite-accent-purple" />, label: 'ELITE', color: 'text-elite-accent-purple' },
+                    { icon: <Medal className="h-5 w-5 text-elite-accent-blue" />, label: 'PROF', color: 'text-elite-accent-blue' },
+                    { icon: <Award className="h-5 w-5 text-slate-500" />, label: 'OPER', color: 'text-slate-500' }
                 ].map((t) => (
                     <div key={t.label} className="text-center">
-                        <div className="text-lg mb-1">{t.icon}</div>
+                        <div className="flex justify-center mb-1">{t.icon}</div>
                         <div className={`text-[8px] font-black uppercase tracking-widest ${t.color}`}>{t.label}</div>
                     </div>
                 ))}

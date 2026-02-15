@@ -3,7 +3,7 @@
  * Defines navigation links and features for each user role
  */
 
-export type UserRole = 'superadmin' | 'admin' | 'teacher' | 'content_writer' | 'student' | 'user';
+export type UserRole = 'superadmin' | 'admin' | 'teacher' | 'content_writer' | 'news_writer' | 'student' | 'user' | 'guest';
 
 export interface NavLink {
   href: string;
@@ -44,9 +44,10 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
           { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
           { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+          { href: '/live', label: 'Live Classes', icon: '🎥' },
         ],
       },
-      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
       { href: '/pricing', label: 'Pricing', icon: '💎' },
       {
         label: 'Updates',
@@ -103,9 +104,10 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
           { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
           { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+          { href: '/live', label: 'Live Classes', icon: '🎥' },
         ],
       },
-      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
       { href: '/pricing', label: 'Pricing', icon: '💎' },
       {
         label: 'Updates',
@@ -162,9 +164,10 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
           { href: '/courses?type=text', label: 'Courses Classes', icon: '📄' },
           { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+          { href: '/live', label: 'Live Classes', icon: '🎥' },
         ],
       },
-      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
       { href: '/pricing', label: 'Pricing', icon: '💎' },
       {
         label: 'Updates',
@@ -240,9 +243,10 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
           { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
           { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+          { href: '/live', label: 'Live Classes', icon: '🎥' },
         ],
       },
-      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
       { href: '/pricing', label: 'Pricing', icon: '💎' },
       {
         label: 'Updates',
@@ -293,9 +297,10 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/courses?type=video', label: 'Video Classes', icon: '🎞️' },
           { href: '/courses?type=text', label: 'Text Classes', icon: '📄' },
           { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+          { href: '/live', label: 'Live Classes', icon: '🎥' },
         ],
       },
-      { href: '/live', label: 'Live Classes', icon: '🎥' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
       { href: '/pricing', label: 'Pricing', icon: '💎' },
       {
         label: 'Updates',
@@ -325,6 +330,54 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       { href: '/subjects', label: 'Subjects', icon: '📚' },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
+    showAdminBadge: false,
+    showViewAs: false,
+  },
+  news_writer: {
+    primaryLinks: [
+      {
+        label: 'Studio',
+        icon: '🎙️',
+        items: [
+          { href: '/admin/studio/news', label: 'News Studio', icon: '📰' },
+          { href: '/admin/studio/blogs', label: 'Blog Studio', icon: '✍️' },
+        ],
+      },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+        ],
+      },
+    ],
+    dashboardLink: { href: '/admin/studio/news', label: 'News Studio' },
+    showAdminBadge: true,
+    showViewAs: false,
+  },
+  guest: {
+    primaryLinks: [
+      {
+        label: 'Courses',
+        icon: '📚',
+        items: [
+          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/ebooks', label: 'Ebooks Library', icon: '📘' },
+        ],
+      },
+      { href: '/pricing', label: 'Join Us', icon: '💎' },
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
+      {
+        label: 'Updates',
+        icon: '🔔',
+        items: [
+          { href: '/blog', label: 'Blog', icon: '✍️' },
+          { href: '/news', label: 'News', icon: '📰' },
+        ],
+      },
+    ],
+    dashboardLink: { href: '/', label: 'Welcome' },
     showAdminBadge: false,
     showViewAs: false,
   },

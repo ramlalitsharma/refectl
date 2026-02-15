@@ -356,3 +356,22 @@ export async function requireContentWriter() {
   }
   return true;
 }
+
+export async function isEventManager(): Promise<boolean> {
+  const role = await getUserRole();
+  return (
+    role === "superadmin" ||
+    role === "admin" ||
+    role === "teacher" ||
+    role === "content_writer" ||
+    (role as any) === "news_writer"
+  );
+}
+
+export async function requireEventManager() {
+  const allowed = await isEventManager();
+  if (!allowed) {
+    throw new Error("Event manager permissions required");
+  }
+  return true;
+}

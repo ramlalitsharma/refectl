@@ -1,16 +1,14 @@
 // Service Worker for PWA offline support
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC_CACHE = `adaptiq-static-${VERSION}`;
 const RUNTIME_CACHE = `adaptiq-runtime-${VERSION}`;
 
 const STATIC_ASSETS = [
   '/',
-  '/offline',
-  '/manifest.json',
+  '/en/offline',
+  '/manifest.webmanifest',
   '/favicon.svg',
   '/adaptiq.svg',
-  '/icon-192.png',
-  '/og-image.png',
 ];
 
 const isSameOrigin = (url) => {
@@ -28,9 +26,9 @@ self.addEventListener('install', (event) => {
       const cache = await caches.open(STATIC_CACHE);
       await cache.addAll(STATIC_ASSETS);
       try {
-        const offlineRes = await fetch('/offline', { cache: 'reload' });
+        const offlineRes = await fetch('/en/offline', { cache: 'reload' });
         if (offlineRes && offlineRes.ok) {
-          await cache.put('/offline', offlineRes.clone());
+          await cache.put('/en/offline', offlineRes.clone());
         }
       } catch {}
     })()
@@ -80,7 +78,7 @@ self.addEventListener('fetch', (event) => {
         } catch {
           const cached = await caches.match(request);
           if (cached) return cached;
-          const offline = await caches.match('/offline');
+          const offline = await caches.match('/en/offline');
           return offline || new Response('Offline', { status: 503 });
         }
       })()

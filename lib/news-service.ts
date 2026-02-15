@@ -2,15 +2,21 @@ import { supabase, supabaseAdmin } from './supabase';
 import { News } from './models/News';
 
 export const NewsService = {
+    isPublishedStatus(status: unknown): boolean {
+        const s = String(status || '').toLowerCase();
+        return s === 'published' || s === 'live' || s === 'active relay';
+    },
+
     /**
      * Get all published news for public view with filtering
      */
     async getPublishedNews(filters?: { country?: string; category?: string }): Promise<News[]> {
         const client = supabaseAdmin || supabase;
+
         let query = client
             .from('news')
             .select('*')
-            .or('status.eq.published,status.eq.Published,status.eq.live');
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay']);
 
         if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
             query = query.eq('country', filters.country);
@@ -20,21 +26,45 @@ export const NewsService = {
             query = query.eq('category', filters.category);
         }
 
+        // Try ordering by published_at first
         const primary = await query.order('published_at', { ascending: false });
         if (primary.error) {
-            throw primary.error;
+            console.warn('NewsService.getPublishedNews primary query failed, trying fallback:', primary.error.message);
         }
-        let data = primary.data || [];
+
+        let data = primary.error ? [] : (primary.data || []);
+
+        // Fallback: If no data found, try broader search without published_at constraint if needed, 
+        // OR simply if the first query missed items due to strict filtering?
+        // Actually, if we found nothing, maybe status casing is still weird.
+        // Let's try to fetch everything and filter in memory as a last resort if primary failed.
         if (!data.length) {
             const fallback = await client
                 .from('news')
                 .select('*')
-                .not('published_at', 'is', null)
-                .order('published_at', { ascending: false });
-            if (!fallback.error) {
-                data = fallback.data || [];
+                .order('created_at', { ascending: false })
+                .limit(50); // Limit to avoid fetching too much
+
+            if (fallback.error) {
+                console.error('NewsService.getPublishedNews fallback query failed:', fallback.error);
+                return [];
+            }
+
+            if (fallback.data) {
+                // Filter in memory for fuzzy match
+                data = fallback.data.filter((n: any) => {
+                    const c = (n.country || '');
+                    const cat = (n.category || '');
+                    const isPub = this.isPublishedStatus(n.status);
+
+                    const matchCountry = !filters?.country || filters.country === 'All' || filters.country === 'Global' || c === filters.country;
+                    const matchCategory = !filters?.category || filters.category === 'All' || cat === filters.category;
+
+                    return isPub && matchCountry && matchCategory;
+                });
             }
         }
+
         return data;
     },
 
@@ -46,7 +76,7 @@ export const NewsService = {
         const res = await client
             .from('news')
             .select('*')
-            .or('status.eq.published,status.eq.Published,status.eq.live')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
             .order('view_count', { ascending: false })
             .limit(limit);
         if (res.error) {
@@ -75,7 +105,7 @@ export const NewsService = {
         const { data, error } = await client
             .from('news')
             .select('*')
-            .eq('status', 'published')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
             .order('published_at', { ascending: false })
             .limit(limit);
 
@@ -116,7 +146,7 @@ export const NewsService = {
             .from('news')
             .select('*')
             .eq('slug', slug)
-            .or('status.eq.published,status.eq.Published,status.eq.live')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
             .limit(1);
         if (!alt.error && (alt.data || []).length) {
             return alt.data![0] as any;
@@ -149,7 +179,7 @@ export const NewsService = {
             .upsert({
                 ...news,
                 updated_at: new Date().toISOString(),
-                published_at: news.status === 'published' ? new Date().toISOString() : null
+                published_at: (news.status || '').toLowerCase() === 'published' ? new Date().toISOString() : null
             })
             .select()
             .single();

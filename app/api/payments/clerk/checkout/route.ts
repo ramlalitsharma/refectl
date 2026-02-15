@@ -61,8 +61,39 @@ export async function POST(req: NextRequest) {
     const db = await getDatabase();
     const client = await clerkClient();
 
-    // Apply coupon if provided
-    let finalAmount = amt;
+    // V-001 FIX: Fetch authoritative price from DB
+    let authoritativePrice = 0;
+    let itemTitle = 'Item';
+
+    if (typ === 'course' && (courseId || courseSlug)) {
+      const { ObjectId } = await import('mongodb');
+      let courseDoc: any = null;
+      if (courseId && ObjectId.isValid(courseId)) {
+        courseDoc = await db.collection('courses').findOne({ _id: new ObjectId(courseId) });
+      }
+      if (!courseDoc && courseSlug) {
+        courseDoc = await db.collection('courses').findOne({ slug: courseSlug });
+      }
+
+      if (!courseDoc) {
+        return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+      }
+
+      authoritativePrice = typeof courseDoc.price === 'number'
+        ? courseDoc.price
+        : (courseDoc.price?.amount || 0);
+      itemTitle = courseDoc.title;
+    } else if (typ === 'bundle' && bundleId) {
+      const bundleDoc = await db.collection('bundles').findOne({ id: bundleId });
+      if (!bundleDoc) {
+        return NextResponse.json({ error: 'Bundle not found' }, { status: 404 });
+      }
+      authoritativePrice = bundleDoc.price || 0;
+      itemTitle = bundleDoc.name;
+    }
+
+    // Apply coupon if provided to the AUTHORITATIVE price
+    let finalAmount = authoritativePrice;
     if (couponCode) {
       const sanitizedCoupon = sanitizeInput(String(couponCode)).toUpperCase();
       const coupon = await db.collection('coupons').findOne({
@@ -76,12 +107,12 @@ export async function POST(req: NextRequest) {
 
       if (coupon) {
         if (coupon.discountType === 'percentage') {
-          finalAmount = finalAmount * (1 - coupon.discountValue / 100);
+          finalAmount = authoritativePrice * (1 - coupon.discountValue / 100);
           if (coupon.maxDiscount) {
-            finalAmount = Math.max(finalAmount, amount - coupon.maxDiscount);
+            finalAmount = Math.max(finalAmount, authoritativePrice - coupon.maxDiscount);
           }
         } else {
-          finalAmount = Math.max(0, finalAmount - coupon.discountValue);
+          finalAmount = Math.max(0, authoritativePrice - coupon.discountValue);
         }
 
         // Increment usage
@@ -120,7 +151,7 @@ export async function POST(req: NextRequest) {
     try {
       const user = await client.users.getUser(userId);
       const purchasedCourses = (user.publicMetadata?.purchasedCourses as any) || {};
-      
+
       await client.users.updateUserMetadata(userId, {
         publicMetadata: {
           ...user.publicMetadata,
@@ -140,7 +171,7 @@ export async function POST(req: NextRequest) {
     // Create enrollment if course purchase
     if (type === 'course' && (courseId || courseSlug)) {
       const courseIdentifier = courseId || courseSlug;
-      
+
       // Check if enrollment already exists
       const existingEnrollment = await db.collection('enrollments').findOne({
         userId,

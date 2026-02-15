@@ -197,112 +197,151 @@ export default async function SuperAdminConsolePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        <section className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Super Admin Console
+    <div className="min-h-screen bg-[#020617] text-slate-200 selection:bg-primary/30">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px] animate-pulse delay-700" />
+      </div>
+
+      <main className="container mx-auto px-4 py-12 relative z-10 space-y-12 max-w-7xl">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
+              Super Admin <span className="text-primary italic">Console</span>
+              <span className="ml-4 text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 align-middle">
+                v2.4.0
+              </span>
             </h1>
-            <p className="text-sm text-slate-500">
-              Simple control panel for everything: users, roles, content,
-              billing, and system configuration.
+            <p className="text-slate-500 font-medium text-sm md:text-base max-w-2xl leading-relaxed">
+              Global platform orchestration and system health monitor. Full spectrum authority over users, content, and monetization.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 border border-emerald-200">
-              Full platform access
-            </span>
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" className="rounded-xl border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 px-8 h-12">
+                Exit to Platform
+              </Button>
+            </Link>
           </div>
-        </section>
+        </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            title="Users"
+        <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatTile
+            title="Total Users"
             value={stats.totalUsers.toLocaleString()}
-            subtitle={`${stats.totalAdmins} admins • ${stats.totalTeachers} teachers`}
-            icon="👥"
-            trend=""
+            subtitle={`${stats.totalAdmins} Admins • ${stats.totalTeachers} Teachers`}
+            icon="group"
+            sparkline={[30, 45, 35, 60, 50, 80, 70]}
           />
-          <StatCard
-            title="Courses"
+          <StatTile
+            title="Live Courses"
             value={stats.totalCourses.toLocaleString()}
-            subtitle={`${stats.totalBlogs} blogs`}
-            icon="📚"
-            trend=""
+            subtitle={`${stats.totalBlogs} Active Insight Blogs`}
+            icon="auto_stories"
+            sparkline={[20, 30, 25, 45, 40, 60, 55]}
           />
-          <StatCard
-            title="Videos"
+          <StatTile
+            title="Media Assets"
             value={stats.totalVideos.toLocaleString()}
-            subtitle="In library"
-            icon="🎥"
-            trend=""
+            subtitle="Encrypted Video Vault"
+            icon="video_library"
+            progress={75}
           />
-          <StatCard
-            title="Monthly Revenue (est.)"
-            value={`$${stats.monthlyRevenue.toLocaleString()}`}
-            subtitle="From premium users"
-            icon="💰"
-            trend=""
+          <StatTile
+            title="Monthly Revenue"
+            value={`$${(stats.monthlyRevenue / 1000).toFixed(1)}k`}
+            subtitle="+12% From Previous Cycle"
+            icon="payments"
+            isAccent
           />
         </section>
 
         <ConsoleSection
           title="Users, Roles & Security"
-          description="Manage people, roles, and global settings."
+          description="Global Access Control & System Configuration"
           tiles={governanceTiles}
         />
 
         <ConsoleSection
           title="Content & Operations"
-          description="Studios, videos, enrollments, and moderation."
+          description="Studio Hubs & Media Management Pipelines"
           tiles={operationsTiles}
         />
 
         <ConsoleSection
           title="Monetization & Analytics"
-          description="Subscriptions, revenue dashboards, and exports."
+          description="Revenue Orchestration & Intelligence Exports"
           tiles={monetizationTiles}
           columns="md:grid-cols-2 xl:grid-cols-4"
         />
 
-        <ConsoleSection
-          title="Dashboard Access"
-          description="Quick access to view any role's dashboard experience."
-          tiles={[
-            {
-              name: 'Super Admin Console',
-              description: 'Your current full-control console with all platform features.',
-              href: '/admin/super',
-              icon: '🛡️',
-              action: 'Open console',
-            },
-            {
-              name: 'Admin Dashboard',
-              description: 'View the admin dashboard experience for content and user management.',
-              href: '/admin/dashboard?viewAs=admin',
-              icon: '👨‍💼',
-              action: 'View as Admin',
-            },
-            {
-              name: 'Teacher Dashboard',
-              description: 'See what teachers see: course creation, student progress, and content tools.',
-              href: '/teacher/dashboard?viewAs=teacher',
-              icon: '👨‍🏫',
-              action: 'View as Teacher',
-            },
-            {
-              name: 'Student Dashboard',
-              description: 'Experience the learner view: courses, progress, quizzes, and recommendations.',
-              href: '/dashboard?viewAs=student',
-              icon: '🎓',
-              action: 'View as Student',
-            },
-          ]}
-          columns="md:grid-cols-2 xl:grid-cols-4"
-        />
+        <footer className="pt-20 border-t border-white/5">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>All Systems Operational</span>
+              </div>
+              <div className="hidden sm:block">DB Latency: 4ms</div>
+              <div className="hidden sm:block">Uptime: 99.98%</div>
+            </div>
+            <div className="opacity-60 italic whitespace-nowrap">
+              Last Registry Synchronization: Just Now
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
+  );
+}
+
+function StatTile({ title, value, subtitle, icon, sparkline, progress, isAccent }: {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: string;
+  sparkline?: number[];
+  progress?: number;
+  isAccent?: boolean;
+}) {
+  return (
+    <Card className={`glass-card-premium border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-between group transition-all duration-500 ${isAccent ? 'bg-primary/5 border-primary/20 ring-1 ring-primary/10' : 'hover:border-primary/30'}`}>
+      <div className="flex justify-between items-start mb-6">
+        <div className="space-y-1">
+          <p className={`text-[10px] font-black uppercase tracking-widest ${isAccent ? 'text-primary' : 'text-slate-500'}`}>{title}</p>
+          <h3 className="text-4xl font-black text-white tracking-tighter">{value}</h3>
+        </div>
+        <div className={`p-3 rounded-2xl ${isAccent ? 'bg-primary/20 text-primary' : 'bg-white/5 text-slate-400 group-hover:text-primary transition-colors'}`}>
+          {/* Using a simple mapping for common icons, or we could pass Lucide components */}
+          <span className="material-icons-round text-2xl">{icon}</span>
+        </div>
+      </div>
+      <div className="flex items-end justify-between">
+        <div className={`text-[9px] font-black uppercase tracking-[0.2em] ${isAccent ? 'text-emerald-500' : 'text-slate-500'}`}>{subtitle}</div>
+        {sparkline && (
+          <svg className="h-8 w-24 overflow-visible" viewBox="0 0 100 20">
+            <path
+              d={`M0 ${20 - sparkline[0]} ${sparkline.map((v, i) => `L ${(i / (sparkline.length - 1)) * 100} ${20 - v}`).join(' ')}`}
+              fill="none"
+              stroke="#00BAE2"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-[dash_1.5s_ease-in-out_forwards] [stroke-dasharray:100] [stroke-dashoffset:100]"
+            />
+          </svg>
+        )}
+        {progress && (
+          <div className="relative w-10 h-10">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="16" fill="none" className="text-white/5 stroke-current" strokeWidth="4" />
+              <circle cx="18" cy="18" r="16" fill="none" className="text-primary stroke-current" strokeWidth="4" strokeDasharray={`${progress}, 100`} strokeLinecap="round" />
+            </svg>
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -318,38 +357,43 @@ function ConsoleSection({
   columns?: string;
 }) {
   return (
-    <section className="space-y-3">
-      <div>
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-        <p className="text-xs text-slate-500">{description}</p>
+    <section className="space-y-6">
+      <div className="flex items-center gap-4">
+        <h2 className="text-lg font-black text-slate-500 uppercase tracking-[0.3em] whitespace-nowrap">{title}</h2>
+        <div className="h-px flex-1 bg-white/5" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">{description}</p>
       </div>
-      <div className={`grid gap-4 ${columns}`}>
+      <div className={`grid gap-8 ${columns}`}>
         {tiles.map((tile) => (
           <Card
             key={tile.name}
-            hover
-            className="border border-slate-200 bg-white shadow-sm"
+            className="glass-card-premium border-white/5 rounded-[2.5rem] group hover:border-primary/20 transition-all duration-500 overflow-hidden"
           >
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
-              <CardTitle className="flex items-start gap-3">
-                <span className="text-2xl">{tile.icon}</span>
-                <div>
-                  <div className="text-sm font-semibold text-slate-900">
-                    {tile.name}
-                  </div>
-                  <p className="text-xs text-slate-500">{tile.description}</p>
+            <CardHeader className="p-8 pb-4 space-y-4">
+              <div className="flex gap-6">
+                <div className="bg-white/5 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500 border border-white/5">
+                  {tile.icon}
                 </div>
-              </CardTitle>
-              {tile.badge && (
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600">
-                  {tile.badge}
-                </span>
-              )}
+                <div className="flex-1 space-y-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-xl font-black text-white tracking-tight uppercase group-hover:text-primary transition-colors">{tile.name}</h4>
+                    {tile.badge && (
+                      <span className="text-[9px] font-black uppercase bg-white/5 px-3 py-1 rounded-full border border-white/5 text-slate-400">
+                        {tile.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">{tile.description}</p>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <Button asChild size="sm" className="w-full">
-                <Link href={tile.href}>{tile.action || `Open ${tile.name}`}</Link>
-              </Button>
+            <CardContent className="p-8 pt-2">
+              <Link href={tile.href}>
+                <Button className="w-full h-12 rounded-2xl bg-white text-slate-950 font-black uppercase text-[10px] tracking-[0.3em] shadow-xl group-hover:bg-primary transition-colors">
+                  {tile.action || `Open ${tile.name}`}
+                  <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ))}

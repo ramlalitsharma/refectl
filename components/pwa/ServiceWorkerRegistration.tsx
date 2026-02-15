@@ -4,31 +4,21 @@ import { useEffect } from 'react';
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered:', registration);
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New service worker available
-                  if (confirm('New version available! Reload to update?')) {
-                    window.location.reload();
-                  }
-                }
-              });
-            }
-          });
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+    if (!('serviceWorker' in navigator)) return;
+
+    // Service workers frequently interfere with Next.js HMR in development.
+    if (process.env.NODE_ENV !== 'production') {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          registration.unregister();
         });
+      });
+      return;
     }
+
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
+      console.error('Service Worker registration failed:', error);
+    });
   }, []);
 
   return null;

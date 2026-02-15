@@ -4,7 +4,7 @@ import { NewsService } from '@/lib/news-service';
 import { CourseServiceNeon } from '@/lib/course-service-neon';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://adaptiq.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.refectl.com';
 
   const { locales } = await import('@/lib/navigation');
 
@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/subjects',
     '/blog',
     '/news',
+    '/shop',
     '/live',
     '/about',
     '/contact',

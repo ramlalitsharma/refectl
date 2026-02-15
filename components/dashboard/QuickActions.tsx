@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { motion } from 'framer-motion';
+import { GraduationCap, Mic, Play, Target, Zap } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface QuickAction {
     label: string;
-    icon: string;
+    icon: ReactNode;
     href: string;
     color: 'cyan' | 'purple' | 'emerald' | 'blue' | 'orange';
     description?: string;
@@ -23,28 +25,28 @@ const colorMap = {
 const defaultActions: QuickAction[] = [
     {
         label: 'Intelligence Feed',
-        icon: '🎙️',
+        icon: <Mic className="h-7 w-7" />,
         href: '/news',
         color: 'cyan',
         description: 'Read the latest updates',
     },
     {
         label: 'Take a Quiz',
-        icon: '🎯',
+        icon: <Target className="h-7 w-7" />,
         href: '/quiz',
         color: 'emerald',
         description: 'Test your knowledge',
     },
     {
         label: 'Skill Paths',
-        icon: '🎓',
+        icon: <GraduationCap className="h-7 w-7" />,
         href: '/courses',
         color: 'purple',
         description: 'Guided learning journeys',
     },
     {
         label: 'Refectl Hub',
-        icon: '⚡',
+        icon: <Zap className="h-7 w-7" />,
         href: '/dashboard',
         color: 'blue',
         description: 'Access all utilities',
@@ -76,7 +78,7 @@ export function QuickActions({ actions = defaultActions, lastCourseSlug }: Quick
                             <div className="glass-card-premium p-6 rounded-3xl border border-white/10 hover:border-elite-accent-cyan/30 transition-all duration-300 cursor-pointer group flex items-center justify-between">
                                 <div className="flex items-center gap-6">
                                     <div className="w-14 h-14 rounded-2xl bg-elite-accent-cyan/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                                        ▶️
+                                        <Play className="h-7 w-7 text-elite-accent-cyan" />
                                     </div>
                                     <div>
                                         <div className="font-black text-white text-lg">Continue Session</div>
