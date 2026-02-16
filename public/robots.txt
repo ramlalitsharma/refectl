@@ -1,0 +1,55 @@
+# Google Search Console robots.txt
+# Allows all search engines to crawl, except disallow for certain admin areas
+
+User-agent: *
+Allow: /
+Allow: /en/
+Allow: /es/
+Allow: /fr/
+Allow: /de/
+Allow: /it/
+Allow: /pt/
+Allow: /ja/
+Allow: /zh/
+Allow: /ru/
+Allow: /ar/
+Allow: /hi/
+
+# Disallow crawling of admin and private areas
+Disallow: /admin/
+Disallow: /api/auth/
+Disallow: /api/private/
+Disallow: /api/users/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /checkout/
+Disallow: /onboarding/
+Disallow: /sign-in/
+Disallow: /sign-up/
+
+# Allow crawling of public APIs for structured data
+Allow: /api/courses/
+Allow: /api/blog/
+Allow: /api/news/
+
+# Crawl delay to prevent server overload
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://www.refectl.com/sitemap.xml
+Sitemap: https://www.refectl.com/en/sitemap.xml
+
+# Google-specific directives
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# AdSense compliance note
+# This site is compliant with Google AdSense policies:
+# - No click fraud or invalid traffic
+# - No deceptive content
+# - Proper ad disclosure
+# - Mobile-responsive design
+# - Privacy policy available
+# - Terms of service available
+# - Quality content verification
