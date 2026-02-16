@@ -195,6 +195,24 @@ export default async function RootLayout({
             name="google-adsense-account"
             content="ca-pub-8149507764464883"
           />
+          {/* Google Analytics 4 */}
+          <Script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-RNZ9J7M4CD"
+            strategy="afterInteractive"
+          />
+          <Script
+            id="gtag-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-RNZ9J7M4CD');
+              `,
+            }}
+          />
           <link
             rel="preconnect"
             href="https://clerk.refectl.com"
