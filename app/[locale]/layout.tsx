@@ -32,8 +32,6 @@ import {
   brandLogoUrl,
 } from "@/lib/brand";
 import { isAnalyticsConfigured } from "@/lib/analytics";
-import { AdSenseScript } from "@/components/ads/AdSenseScript";
-import { GoogleAdsense } from "@/components/ads/GoogleAdsense";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -300,66 +298,11 @@ export default async function RootLayout({
                     <Suspense>
                       <Navbar />
                     </Suspense>
-                    
-                    {/* TOP AD - Horizontal banner right after navbar */}
-                    {!isPro && (
-                      <div className="w-full bg-white/5 py-4 border-b border-white/10">
-                        <div className="flex justify-center">
-                          <GoogleAdsense
-                            adSlot="5087174988"
-                            adFormat="horizontal"
-                            className="w-full max-w-6xl"
-                          />
-                        </div>
-                      </div>
-                    )}
 
-                    {/* MAIN CONTENT WITH SIDEBAR ADS */}
-                    <div className="flex-1 flex gap-8">
-                      {/* LEFT VERTICAL AD - For larger screens */}
-                      <div className="hidden 2xl:block w-64 flex-shrink-0 pt-8">
-                        {!isPro && (
-                          <div className="sticky top-32">
-                            <GoogleAdsense
-                              adSlot="9337411181"
-                              adFormat="vertical"
-                              className="w-full"
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* MAIN CONTENT */}
-                      <main className="flex-1">
-                        {children}
-                        
-                        {/* BOTTOM AD - Horizontal banner */}
-                        {!isPro && (
-                          <div className="mt-16 pt-8 border-t border-white/10">
-                            <div className="flex justify-center py-6">
-                              <GoogleAdsense
-                                adSlot="5087174988"
-                                adFormat="horizontal"
-                                className="w-full max-w-6xl"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </main>
-
-                      {/* RIGHT VERTICAL AD - For larger screens */}
-                      <div className="hidden 2xl:block w-64 flex-shrink-0 pt-8">
-                        {!isPro && (
-                          <div className="sticky top-32">
-                            <GoogleAdsense
-                              adSlot="9337411181"
-                              adFormat="vertical"
-                              className="w-full"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {/* MAIN CONTENT */}
+                    <main className="flex-1">
+                      {children}
+                    </main>
                     <Footer />
                   </div>
                   <CookieConsent />

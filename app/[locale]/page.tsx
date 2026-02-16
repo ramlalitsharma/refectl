@@ -10,8 +10,6 @@ import { CourseSlider } from '@/components/courses/CourseSlider';
 import { FallbackImage } from '@/components/ui/FallbackImage';
 import { CategorySearch } from '@/components/search/CategorySearch';
 import { BentoFeatures } from '@/components/home/BentoFeatures';
-import { ContentAd } from '@/components/ads/ContentAd';
-import { GoogleAdsense } from '@/components/ads/GoogleAdsense';
 import * as motion from 'framer-motion/client';
 import { BRAND_NAME } from '@/lib/brand';
 import { FadeIn } from '@/components/ui/Motion';
@@ -435,25 +433,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* Bento Grid Features */}
       <BentoFeatures />
 
-      {/* AD PLACEMENT 1 - After Features */}
-      <section className="bg-white dark:bg-slate-900 pt-12 pb-6">
-        <div className="container mx-auto px-4">
-          <ContentAd label="Featured Recommendations" />
-        </div>
-      </section>
-
       {/* Modern High-Performance Features: Engineered for Excellence */}
       <EngineeredForExcellence />
 
       {/* Path to Excellence: Steps Section */}
       <PathToExcellence />
-
-      {/* AD PLACEMENT 2 - After Path Section */}
-      <section className="bg-white dark:bg-slate-900 pt-12 pb-6">
-        <div className="container mx-auto px-4">
-          <ContentAd label="Popular Skills & Paths" />
-        </div>
-      </section>
 
       {/* Course Slider - Featured */}
       {latestCourses.length > 0 && (
@@ -667,13 +651,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                       </div>
                     )}
                   </section>
-
-                  {/* AD PLACEMENT - After every 2 category sections */}
-                  {(categoryIdx + 1) % 2 === 0 && categoryIdx < categoryData.length - 1 && (
-                    <div className="py-12">
-                      <ContentAd label={`Explore ${categoryData[categoryIdx + 1]?.displayName || 'More'} Skills`} />
-                    </div>
-                  )}
                 </div>
               );
             })
@@ -681,17 +658,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
         </div>
       </div>
-
-      {/* AD PLACEMENT 3 - Final section before footer */}
-      <section className="bg-white dark:bg-slate-900 pt-12 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Continue Learning</h3>
-            <p className="text-slate-600 dark:text-slate-400">Discover more courses and opportunities</p>
-          </div>
-          <ContentAd label="Featured Learning Opportunities" />
-        </div>
-      </section>
     </div>
   );
 }
