@@ -5,7 +5,6 @@ import { BlogPostClient } from '@/components/blog/BlogPostClient';
 import { BRAND_URL } from '@/lib/brand';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { AdBlockerDetector } from '@/components/ads/AdBlockerDetector';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -54,8 +53,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const serializedPost = JSON.parse(JSON.stringify(post));
 
   return (
-    <AdBlockerDetector>
-      <BlogPostClient post={serializedPost} slug={slug} content={post.markdown || ''} />
-    </AdBlockerDetector>
+    <BlogPostClient post={serializedPost} slug={slug} content={post.markdown || ''} />
   );
 }

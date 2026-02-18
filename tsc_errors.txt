@@ -1,0 +1,311 @@
+.next/dev/types/validator.ts(1098,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/content/badges/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/content/badges/[id]">'.
+  Types of property 'PUT' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; message: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(1125,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/content/quests/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/content/quests/[id]">'.
+  Types of property 'PUT' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; message: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(1260,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/ebooks/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/ebooks/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ id: string; title: string; status: string; audience: string | null; ... 10 more ...; coverImageUrl: string | null; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(1467,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/moderation/history/[userId]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/moderation/history/[userId]">'.
+  Types of property 'GET' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { userId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; data: WithId<Document>[]; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ userId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ userId: string; }>; }' is not assignable to type '{ params: { userId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'userId' is missing in type 'Promise<{ userId: string; }>' but required in type '{ userId: string; }'.
+.next/dev/types/validator.ts(1530,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/news/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/news/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<any>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/dev/types/validator.ts(1656,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/reports/[type]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/reports/[type]">'.
+  Types of property 'GET' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { type: string; }; }) => Promise<NextResponse<unknown>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ type: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ type: string; }>; }' is not assignable to type '{ params: { type: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'type' is missing in type 'Promise<{ type: string; }>' but required in type '{ type: string; }'.
+.next/dev/types/validator.ts(2340,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/live/rooms/[roomId]/start/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/live/rooms/[roomId]/start">'.
+  Types of property 'POST' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { roomId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; roomUrl: string; room: any; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ roomId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ roomId: string; }>; }' is not assignable to type '{ params: { roomId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'roomId' is missing in type 'Promise<{ roomId: string; }>' but required in type '{ roomId: string; }'.
+.next/dev/types/validator.ts(2376,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/live/sessions/[sessionId]/organize/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/live/sessions/[sessionId]/organize">'.
+  Types of property 'POST' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { sessionId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; session: WithId<Document>; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ sessionId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ sessionId: string; }>; }' is not assignable to type '{ params: { sessionId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'sessionId' is missing in type 'Promise<{ sessionId: string; }>' but required in type '{ sessionId: string; }'.
+.next/dev/types/validator.ts(2610,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/public/ebooks/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/public/ebooks/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ ebook: { id: string; title: string; audience: string; tone: string; ... 5 more ...; chapters: { ...; }[]; }; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/app/[locale]/learning-paths/[id]/page.ts(36,29): error TS2344: Type '{ params: { id: string; locale: string; }; }' does not satisfy the constraint 'PageProps'.
+  Types of property 'params' are incompatible.
+    Type '{ id: string; locale: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/content/badges/[id]/route.ts(208,7): error TS2344: Type '{ __tag__: "PUT"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/content/badges/[id]/route.ts(247,7): error TS2344: Type '{ __tag__: "DELETE"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/content/quests/[id]/route.ts(208,7): error TS2344: Type '{ __tag__: "PUT"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/content/quests/[id]/route.ts(247,7): error TS2344: Type '{ __tag__: "DELETE"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/ebooks/[id]/route.ts(52,7): error TS2344: Type '{ __tag__: "GET"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/ebooks/[id]/route.ts(247,7): error TS2344: Type '{ __tag__: "DELETE"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/moderation/history/[userId]/route.ts(52,7): error TS2344: Type '{ __tag__: "GET"; __param_position__: "second"; __param_type__: { params: { userId: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ userId: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/news/[id]/route.ts(52,7): error TS2344: Type '{ __tag__: "GET"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/news/[id]/route.ts(247,7): error TS2344: Type '{ __tag__: "DELETE"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/admin/reports/[type]/route.ts(52,7): error TS2344: Type '{ __tag__: "GET"; __param_position__: "second"; __param_type__: { params: { type: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ type: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/live/rooms/[roomId]/start/route.ts(169,7): error TS2344: Type '{ __tag__: "POST"; __param_position__: "second"; __param_type__: { params: { roomId: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ roomId: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/live/sessions/[sessionId]/organize/route.ts(169,7): error TS2344: Type '{ __tag__: "POST"; __param_position__: "second"; __param_type__: { params: { sessionId: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ sessionId: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/public/ebooks/[id]/route.ts(52,7): error TS2344: Type '{ __tag__: "GET"; __param_position__: "second"; __param_type__: { params: { id: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ id: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/validator.ts(1098,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/content/badges/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/content/badges/[id]">'.
+  Types of property 'PUT' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; message: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(1125,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/content/quests/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/content/quests/[id]">'.
+  Types of property 'PUT' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; message: string; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(1260,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/ebooks/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/ebooks/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ id: string; title: string; status: string; audience: string | null; ... 10 more ...; coverImageUrl: string | null; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(1467,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/moderation/history/[userId]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/moderation/history/[userId]">'.
+  Types of property 'GET' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { userId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; data: WithId<Document>[]; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ userId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ userId: string; }>; }' is not assignable to type '{ params: { userId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'userId' is missing in type 'Promise<{ userId: string; }>' but required in type '{ userId: string; }'.
+.next/types/validator.ts(1530,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/news/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/news/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<any>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(1656,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/admin/reports/[type]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/admin/reports/[type]">'.
+  Types of property 'GET' are incompatible.
+    Type '(request: NextRequest, { params }: { params: { type: string; }; }) => Promise<NextResponse<unknown>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ type: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ type: string; }>; }' is not assignable to type '{ params: { type: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'type' is missing in type 'Promise<{ type: string; }>' but required in type '{ type: string; }'.
+.next/types/validator.ts(2340,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/live/rooms/[roomId]/start/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/live/rooms/[roomId]/start">'.
+  Types of property 'POST' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { roomId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; roomUrl: string; room: any; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ roomId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ roomId: string; }>; }' is not assignable to type '{ params: { roomId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'roomId' is missing in type 'Promise<{ roomId: string; }>' but required in type '{ roomId: string; }'.
+.next/types/validator.ts(2376,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/live/sessions/[sessionId]/organize/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/live/sessions/[sessionId]/organize">'.
+  Types of property 'POST' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { sessionId: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ success: boolean; session: WithId<Document>; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ sessionId: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ sessionId: string; }>; }' is not assignable to type '{ params: { sessionId: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'sessionId' is missing in type 'Promise<{ sessionId: string; }>' but required in type '{ sessionId: string; }'.
+.next/types/validator.ts(2610,31): error TS2344: Type 'typeof import("C:/Users/97798/OneDrive/Documents/lms/app/api/public/ebooks/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/public/ebooks/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(_req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ ebook: { id: string; title: string; audience: string; tone: string; ... 5 more ...; chapters: { ...; }[]; }; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+app/[locale]/admin/courses/page.tsx(18,11): error TS2304: Cannot find name 'requireAdmin'.
+app/[locale]/admin/live-classes/page.tsx(73,27): error TS2322: Type '{ id: string; roomId: any; roomName: any; roomUrl: any; courseId: any; createdBy: any; createdAt: any; status: any; config: any; }[]' is not assignable to type 'LiveRoom[]'.
+  Type '{ id: string; roomId: any; roomName: any; roomUrl: any; courseId: any; createdBy: any; createdAt: any; status: any; config: any; }' is missing the following properties from type 'LiveRoom': contentType, provider
+app/[locale]/admin/news/new/page.tsx(215,64): error TS2339: Property 'banner_image' does not exist on type 'Partial<News>'.
+app/[locale]/admin/studio/news/page.tsx(178,60): error TS2339: Property 'author_id' does not exist on type 'StudioNews'.
+app/[locale]/admin/studio/news/page.tsx(189,31): error TS2339: Property 'author_id' does not exist on type 'StudioNews'.
+app/[locale]/admin/studio/news/page.tsx(213,22): error TS2551: Property 'lastPublished' does not exist on type 'AuthorAnalytics | { authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'. Did you mean 'published'?
+  Property 'lastPublished' does not exist on type '{ authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'.
+app/[locale]/admin/studio/news/page.tsx(213,69): error TS2551: Property 'lastPublished' does not exist on type 'AuthorAnalytics | { authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'. Did you mean 'published'?
+  Property 'lastPublished' does not exist on type '{ authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'.
+app/[locale]/admin/studio/news/page.tsx(214,21): error TS2551: Property 'lastPublished' does not exist on type 'AuthorAnalytics | { authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'. Did you mean 'published'?
+  Property 'lastPublished' does not exist on type '{ authorId: any; authorName: string; total: number; published: number; trending: number; avgQuality: number; activeDays30: number; impactScore: number; }'.
+app/[locale]/blog/[slug]/page.tsx(6,8): error TS2300: Duplicate identifier 'Link'.
+app/[locale]/blog/[slug]/page.tsx(8,8): error TS2300: Duplicate identifier 'Link'.
+app/[locale]/blog/page.tsx(5,10): error TS2300: Duplicate identifier 'BRAND_URL'.
+app/[locale]/blog/page.tsx(6,10): error TS2300: Duplicate identifier 'BRAND_URL'.
+app/[locale]/contact/page.tsx(79,86): error TS2304: Cannot find name 'BRAND_NAME'.
+app/[locale]/contact/page.tsx(182,74): error TS2304: Cannot find name 'BRAND_NAME'.
+app/[locale]/learning-paths/page.tsx(27,41): error TS2322: Type '"xl"' is not assignable to type '"default" | "icon" | "sm" | "xs" | "lg" | null | undefined'.
+app/[locale]/onboarding/role-selection/page.tsx(110,25): error TS2322: Type '"xl"' is not assignable to type '"default" | "icon" | "sm" | "xs" | "lg" | null | undefined'.
+app/[locale]/search/page.tsx(72,31): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+app/[locale]/search/page.tsx(74,35): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+app/[locale]/subjects/[subjectId]/page.tsx(145,11): error TS2322: Type '{ tabs: { id: string; label: string; content: Element; }[]; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'tabs' does not exist on type 'IntrinsicAttributes'.
+app/api/achievements/check/route.ts(30,64): error TS2339: Property 'tierName' does not exist on type '{ achievementId: string; tier: number; xpAwarded: number; achievementName: string; }'.
+app/api/achievements/check/route.ts(35,21): error TS2353: Object literal may only specify known properties, and 'tier' does not exist in type '{ badgeId?: string | undefined; badgeName?: string | undefined; oldLevel?: number | undefined; newLevel?: number | undefined; questId?: string | undefined; xpAwarded?: number | undefined; streakDays?: number | undefined; oldRank?: number | undefined; newRank?: number | undefined; achievementId?: string | undefined; }'.
+app/api/admin/courses/generate-thumbnail/route.ts(37,26): error TS18048: 'response.data' is possibly 'undefined'.
+app/api/admin/news/generate-thumbnail/route.ts(30,17): error TS18048: 'response.data' is possibly 'undefined'.
+app/api/badges/route.ts(14,31): error TS2339: Property 'length' does not exist on type 'Promise<BadgeDefinition[]>'.
+app/api/badges/route.ts(16,36): error TS2339: Property 'filter' does not exist on type 'Promise<BadgeDefinition[]>'.
+app/api/badges/route.ts(16,43): error TS7006: Parameter 'b' implicitly has an 'any' type.
+app/api/badges/route.ts(17,34): error TS2339: Property 'filter' does not exist on type 'Promise<BadgeDefinition[]>'.
+app/api/badges/route.ts(17,41): error TS7006: Parameter 'b' implicitly has an 'any' type.
+app/api/badges/route.ts(18,34): error TS2339: Property 'filter' does not exist on type 'Promise<BadgeDefinition[]>'.
+app/api/badges/route.ts(18,41): error TS7006: Parameter 'b' implicitly has an 'any' type.
+app/api/badges/route.ts(19,39): error TS2339: Property 'filter' does not exist on type 'Promise<BadgeDefinition[]>'.
+app/api/badges/route.ts(19,46): error TS7006: Parameter 'b' implicitly has an 'any' type.
+app/api/debug-news/route.ts(16,13): error TS7034: Variable 'allNews' implicitly has type 'any[]' in some locations where its type cannot be determined.
+app/api/debug-news/route.ts(32,30): error TS7005: Variable 'allNews' implicitly has an 'any[]' type.
+app/api/live/jitsi-rooms/route.ts(42,24): error TS2304: Cannot find name 'maxParticipants'.
+app/api/live/jitsi-rooms/route.ts(43,24): error TS2304: Cannot find name 'enableRecording'.
+app/api/live/jitsi-rooms/route.ts(44,26): error TS2304: Cannot find name 'enableScreenshare'.
+app/api/live/jitsi-rooms/route.ts(45,19): error TS2304: Cannot find name 'enableChat'.
+app/api/live/jitsi-rooms/route.ts(46,25): error TS2304: Cannot find name 'enableWhiteboard'.
+app/api/live/jitsi-rooms/route.ts(59,13): error TS2304: Cannot find name 'enableRecording'.
+app/api/live/jitsi-rooms/route.ts(65,13): error TS2304: Cannot find name 'enableChat'.
+app/api/live/jitsi-rooms/route.ts(69,13): error TS2304: Cannot find name 'enableScreenshare'.
+app/api/live/rooms/[roomId]/start/route.ts(29,14): error TS18047: 'result' is possibly 'null'.
+app/api/live/rooms/[roomId]/start/route.ts(40,19): error TS18047: 'result' is possibly 'null'.
+app/api/live/sessions/[sessionId]/organize/route.ts(21,15): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(filter: Filter<Document>, update: Document[] | UpdateFilter<Document>, options: FindOneAndUpdateOptions & { ...; }): Promise<...>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 2 of 4, '(filter: Filter<Document>, update: Document[] | UpdateFilter<Document>, options: FindOneAndUpdateOptions & { ...; }): Promise<...>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 3 of 4, '(filter: Filter<Document>, update: Document[] | UpdateFilter<Document>, options: FindOneAndUpdateOptions): Promise<...>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+app/api/live/student/polls/route.ts(157,11): error TS2322: Type '{ votes: { userId: any; }; }' is not assignable to type 'PullOperator<Document>'.
+  Type '{ votes: { userId: any; }; }' is not assignable to type 'NotAcceptedFields<Document, readonly any[]>'.
+    Property 'votes' is incompatible with index signature.
+      Type '{ userId: any; }' is not assignable to type 'undefined'.
+app/api/live/student/polls/route.ts(165,11): error TS2322: Type '{ votes: { userId: any; selectedOptions: any[]; votedAt: Date; }; }' is not assignable to type 'PushOperator<Document>'.
+  Type '{ votes: { userId: any; selectedOptions: any[]; votedAt: Date; }; }' is not assignable to type 'NotAcceptedFields<Document, readonly any[]>'.
+    Property 'votes' is incompatible with index signature.
+      Type '{ userId: any; selectedOptions: any[]; votedAt: Date; }' is not assignable to type 'undefined'.
+app/api/quests/daily/progress/route.ts(7,31): error TS2305: Module '"@/lib/quest-system"' has no exported member 'calculateQuestBonus'.
+app/api/quests/daily/progress/route.ts(76,50): error TS2345: Argument of type 'DailyQuest' is not assignable to parameter of type 'string'.
+app/api/quests/daily/progress/route.ts(77,9): error TS2740: Type 'Promise<any>' is missing the following properties from type 'DailyQuest': id, title, description, xpReward, and 5 more.
+app/api/quests/daily/progress/route.ts(80,64): error TS2339: Property 'completed' does not exist on type 'Promise<any>'.
+app/api/subscriptions/checkout/route.ts(42,19): error TS2339: Property 'primaryEmailAddress' does not exist on type 'SessionUser'.
+app/api/subscriptions/checkout/route.ts(43,58): error TS2339: Property 'primaryEmailAddress' does not exist on type 'SessionUser'.
+app/api/user/stats/streak/route.ts(45,13): error TS2322: Type 'UserStats' is not assignable to type 'WithId<UserStats>'.
+  Type 'UserStats' is not assignable to type '{ _id: ObjectId; }'.
+    Types of property '_id' are incompatible.
+      Type 'ObjectId | undefined' is not assignable to type 'ObjectId'.
+        Type 'undefined' is not assignable to type 'ObjectId'.
+app/api/user/stats/streak/route.ts(49,28): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/streak/route.ts(50,28): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/streak/route.ts(51,28): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/award/route.ts(12,17): error TS2554: Expected 2-3 arguments, but got 1.
+app/api/user/stats/xp/award/route.ts(55,13): error TS2322: Type 'UserStats' is not assignable to type 'WithId<UserStats>'.
+  Type 'UserStats' is not assignable to type '{ _id: ObjectId; }'.
+    Types of property '_id' are incompatible.
+      Type 'ObjectId | undefined' is not assignable to type 'ObjectId'.
+        Type 'undefined' is not assignable to type 'ObjectId'.
+app/api/user/stats/xp/award/route.ts(56,40): error TS2345: Argument of type 'WithId<UserStats> | null' is not assignable to parameter of type 'OptionalId<UserStats>'.
+  Type 'null' is not assignable to type 'OptionalId<UserStats>'.
+    Type 'null' is not assignable to type 'Pick<UserStats, "updatedAt" | "createdAt" | "userId" | "currentXP" | "currentLevel" | "currentStreak" | "longestStreak" | "lastStudyDate" | "totalStudyMinutes" | "totalQuizzes" | "perfectScores" | "completedCourses">'.
+app/api/user/stats/xp/award/route.ts(60,23): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(28,13): error TS2322: Type 'UserStats' is not assignable to type 'WithId<UserStats>'.
+  Type 'UserStats' is not assignable to type '{ _id: ObjectId; }'.
+    Types of property '_id' are incompatible.
+      Type 'ObjectId | undefined' is not assignable to type 'ObjectId'.
+        Type 'undefined' is not assignable to type 'ObjectId'.
+app/api/user/stats/xp/route.ts(29,40): error TS2345: Argument of type 'WithId<UserStats> | null' is not assignable to parameter of type 'OptionalId<UserStats>'.
+  Type 'null' is not assignable to type 'OptionalId<UserStats>'.
+    Type 'null' is not assignable to type 'Pick<UserStats, "updatedAt" | "createdAt" | "userId" | "currentXP" | "currentLevel" | "currentStreak" | "longestStreak" | "lastStudyDate" | "totalStudyMinutes" | "totalQuizzes" | "perfectScores" | "completedCourses">'.
+app/api/user/stats/xp/route.ts(33,40): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(38,28): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(39,31): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(42,30): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(43,30): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(46,40): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(47,35): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(48,36): error TS18047: 'userStats' is possibly 'null'.
+app/api/user/stats/xp/route.ts(49,39): error TS18047: 'userStats' is possibly 'null'.
+components/admin/BlogCreatorStudio.tsx(561,154): error TS2322: Type 'BlogResource | { label: string; url: string; }' is not assignable to type 'BlogResource'.
+  Property 'type' is missing in type '{ label: string; url: string; }' but required in type 'BlogResource'.
+components/admin/BlogCreatorStudio.tsx(561,168): error TS2741: Property 'type' is missing in type '{ label: string; url: string; }' but required in type 'BlogResource'.
+components/admin/BlogCreatorStudio.tsx(655,42): error TS2304: Cannot find name 'loadBlog'.
+components/admin/BlogCreatorStudio.tsx(718,47): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/admin/BlogCreatorStudio.tsx(718,71): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+components/admin/CourseManager.tsx(191,120): error TS2339: Property 'dbSource' does not exist on type 'CourseSummary'.
+components/admin/CourseManager.tsx(192,33): error TS2339: Property 'dbSource' does not exist on type 'CourseSummary'.
+components/admin/PremiumEbookStudio.tsx(432,57): error TS2322: Type '"primary"' is not assignable to type '"default" | "outline" | "secondary" | "ghost" | "inverse" | "destructive" | null | undefined'.
+components/admin/UnifiedContentStudio.tsx(808,33): error TS2322: Type '"media" | "live" | "video"' is not assignable to type '"live" | "video" | undefined'.
+  Type '"media"' is not assignable to type '"live" | "video" | undefined'.
+components/ads/SQUARE_AD_EXAMPLE.tsx(17,11): error TS2304: Cannot find name 'isPro'.
+components/ai/AITutor.tsx(8,28): error TS2307: Cannot find module '@/components/ui/ScrollArea' or its corresponding type declarations.
+components/courses/CourseLibrary.tsx(141,16): error TS2339: Property 'isPremium' does not exist on type 'Course'.
+components/courses/LessonVideoPlayer.tsx(98,11): error TS2322: Type '{ ref: RefObject<any>; videoUrl: string | undefined; videoId: string | undefined; title: string | undefined; provider: "direct" | "youtube" | "self-hosted" | "vimeo" | "hls" | undefined; onEnded: () => Promise<...>; chapters: { ...; }[] | undefined; onProgress: (current: number) => void; }' is not assignable to type 'IntrinsicAttributes & VideoPlayerProps & RefAttributes<unknown>'.
+  Property 'onProgress' does not exist on type 'IntrinsicAttributes & VideoPlayerProps & RefAttributes<unknown>'.
+components/dashboard/EnhancedDashboardComponents.tsx(4,10): error TS2305: Module '"@/components/ui/AdvancedEffects"' has no exported member 'ProgressRing'.
+components/live/JitsiClassroom.tsx(426,14): error TS2304: Cannot find name 'jitsiApiInstance'.
+components/live/JitsiClassroom.tsx(426,79): error TS2304: Cannot find name 'jitsiApiInstance'.
+components/news/NewsImage.tsx(23,8): error TS2322: Type '{ crossOrigin?: CrossOrigin; decoding?: "auto" | "async" | "sync" | undefined; fetchPriority?: "low" | "high" | "auto" | undefined; height?: string | number | undefined; ... 288 more ...; unoptimized: true; }' is not assignable to type '{ src: string | StaticImport; alt: string; width?: number | `${number}` | undefined; height?: number | `${number}` | undefined; fill?: boolean | undefined; loader?: ImageLoader | undefined; ... 13 more ...; lazyRoot?: string | undefined; }'.
+  Types of property 'width' are incompatible.
+    Type 'string | number | undefined' is not assignable to type 'number | `${number}` | undefined'.
+      Type 'string' is not assignable to type 'number | `${number}` | undefined'.
+lib/langchain-service.ts(53,43): error TS2345: Argument of type '{ temperature: number; provider?: AIProvider | undefined; modelName?: string | undefined; }' is not assignable to parameter of type 'LangChainConfig'.
+  Types of property 'provider' are incompatible.
+    Type 'AIProvider | undefined' is not assignable to type 'AIProvider'.
+      Type 'undefined' is not assignable to type 'AIProvider'.
+lib/learning-path-service.ts(68,26): error TS2345: Argument of type '(path: LearningPath & { _id?: any; }) => LearningPath' is not assignable to parameter of type '(value: WithId<Document>, index: number, array: WithId<Document>[]) => LearningPath'.
+  Types of parameters 'path' and 'value' are incompatible.
+    Type 'WithId<Document>' is not assignable to type 'LearningPath & { _id?: any; }'.
+      Type 'WithId<Document>' is missing the following properties from type 'LearningPath': title, authorId, courses, difficulty, and 4 more.
+lib/posthog-analytics.ts(47,27): error TS2554: Expected 0 arguments, but got 2.
+lib/posthog-analytics.ts(591,3): error TS2322: Type 'string | boolean | undefined' is not assignable to type 'string | boolean | null'.
+  Type 'undefined' is not assignable to type 'string | boolean | null'.
+lib/rate-limit.ts(224,22): error TS2304: Cannot find name 'getDatabase'.
+lib/rate-limit.ts(260,22): error TS2304: Cannot find name 'getDatabase'.
+scripts/seed-seasonal.ts(1,29): error TS2307: Cannot find module './lib/mongodb' or its corresponding type declarations.
+scripts/seed-seasonal.ts(2,48): error TS2307: Cannot find module './lib/models/SeasonalChallenge' or its corresponding type declarations.

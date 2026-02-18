@@ -3,7 +3,6 @@ import { getDatabase } from '@/lib/mongodb';
 import { Metadata } from 'next';
 import { BlogClientList } from '@/components/blog/BlogClientList';
 import { BRAND_URL } from '@/lib/brand';
-import { AdBlockerDetector } from '@/components/ads/AdBlockerDetector';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -26,7 +25,7 @@ export default async function BlogIndexPage() {
   const serializedPosts = JSON.parse(JSON.stringify(posts));
 
   return (
-    <AdBlockerDetector>
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -51,7 +50,7 @@ export default async function BlogIndexPage() {
         }}
       />
       <BlogClientList initialPosts={serializedPosts} />
-    </AdBlockerDetector>
+    </>
   );
 }
 
