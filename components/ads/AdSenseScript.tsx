@@ -1,23 +1,16 @@
-'use client';
-
-import { useEffect } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+// This is a server component - no 'use client' needed for just a Script tag
 import Script from 'next/script';
 
+/**
+ * AdSenseScript - Loads Google AdSense for Auto Ads.
+ * 
+ * IMPORTANT: Do NOT manually call adsbygoogle.push({}) here.
+ * Auto Ads are fully managed by Google's AI engine. Manual push calls
+ * are only for explicitly defined ad units (<ins class="adsbygoogle">)
+ * and will cause errors / reduce auto ad density if called without
+ * a corresponding ad slot element.
+ */
 export function AdSenseScript() {
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-
-    useEffect(() => {
-        try {
-            if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-                (window as any).adsbygoogle.push({});
-            }
-        } catch (e) {
-            console.error("AdSense push error:", e);
-        }
-    }, [pathname, searchParams]);
-
     return (
         <Script
             async
