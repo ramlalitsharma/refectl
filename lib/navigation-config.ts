@@ -57,7 +57,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/subjects', label: 'All Subjects', icon: '🏷️' },
         ],
       },
-      
+
       // 🔗 Community - Connect & collaborate
       {
         label: 'Community',
@@ -71,8 +71,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      // 🛠️ Tools & Resources - All tools in one place
-      { href: '/shop', label: 'Tools & Resources', icon: '🛠️' },
+      // 🛒 Forge Shop - Premium tools & software
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
       // 🎯 Practice Hub - Assessments & tests
       {
@@ -139,8 +139,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      // 🛠️ Tools & Resources - All tools in one place
-      { href: '/shop', label: 'Tools & Resources', icon: '🛠️' },
+      // 🛒 Forge Shop - Premium tools & software
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
       {
         label: 'Administration',
@@ -192,8 +192,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      // 🛠️ Tools & Resources - All tools in one place
-      { href: '/shop', label: 'Tools & Resources', icon: '🛠️' },
+      // 🛒 Forge Shop - Premium tools & software
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
       {
         label: 'Teaching Studio',
@@ -348,8 +348,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      // 🛠️ Tools & Resources - All tools in one place
-      { href: '/shop', label: 'Tools & Resources', icon: '🛠️' },
+      // 🛒 Forge Shop - Premium tools & software
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
@@ -395,8 +395,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      // 🛠️ Tools & Resources - All tools in one place
-      { href: '/shop', label: 'Tools & Resources', icon: '🛠️' },
+      // 🛒 Forge Shop - Premium tools & software
+      { href: '/shop', label: 'Forge Shop', icon: '🛒' },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
