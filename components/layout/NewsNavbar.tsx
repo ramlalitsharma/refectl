@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 
 export function NewsNavbar() {
     const [dateString, setDateString] = useState("");
-    
+
     useEffect(() => {
         setTimeout(() => setDateString(format(new Date(), "EEEE, MMMM dd, yyyy")), 0);
     }, []);
@@ -28,7 +28,7 @@ export function NewsNavbar() {
     return (
         <header className="relative z-40 border-b border-slate-200/90 dark:border-slate-700/80 bg-[#fdfdfc]/95 dark:bg-slate-950/90 supports-[backdrop-filter]:bg-[#fdfdfc]/85 dark:supports-[backdrop-filter]:bg-slate-950/75 backdrop-blur news-paper-theme">
             {/* Top Utility Strip */}
-            <div className="border-b border-slate-100 dark:border-slate-800 py-2 bg-slate-50/70 dark:bg-slate-900/70">
+            <div className="border-b border-slate-100 dark:border-slate-800 py-1.5 bg-slate-50/70 dark:bg-slate-900/70">
                 <div className="news-viewport px-4 flex justify-between items-center text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-4">
                         <span className="min-w-[150px]">{dateString}</span>
@@ -37,15 +37,18 @@ export function NewsNavbar() {
                         </span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="hover:text-red-700 transition-colors">Digital Edition</button>
-                        <button className="hover:text-red-700 transition-colors border-l pl-4 border-slate-200">Intelligence Terminal</button>
+                        <button className="hover:text-red-700 dark:hover:text-red-400 transition-colors">Digital Edition</button>
+                        <button className="hover:text-red-600 dark:hover:text-red-400 transition-all border-l pl-4 border-slate-200 dark:border-slate-800 flex items-center gap-2 group">
+                            <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(220,38,38,0.5)]" />
+                            Intelligence Terminal
+                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Main Brand & Nav Container */}
-            <div className="news-viewport px-4 py-5 md:py-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+            <div className="news-viewport px-4 py-4 md:py-4.5">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
                     {/* Search Icon (Desktop Left) */}
                     <button className="hidden md:block p-2 text-slate-400 hover:text-red-700 dark:hover:text-red-400 transition-colors">
                         <Search size={20} />
@@ -53,7 +56,7 @@ export function NewsNavbar() {
 
                     {/* Centered Brand Logo */}
                     <Link href="/news" className="flex flex-col items-center group">
-                        <div className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none text-red-700 font-serif">
+                        <div className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none text-red-600 dark:text-red-500 font-serif uhd-text-shadow transition-transform duration-500 group-hover:scale-[1.02]">
                             Terai Times
                         </div>
                         <div className="text-[10px] md:text-xs uppercase font-black tracking-[0.26em] text-slate-400 dark:text-slate-500 mt-2 flex items-center gap-4">
@@ -74,7 +77,7 @@ export function NewsNavbar() {
                     </div>
                 </div>
 
-                <nav className="mt-7 flex items-center justify-center border-t border-slate-100 dark:border-slate-800 pt-3">
+                <nav className="mt-4 flex items-center justify-center border-t border-slate-100 dark:border-slate-800 pt-2.5">
                     <ul className="flex items-center gap-1 md:gap-6 overflow-x-auto md:overflow-visible no-scrollbar pb-2 md:pb-0 text-[12px] md:text-sm font-black uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
                         {coreCategories.map(item => {
                             const href = item === 'Home'
@@ -85,7 +88,7 @@ export function NewsNavbar() {
                                 <li key={item}>
                                     <Link
                                         href={href}
-                                        className={`hover:text-red-700 dark:hover:text-red-400 transition-colors whitespace-nowrap px-2 ${currentCategory === item ? 'text-red-700 dark:text-red-400 font-black' : ''}`}
+                                        className={`hover:text-red-600 dark:hover:text-red-400 transition-all whitespace-nowrap px-3 py-1 rounded-lg ${currentCategory === item ? 'text-red-600 dark:text-red-500 font-black bg-red-600/5 dark:bg-white/5 uhd-text-shadow' : ''}`}
                                     >
                                         {item}
                                     </Link>

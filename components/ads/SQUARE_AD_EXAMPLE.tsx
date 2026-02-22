@@ -1,6 +1,5 @@
-// Example: How to add the square ad in the middle of your pages
-
-import { GoogleAdsense } from '@/components/ads/GoogleAdsense';
+// Deprecated example kept for reference.
+// Manual slot injection has been retired in favor of global AdSense Auto Ads.
 
 export default function ExamplePage() {
   return (
@@ -13,18 +12,12 @@ export default function ExamplePage() {
           <p>Your content here...</p>
         </div>
 
-        {/* MIDDLE - SQUARE AD (9337411181) */}
-        {!isPro && (
-          <div className="flex justify-center my-12">
-            <div className="w-full max-w-md">
-              <GoogleAdsense 
-                adSlot="9337411181"
-                adFormat="rectangle"
-                className="mx-auto"
-              />
-            </div>
+        {/* Auto Ads are injected globally by AdSenseScript */}
+        <div className="flex justify-center my-12">
+          <div className="w-full max-w-md rounded-xl border border-slate-200 dark:border-slate-700 p-6 text-center text-sm text-slate-500">
+            AdSense Auto Ads zone
           </div>
-        )}
+        </div>
 
         {/* BOTTOM SECTION */}
         <div className="mt-12">

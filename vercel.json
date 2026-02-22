@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/news-automation",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/news-maintenance",
+      "schedule": "0 0 * * 0"
+    }
+  ]
+}

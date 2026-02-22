@@ -461,7 +461,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </CardContent>
             </Card>
           ) : (
-            categoryData.map((categoryInfo, categoryIdx) => {
+            categoryData.map((categoryInfo) => {
               if (categoryInfo.courses.length === 0) return null;
 
               return (

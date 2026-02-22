@@ -86,5 +86,23 @@ export const EmailTemplates = {
           <p>Best,<br/>The AdaptiQ Team</p>
         </div>
         `;
-  }
+  },
+  newsApprovalDigest: (items: { title: string; category: string; id: string }[]) => `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+      <h2 style="color: #B91C1C;">Pending News Approval Queue 🗞️</h2>
+      <p>The following articles were auto-generated and are awaiting your review:</p>
+      <div style="background-color: #FEF2F2; padding: 20px; border-radius: 12px; margin: 20px 0;">
+        <ul style="padding-left: 20px;">
+          ${items.map(item => `
+            <li style="margin-bottom: 15px;">
+              <strong style="color: #111827;">${item.title}</strong><br/>
+              <span style="font-size: 12px; color: #6B7280; text-transform: uppercase; font-weight: bold;">${item.category}</span><br/>
+              <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/news/edit/${item.id}" style="color: #B91C1C; font-size: 12px; font-weight: bold; text-decoration: none;">Review & Publish →</a>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <p style="font-size: 12px; color: #9CA3AF;">This is an automated intelligence briefing from Terai Times News Ultra.</p>
+    </div>
+  `
 };

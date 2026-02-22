@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { NewsNavbar } from '@/components/layout/NewsNavbar';
 import { NewsFeedClient } from '@/components/news/NewsFeedClient';
+import { LiveNewsPulse } from '@/components/news/LiveNewsPulse';
 import { BRAND_URL } from '@/lib/brand';
 import { NewsService } from '@/lib/news-service';
 import { NewsEventService } from '@/lib/news-event-service';
@@ -79,7 +80,10 @@ export default async function NewsPage({
   return (
     <div className="news-page-shell min-h-screen text-slate-900 dark:text-slate-100">
       <NewsNavbar />
-      <main className="news-viewport px-4 pb-10 pt-3 md:pt-4">
+      <div className="news-live-pulse-row">
+        <LiveNewsPulse />
+      </div>
+      <main className="news-viewport news-main-surface px-4 pb-10 pt-2 md:pt-3">
         <NewsFeedClient
           category={category}
           country={country}

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Lora } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
 import Script from "next/script";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -159,16 +158,6 @@ export default async function RootLayout({
   const messages = await getMessages({ locale });
 
 
-  let user = null;
-  let isPro = false;
-  try {
-    user = await currentUser();
-    isPro = user?.publicMetadata?.isPro === true;
-  } catch (err) {
-    console.error("Clerk auth detection error in RootLayout:", err);
-    user = null;
-    isPro = false;
-  }
   const enableProdAnalytics = process.env.NODE_ENV === "production" && isAnalyticsConfigured();
 
   return (
