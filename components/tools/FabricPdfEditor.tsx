@@ -22,6 +22,27 @@ export const FabricPdfEditor: React.FC<FabricPdfEditorProps> = ({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvas = useRef<Canvas | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Calculate initial fit-to-screen zoom
+    useEffect(() => {
+        const updateZoom = () => {
+            if (!containerRef.current) return;
+            const padding = 64;
+            const availableW = containerRef.current.clientWidth - padding;
+            const availableH = containerRef.current.clientHeight - padding;
+
+            const scaleW = availableW / width;
+            const scaleH = availableH / height;
+            const fitScale = Math.min(scaleW, scaleH, 1);
+            setZoom(fitScale);
+        };
+
+        updateZoom();
+        window.addEventListener('resize', updateZoom);
+        return () => window.removeEventListener('resize', updateZoom);
+    }, [width, height]);
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -152,8 +173,8 @@ export const FabricPdfEditor: React.FC<FabricPdfEditorProps> = ({
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center gap-8 py-8 overflow-y-auto overflow-x-hidden scrollbar-elegant">
-            <div className="flex items-center gap-2 p-1 bg-white/10 dark:bg-slate-950/50 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/10 sticky top-0 z-[100] ring-1 ring-white/5">
+        <div className="w-full h-full flex flex-col items-center gap-4 py-4 overflow-hidden scrollbar-elegant">
+            <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-white/10 dark:bg-slate-950/60 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/10 sticky top-0 z-[100] ring-1 ring-white/5">
                 <button onClick={addText} title="Add Text Tool" className="px-4 py-2 hover:bg-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95">
                     <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
                     Text
@@ -166,7 +187,17 @@ export const FabricPdfEditor: React.FC<FabricPdfEditorProps> = ({
                     <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
                     Arrow
                 </button>
-                <div className="w-px h-6 bg-white/10 mx-2"></div>
+                <div className="w-px h-6 bg-white/10 mx-1"></div>
+                <div className="flex items-center gap-1 bg-black/20 p-1 rounded-xl">
+                    <button onClick={() => setZoom(z => Math.max(0.1, z - 0.1))} className="p-1 px-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" /></svg>
+                    </button>
+                    <span className="text-[9px] font-black text-white/50 w-10 text-center uppercase tracking-widest">{Math.round(zoom * 100)}%</span>
+                    <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} className="p-1 px-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-all">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
+                <div className="w-px h-6 bg-white/10 mx-1"></div>
                 <button
                     onClick={() => {
                         const active = fabricCanvas.current?.getActiveObject();
@@ -178,8 +209,14 @@ export const FabricPdfEditor: React.FC<FabricPdfEditorProps> = ({
                     Delete
                 </button>
             </div>
-            <div className="flex-1 flex items-center justify-center w-full min-h-[500px]">
-                <div className="shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-white border border-white/5 rounded-sm overflow-hidden transform scale-100 transition-transform origin-center">
+            <div ref={containerRef} className="flex-1 w-full flex items-center justify-center p-4 bg-slate-900/30 overflow-hidden relative">
+                <div
+                    className="shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-white border border-white/5 rounded-sm overflow-hidden transition-transform duration-200 ease-out will-change-transform"
+                    style={{
+                        transform: `scale(${zoom})`,
+                        transformOrigin: 'center center',
+                    }}
+                >
                     <canvas ref={canvasRef} />
                 </div>
             </div>
