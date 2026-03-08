@@ -122,12 +122,12 @@ function HighResEditorWrapper({
                 const pdf = await pdfjsLib.getDocument({ data: src.arrayBuffer.slice(0) }).promise;
                 const pdfPage = await pdf.getPage(page.srcIndex + 1);
 
-                const rawVp = pdfPage.getViewport({ scale: 1 });
+                const rawVp = pdfPage.getViewport({ scale: 1, rotation: page.rotation });
                 const maxDim = 2048;
                 let baseScale = 3.5;
                 if (rawVp.width * baseScale > maxDim) baseScale = maxDim / rawVp.width;
                 if (rawVp.height * baseScale > maxDim) baseScale = maxDim / rawVp.height;
-                const vp = pdfPage.getViewport({ scale: baseScale });
+                const vp = pdfPage.getViewport({ scale: baseScale, rotation: page.rotation });
 
                 const canvas = document.createElement('canvas');
                 canvas.width = vp.width;
@@ -172,7 +172,7 @@ function HighResEditorWrapper({
     );
 
     return (
-        <div className="w-full overflow-hidden flex flex-col gap-6">
+        <div className="w-full h-full overflow-hidden flex flex-col gap-6">
             <div className="flex items-center justify-center">
                 <button
                     onClick={runOcr}

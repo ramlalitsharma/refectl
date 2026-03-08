@@ -209,15 +209,24 @@ export const FabricPdfEditor: React.FC<FabricPdfEditorProps> = ({
                     Delete
                 </button>
             </div>
-            <div ref={containerRef} className="flex-1 w-full flex items-center justify-center p-4 bg-slate-900/30 overflow-hidden relative">
+            <div ref={containerRef} className="flex-1 w-full flex items-center justify-center p-4 bg-slate-900/30 overflow-auto relative scrollbar-elegant">
                 <div
-                    className="shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-white border border-white/5 rounded-sm overflow-hidden transition-transform duration-200 ease-out will-change-transform"
+                    className="shadow-[0_0_100px_rgba(0,0,0,0.5)] bg-white border border-white/5 rounded-sm overflow-hidden transition-all duration-200 ease-out will-change-transform flex items-center justify-center"
                     style={{
-                        transform: `scale(${zoom})`,
-                        transformOrigin: 'center center',
+                        width: width * zoom,
+                        height: height * zoom,
+                        minWidth: width * zoom,
+                        minHeight: height * zoom,
                     }}
                 >
-                    <canvas ref={canvasRef} />
+                    <canvas
+                        ref={canvasRef}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'block'
+                        }}
+                    />
                 </div>
             </div>
         </div>
