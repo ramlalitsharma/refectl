@@ -5,6 +5,16 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  webpack: (config, { isServer }) => {
+    // pdfjs-dist requires canvas on the server; alias it to empty module to prevent errors
+    if (isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        canvas: false,
+      };
+    }
+    return config;
+  },
   async redirects() {
     return [
       { source: '/news', destination: '/en/news', permanent: false },

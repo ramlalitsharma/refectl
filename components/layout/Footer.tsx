@@ -17,6 +17,8 @@ const footerLinks = [
     items: [
       { label: 'Blog', href: '/blog' },
       { label: 'Contact', href: '/contact' },
+      { label: 'Editorial Policy', href: '/news/editorial-policy' },
+      { label: 'Disclosures', href: '/news/disclosures' },
     ],
   },
   {

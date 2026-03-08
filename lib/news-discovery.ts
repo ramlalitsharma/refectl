@@ -12,6 +12,58 @@ export interface DiscoveredTrend {
     score?: number; // 0-100 viral potential
 }
 
+const NOISE_TITLE_PATTERNS = [
+    /terms of use/i,
+    /privacy policy/i,
+    /about us/i,
+    /about\b/i,
+    /contact us/i,
+    /cookie policy/i,
+    /cookie settings/i,
+    /sitemap/i,
+    /careers/i,
+    /jobs/i,
+    /subscribe/i,
+    /login/i,
+    /sign in/i,
+    /your\s+us\s+state\s+privacy\s+rights/i,
+    /book a trip/i,
+    /attend a live event/i,
+    /inspire your kids/i,
+    /travel/i,
+    /shop/i,
+    /gift/i,
+    /magazine/i,
+    /newsletter/i,
+    /podcast/i,
+    /watch/i,
+    /listen/i,
+    /quiz/i,
+    /games?/i,
+    /subscribe/i,
+    /sign up/i,
+];
+
+const NOISE_LINK_PATTERNS = [
+    /\/terms\b/i,
+    /\/privacy\b/i,
+    /\/about\b/i,
+    /\/contact\b/i,
+    /\/careers?\b/i,
+    /\/jobs?\b/i,
+    /\/sitemap\b/i,
+];
+
+function isNoiseItem(item: DiscoveredTrend): boolean {
+    const title = (item.title || '').trim();
+    const link = (item.link || '').trim();
+    if (!title || title.length < 6) return true;
+    if (title.split(/\s+/).length < 3) return true;
+    if (NOISE_TITLE_PATTERNS.some((re) => re.test(title))) return true;
+    if (link && NOISE_LINK_PATTERNS.some((re) => re.test(link))) return true;
+    return false;
+}
+
 const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[] = [
     { url: 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en', source: 'Google News', defaultCategory: 'World' as NewsCategory },
     { url: 'https://techcrunch.com/feed/', source: 'TechCrunch', defaultCategory: 'Technology' as NewsCategory },
@@ -61,8 +113,9 @@ export const NewsDiscoveryService = {
             console.error('[Discovery] Scraping step failed:', error);
         }
 
-        // Remove duplicates and sort by date (newest first)
+        // Remove duplicates, filter noise, sort by date (newest first)
         return discovered
+            .filter((item) => !isNoiseItem(item))
             .filter((v, i, a) => a.findIndex(t => t.title === v.title) === i)
             .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
             .slice(0, 50); // Increased pool size for intelligence hub
@@ -76,6 +129,7 @@ export const NewsDiscoveryService = {
         if (trends.length === 0) return [];
 
         const openRouterKey = process.env.OPENROUTER_API_KEY;
+        const openAiKey = process.env.OPENAI_API_KEY;
         const prompt = `
             Score the following news headlines from 0 to 100 based on:
             1. Global viral potential (will people share this?)
@@ -119,20 +173,32 @@ export const NewsDiscoveryService = {
             }
 
             // 2. Fallback to OpenAI if OpenRouter failed or no key
-            if (!jsonResponse && openai) {
-                console.log('[Discovery] Falling back to OpenAI (Premium Segment)...');
-                const resp = await openai.chat.completions.create({
-                    model: 'gpt-4o-mini',
-                    messages: [
-                        { role: 'system', content: 'You are an elite news editor.' },
-                        { role: 'user', content: prompt }
-                    ],
-                    response_format: { type: 'json_object' }
-                });
-                jsonResponse = JSON.parse(resp.choices[0]?.message?.content || '{"scores": []}');
+            if (!jsonResponse && openai && openAiKey && !this.isOpenAiCoolingDown()) {
+                try {
+                    console.log('[Discovery] Falling back to OpenAI (Premium Segment)...');
+                    const resp = await openai.chat.completions.create({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            { role: 'system', content: 'You are an elite news editor.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        response_format: { type: 'json_object' }
+                    });
+                    jsonResponse = JSON.parse(resp.choices[0]?.message?.content || '{"scores": []}');
+                } catch (openaiError: any) {
+                    console.error('[Discovery] OpenAI fallback failed:', openaiError);
+                    // If it's a 429, we definitely need to return the generic pool
+                    if (openaiError?.status === 429) {
+                        console.warn('[Discovery] OpenAI Quota Exceeded. Using zero-cost baseline.');
+                        this.startOpenAiCooldown();
+                    }
+                }
             }
 
-            if (!jsonResponse) throw new Error('All scoring providers failed');
+            if (!jsonResponse || !jsonResponse.scores) {
+                console.warn('[Discovery] All intelligence providers failed or returned invalid data. Using baseline scoring.');
+                return trends.slice(0, 15).map(t => ({ ...t, score: 60 }));
+            }
 
             const scores = jsonResponse.scores || [];
             const scoredTrends = trends.map(t => {
@@ -144,9 +210,17 @@ export const NewsDiscoveryService = {
                 .sort((a, b) => (b.score || 0) - (a.score || 0))
                 .slice(0, 12); // Return top 12 viral stars
         } catch (error) {
-            console.error('[Discovery] Scoring failed, returning generic pool:', error);
-            return trends.slice(0, 10).map(t => ({ ...t, score: 50 })); // Ensure always returns scored objects
+            console.error('[Discovery] Critical scoring failure:', error);
+            return trends.slice(0, 12).map(t => ({ ...t, score: 50 }));
         }
+    },
+
+    openAiCooldownUntil: 0,
+    startOpenAiCooldown() {
+        this.openAiCooldownUntil = Date.now() + 6 * 60 * 60 * 1000;
+    },
+    isOpenAiCoolingDown() {
+        return Date.now() < this.openAiCooldownUntil;
     },
 
     parseRssItems(xml: string, source: string, defaultCategory: NewsCategory): DiscoveredTrend[] {

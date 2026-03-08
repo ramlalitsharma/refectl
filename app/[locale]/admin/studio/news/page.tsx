@@ -1,4 +1,6 @@
 import { NewsService } from '@/lib/news-service';
+import { NewsAutomationService } from '@/lib/news-automation';
+import { TeraiTimesPublicService } from '@/modules/terai-times/backend/services/TeraiTimesPublicService';
 import { Link } from '@/lib/navigation';
 import { Button } from '@/components/ui/Button';
 import { Plus, Search, Filter, Edit, Trash2, Eye, Newspaper, TrendingUp, ShieldAlert, BarChart3, Globe, CalendarDays, Target, Gauge } from 'lucide-react';
@@ -7,8 +9,171 @@ import { format } from 'date-fns';
 import { FadeIn } from '@/components/ui/Motion';
 import { NewsImage } from '@/components/news/NewsImage';
 import { getNewsAuthorsByIds } from '@/lib/news-authors';
+import { approveSourceTrustAction, blockSourceAction } from '@/app/actions/news';
+import { ingestTrendDraftAction, ingestTrendPublishAction, scrapeTargetedQueueAction } from '@/app/actions/news-ai';
 
 export const dynamic = 'force-dynamic';
+
+type UiLabels = {
+    controls: string;
+    scrapeConsole: string;
+    jumpToConsole: string;
+    scrapeControl: string;
+    targetedConsole: string;
+    topicPlaceholder: string;
+    categoryPlaceholder: string;
+    countryPlaceholder: string;
+    regionPlaceholder: string;
+    statePlaceholder: string;
+    queueScrape: string;
+    trendingDiscovery: string;
+    draft: string;
+    publish: string;
+    searchPlaceholder: string;
+};
+
+const LABELS_BY_LOCALE: Record<string, UiLabels> = {
+    en: {
+        controls: 'Controls',
+        scrapeConsole: 'Scrape Console',
+        jumpToConsole: 'Jump to Console',
+        scrapeControl: 'Scrape Control',
+        targetedConsole: 'Targeted Scraping Console',
+        topicPlaceholder: 'Topic or headline (optional)',
+        categoryPlaceholder: 'Category',
+        countryPlaceholder: 'Country',
+        regionPlaceholder: 'Region (optional)',
+        statePlaceholder: 'State (optional)',
+        queueScrape: 'Queue Scrape',
+        trendingDiscovery: 'Trending Discovery',
+        draft: 'Draft',
+        publish: 'Publish',
+        searchPlaceholder: 'Search headlines, tags, authors...',
+    },
+    hi: {
+        controls: 'नियंत्रण',
+        scrapeConsole: 'स्क्रेप कंसोल',
+        jumpToConsole: 'कंसोल पर जाएँ',
+        scrapeControl: 'स्क्रेप नियंत्रण',
+        targetedConsole: 'लक्षित स्क्रेप कंसोल',
+        topicPlaceholder: 'विषय या शीर्षक (वैकल्पिक)',
+        categoryPlaceholder: 'श्रेणी',
+        countryPlaceholder: 'देश',
+        regionPlaceholder: 'क्षेत्र (वैकल्पिक)',
+        statePlaceholder: 'राज्य (वैकल्पिक)',
+        queueScrape: 'स्क्रेप कतार',
+        trendingDiscovery: 'ट्रेंड खोज',
+        draft: 'ड्राफ्ट',
+        publish: 'प्रकाशित',
+        searchPlaceholder: 'शीर्षक, टैग, लेखक खोजें...',
+    },
+    ne: {
+        controls: 'नियन्त्रण',
+        scrapeConsole: 'स्क्रेप कन्सोल',
+        jumpToConsole: 'कन्सोलमा जानुहोस्',
+        scrapeControl: 'स्क्रेप नियन्त्रण',
+        targetedConsole: 'लक्षित स्क्रेप कन्सोल',
+        topicPlaceholder: 'विषय वा शीर्षक (वैकल्पिक)',
+        categoryPlaceholder: 'श्रेणी',
+        countryPlaceholder: 'देश',
+        regionPlaceholder: 'क्षेत्र (वैकल्पिक)',
+        statePlaceholder: 'राज्य (वैकल्पिक)',
+        queueScrape: 'स्क्रेप क्यू',
+        trendingDiscovery: 'ट्रेन्ड खोज',
+        draft: 'ड्राफ्ट',
+        publish: 'प्रकाशित',
+        searchPlaceholder: 'शीर्षक, ट्याग, लेखक खोज्नुहोस्...',
+    },
+    ja: {
+        controls: 'コントロール',
+        scrapeConsole: 'スクレイプ・コンソール',
+        jumpToConsole: 'コンソールへ',
+        scrapeControl: 'スクレイプ制御',
+        targetedConsole: 'ターゲットスクレイプ',
+        topicPlaceholder: '話題や見出し（任意）',
+        categoryPlaceholder: 'カテゴリ',
+        countryPlaceholder: '国',
+        regionPlaceholder: '地域（任意）',
+        statePlaceholder: '州（任意）',
+        queueScrape: 'スクレイプ投入',
+        trendingDiscovery: 'トレンド検出',
+        draft: '下書き',
+        publish: '公開',
+        searchPlaceholder: '見出し・タグ・著者を検索...',
+    },
+    zh: {
+        controls: '控制',
+        scrapeConsole: '抓取控制台',
+        jumpToConsole: '进入控制台',
+        scrapeControl: '抓取控制',
+        targetedConsole: '定向抓取控制台',
+        topicPlaceholder: '主题或标题（可选）',
+        categoryPlaceholder: '分类',
+        countryPlaceholder: '国家',
+        regionPlaceholder: '地区（可选）',
+        statePlaceholder: '州/省（可选）',
+        queueScrape: '加入队列',
+        trendingDiscovery: '趋势发现',
+        draft: '草稿',
+        publish: '发布',
+        searchPlaceholder: '搜索标题、标签、作者...',
+    },
+    fr: {
+        controls: 'Contrôles',
+        scrapeConsole: 'Console de collecte',
+        jumpToConsole: 'Aller à la console',
+        scrapeControl: 'Contrôle de collecte',
+        targetedConsole: 'Console de collecte ciblée',
+        topicPlaceholder: 'Sujet ou titre (optionnel)',
+        categoryPlaceholder: 'Catégorie',
+        countryPlaceholder: 'Pays',
+        regionPlaceholder: 'Région (optionnel)',
+        statePlaceholder: 'État (optionnel)',
+        queueScrape: 'Lancer collecte',
+        trendingDiscovery: 'Détection tendances',
+        draft: 'Brouillon',
+        publish: 'Publier',
+        searchPlaceholder: 'Rechercher titres, tags, auteurs...',
+    },
+    de: {
+        controls: 'Kontrollen',
+        scrapeConsole: 'Scrape-Konsole',
+        jumpToConsole: 'Zur Konsole',
+        scrapeControl: 'Scrape-Steuerung',
+        targetedConsole: 'Gezielte Scrape-Konsole',
+        topicPlaceholder: 'Thema oder Titel (optional)',
+        categoryPlaceholder: 'Kategorie',
+        countryPlaceholder: 'Land',
+        regionPlaceholder: 'Region (optional)',
+        statePlaceholder: 'Bundesland (optional)',
+        queueScrape: 'Scrape starten',
+        trendingDiscovery: 'Trend-Erkennung',
+        draft: 'Entwurf',
+        publish: 'Veröffentlichen',
+        searchPlaceholder: 'Suche Titel, Tags, Autoren...',
+    },
+    ar: {
+        controls: 'عناصر التحكم',
+        scrapeConsole: 'وحدة الكشط',
+        jumpToConsole: 'الانتقال إلى الوحدة',
+        scrapeControl: 'تحكم الكشط',
+        targetedConsole: 'وحدة الكشط المستهدف',
+        topicPlaceholder: 'موضوع أو عنوان (اختياري)',
+        categoryPlaceholder: 'الفئة',
+        countryPlaceholder: 'الدولة',
+        regionPlaceholder: 'المنطقة (اختياري)',
+        statePlaceholder: 'الولاية (اختياري)',
+        queueScrape: 'إضافة للكشط',
+        trendingDiscovery: 'اكتشاف الترند',
+        draft: 'مسودة',
+        publish: 'نشر',
+        searchPlaceholder: 'ابحث عن العناوين والعلامات والكتاب...',
+    },
+};
+
+function baseLocale(locale?: string) {
+    return (locale || 'en').split('-')[0].toLowerCase();
+}
 
 type StudioNews = {
     id: string;
@@ -124,9 +289,13 @@ function articleQualityScore(n: StudioNews) {
     return Math.min(100, score);
 }
 
-export default async function NewsStudioPage() {
+export default async function NewsStudioPage({ params }: { params: Promise<{ locale: string }> }) {
     await requireContentWriter();
+    const { locale } = await params;
+    const labels = LABELS_BY_LOCALE[baseLocale(locale)] || LABELS_BY_LOCALE.en;
     const news: StudioNews[] = await NewsService.getAllNews().catch(() => []);
+    const automationStatus = await new TeraiTimesPublicService().getAutomationStatus();
+    const trendCandidates = await NewsAutomationService.fetchGlobalTrends().catch(() => []);
     const publishedNews = news.filter((n) => (n.status || '').toLowerCase() === 'published');
     const draftNews = news.filter((n) => (n.status || '').toLowerCase() === 'draft');
     const trendingNews = news.filter((n) => n.is_trending);
@@ -232,6 +401,9 @@ export default async function NewsStudioPage() {
         .sort((a, b) => b.impactScore - a.impactScore)
         .slice(0, 8);
 
+    const unverifiedNews = news.filter((n) => normalizeTags(n.tags).includes('source_unverified')).slice(0, 8);
+    const blockedNews = news.filter((n) => normalizeTags(n.tags).includes('source_blocked')).slice(0, 8);
+
     return (
         <div className="min-h-screen bg-elite-bg text-slate-100 p-8 lg:p-12 space-y-16 selection:bg-elite-accent-cyan/30">
             {/* Header / Brand Strip */}
@@ -282,6 +454,196 @@ export default async function NewsStudioPage() {
                         </div>
                     </FadeIn>
                 ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                <FadeIn delay={0.35}>
+                    <div className="glass-card-premium p-8 rounded-[2.25rem] border border-white/5 hover:border-white/10 transition-all group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-elite-accent-emerald/5 rounded-full blur-3xl" />
+                        <div className="flex items-center justify-between mb-6">
+                            <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em]">Automation Status</span>
+                            <Gauge size={18} className="text-elite-accent-emerald" />
+                        </div>
+                        <div className={`text-3xl font-black ${automationStatus.maintenanceMode === 'healthy' && automationStatus.autoPublishEnabled ? 'text-elite-accent-emerald' : 'text-amber-300'}`}>
+                            {automationStatus.maintenanceMode === 'healthy' && automationStatus.autoPublishEnabled ? 'Active' : 'Limited'}
+                        </div>
+                        <div className="mt-3 text-[11px] uppercase tracking-[0.28em] text-slate-500 font-black">
+                            {automationStatus.autoPublishEnabled ? `${automationStatus.targetPerHour}/hr` : 'Manual'}
+                        </div>
+                        <div className="mt-6 grid grid-cols-3 gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            <div>
+                                <div className="text-[10px] text-slate-500">24h Auto</div>
+                                <div className="text-slate-200 text-base font-black">{automationStatus.last24hAutomatedPublished ?? 0}</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-slate-500">Pending</div>
+                                <div className="text-slate-200 text-base font-black">{automationStatus.pendingApprovalCount ?? 0}</div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] text-slate-500">Retention</div>
+                                <div className="text-slate-200 text-base font-black">{automationStatus.retentionDays}d</div>
+                            </div>
+                        </div>
+                    </div>
+                </FadeIn>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <FadeIn delay={0.36}>
+                    <div className="glass-card-premium p-6 rounded-[2rem] border border-white/5 hover:border-white/10 transition-all">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black">Governance</p>
+                        <h3 className="text-xl font-black text-white mt-2">Source Trust Dashboard</h3>
+                        <p className="text-xs text-slate-500 mt-2">Approve or block sources and manage allowlists.</p>
+                        <Link href="/admin/studio/news/source-trust" className="mt-4 inline-flex text-[10px] uppercase tracking-[0.25em] font-black text-elite-accent-cyan">
+                            Open Console →
+                        </Link>
+                    </div>
+                </FadeIn>
+                <FadeIn delay={0.38}>
+                    <div className="glass-card-premium p-6 rounded-[2rem] border border-white/5 hover:border-white/10 transition-all">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black">Scheduling</p>
+                        <h3 className="text-xl font-black text-white mt-2">Scrape Scheduler</h3>
+                        <p className="text-xs text-slate-500 mt-2">Trigger and configure automation cycles.</p>
+                        <Link href="/admin/studio/news/scheduler" className="mt-4 inline-flex text-[10px] uppercase tracking-[0.25em] font-black text-elite-accent-cyan">
+                            Open Scheduler →
+                        </Link>
+                    </div>
+                </FadeIn>
+                <FadeIn delay={0.4}>
+                    <div className="glass-card-premium p-6 rounded-[2rem] border border-white/5 hover:border-white/10 transition-all">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black">{labels.controls}</p>
+                        <h3 className="text-xl font-black text-white mt-2">{labels.scrapeConsole}</h3>
+                        <p className="text-xs text-slate-500 mt-2">Launch targeted scrapes and trend ingests.</p>
+                        <a href="#scrape-console" className="mt-4 inline-flex text-[10px] uppercase tracking-[0.25em] font-black text-elite-accent-cyan">
+                            {labels.jumpToConsole} →
+                        </a>
+                    </div>
+                </FadeIn>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <FadeIn delay={0.4}>
+                    <div id="scrape-console" className="glass-card-premium p-8 rounded-[2.25rem] border border-white/5 hover:border-white/10 transition-all">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{labels.scrapeControl}</p>
+                                <h3 className="text-2xl font-black text-white mt-2">{labels.targetedConsole}</h3>
+                            </div>
+                        </div>
+
+                        <form action={scrapeTargetedQueueAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input
+                                name="topic"
+                                placeholder={labels.topicPlaceholder}
+                                className="px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-sm text-slate-200"
+                            />
+                            <input
+                                name="category"
+                                defaultValue="World"
+                                placeholder={labels.categoryPlaceholder}
+                                className="px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-sm text-slate-200"
+                            />
+                            <input
+                                name="country"
+                                defaultValue="Global"
+                                placeholder={labels.countryPlaceholder}
+                                className="px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-sm text-slate-200"
+                            />
+                            <input
+                                name="region"
+                                placeholder={labels.regionPlaceholder}
+                                className="px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-sm text-slate-200"
+                            />
+                            <input
+                                name="state"
+                                placeholder={labels.statePlaceholder}
+                                className="px-4 py-3 rounded-xl bg-black/30 border border-white/10 text-sm text-slate-200"
+                            />
+                            <Button type="submit" className="bg-elite-accent-cyan text-black font-black uppercase tracking-[0.25em] text-[10px] h-12">
+                                {labels.queueScrape}
+                            </Button>
+                        </form>
+
+                        <div className="mt-8">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-3">{labels.trendingDiscovery}</p>
+                            <div className="space-y-3">
+                                {trendCandidates.length ? trendCandidates.slice(0, 6).map((trend) => (
+                                    <div key={`${trend.title}-${trend.source_url}`} className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                                        <div>
+                                            <p className="text-sm font-black text-white">{trend.title}</p>
+                                            <p className="text-[10px] uppercase tracking-widest text-slate-500">{trend.source_name || 'Discovery Feed'} • {trend.category}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <form action={ingestTrendDraftAction}>
+                                                <input type="hidden" name="title" value={trend.title} />
+                                                <input type="hidden" name="category" value={trend.category} />
+                                                <input type="hidden" name="country" value={trend.country || 'Global'} />
+                                                <input type="hidden" name="source_url" value={trend.source_url || ''} />
+                                                <input type="hidden" name="source_name" value={trend.source_name || ''} />
+                                                <Button type="submit" variant="ghost" className="border border-white/10 text-[9px] uppercase tracking-[0.25em]">{labels.draft}</Button>
+                                            </form>
+                                            <form action={ingestTrendPublishAction}>
+                                                <input type="hidden" name="title" value={trend.title} />
+                                                <input type="hidden" name="category" value={trend.category} />
+                                                <input type="hidden" name="country" value={trend.country || 'Global'} />
+                                                <input type="hidden" name="source_url" value={trend.source_url || ''} />
+                                                <input type="hidden" name="source_name" value={trend.source_name || ''} />
+                                                <Button type="submit" className="bg-white text-black font-black text-[9px] uppercase tracking-[0.25em]">{labels.publish}</Button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <p className="text-sm text-slate-500">No trends available.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </FadeIn>
+
+                <FadeIn delay={0.45}>
+                    <div className="glass-card-premium p-8 rounded-[2.25rem] border border-white/5 hover:border-white/10 transition-all">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Source Trust</p>
+                                <h3 className="text-2xl font-black text-white mt-2">Source Trust Dashboard</h3>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500 font-black">Unverified</p>
+                                <p className="text-3xl font-black text-amber-300 mt-2">{unverifiedNews.length}</p>
+                            </div>
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500 font-black">Blocked</p>
+                                <p className="text-3xl font-black text-red-400 mt-2">{blockedNews.length}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            {unverifiedNews.length ? unverifiedNews.map((item) => (
+                                <div key={item.id} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                        <p className="text-sm font-black text-white">{item.title}</p>
+                                        <p className="text-[10px] uppercase tracking-widest text-slate-500">{item.category} • {item.country}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <form action={approveSourceTrustAction}>
+                                            <input type="hidden" name="id" value={item.id} />
+                                            <Button type="submit" className="bg-elite-accent-emerald text-black font-black text-[9px] uppercase tracking-[0.25em]">Approve</Button>
+                                        </form>
+                                        <form action={blockSourceAction}>
+                                            <input type="hidden" name="id" value={item.id} />
+                                            <Button type="submit" variant="ghost" className="border border-white/10 text-[9px] uppercase tracking-[0.25em]">Block</Button>
+                                        </form>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-sm text-slate-500">No unverified sources.</p>
+                            )}
+                        </div>
+                    </div>
+                </FadeIn>
             </div>
 
             {/* Author Performance Dashboard */}
@@ -522,7 +884,7 @@ export default async function NewsStudioPage() {
                             <div className="relative group">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-hover:text-elite-accent-cyan transition-colors" />
                                 <input
-                                    placeholder="Scan Protocol..."
+                                    placeholder={labels.searchPlaceholder}
                                     className="pl-14 pr-8 h-12 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:border-elite-accent-cyan/50 focus:bg-white/10 transition-all w-72 placeholder:text-slate-700"
                                 />
                             </div>

@@ -12,6 +12,7 @@ export type NewsAuthorProfile = {
 function fallbackAuthorLabel(authorId?: string) {
   if (!authorId) return 'Unknown Desk';
   if (authorId === 'system') return 'System Desk';
+  if (authorId === 'global-intelligence-bot') return 'Terai Times Global Desk';
   return `Desk ${authorId.slice(0, 6).toUpperCase()}`;
 }
 
@@ -60,6 +61,14 @@ export async function getNewsAuthorsByIds(authorIds: string[]): Promise<Map<stri
 }
 
 export async function getNewsAuthorById(authorId: string): Promise<NewsAuthorProfile> {
+  if (authorId === 'global-intelligence-bot') {
+    return {
+      authorId,
+      name: 'Terai Times Global Desk',
+      role: 'AI-Assisted World News Desk',
+      bio: 'A hybrid reporting desk combining live source review, editorial automation, and verification signals.',
+    };
+  }
   const map = await getNewsAuthorsByIds([authorId]);
   return map.get(authorId) || { authorId, name: fallbackAuthorLabel(authorId) };
 }

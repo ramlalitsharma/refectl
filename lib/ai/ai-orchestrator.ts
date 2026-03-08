@@ -5,26 +5,43 @@ export const MultiAgentOrchestrator = {
      * Primary drafting agent (Gemini 1.5 Flash - Free Tier)
      * Fallback: OpenRouter Free Models
      */
-    async runAuthorAgent(params: { topic: string; region: string; sourceMaterial?: string }): Promise<NewsDraftResult> {
+    async runAuthorAgent(params: { topic: string; region: string; depth?: 'Brief' | 'Standard' | 'Longform'; sourceMaterial?: string }): Promise<NewsDraftResult> {
         console.log('[Multi-Agent] Author Agent: Initializing creative draft...');
 
         const googleKey = process.env.GOOGLE_AI_API_KEY;
         const openRouterKey = process.env.OPENROUTER_API_KEY;
+
+        const depth = params.depth || 'Standard';
+        const depthInstruction =
+            depth === 'Longform'
+                ? 'Target 1200-1800 words with multiple sections, context, implications, and risks.'
+                : depth === 'Brief'
+                    ? 'Target 350-550 words with concise factual structure.'
+                    : 'Target 700-1100 words with clear depth and sectioned analysis.';
 
         const prompt = `
             You are "The Author", a world-class news journalist for Terai Times.
             Draft a professional news article based on the following:
             Topic: ${params.topic}
             Region: ${params.region}
+            Required Depth: ${depth}
             Source Material: ${params.sourceMaterial || 'N/A'}
+            Depth Instruction: ${depthInstruction}
             
+            FORMATTING RULES FOR BODY (CRITICAL):
+            - Output clean HTML, NOT Markdown.
+            - Start the very first paragraph with exactly this structure for a drop-cap: <p><span class="nda-dropcap">FirstLetter</span>est of the word and sentence...</p>
+            - Use <h2> for section headers.
+            - Use <blockquote><p>Quote here</p></blockquote> for quotes.
+            - Write in a highly professional, objective, analytical tone similar to Reuters or The Financial Times.
+
             Return ONLY a JSON object with:
             {
                 "print_headline": "string",
                 "digital_headline": "string",
                 "subheadline": "string",
                 "executive_summary": "string",
-                "body": "string (markdown)",
+                "body": "string (HTML formatting)",
                 "suggested_tier": "string"
             }
         `;

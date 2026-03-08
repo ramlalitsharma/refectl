@@ -44,11 +44,9 @@ export default function DisclosuresPage() {
             <section className="space-y-2">
               <h2 className="text-xl font-bold">Live and Automated Content</h2>
               <p>
-                Some content—including our Nepal Election Live page—is updated automatically. Official election
-                tallies are fetched live from the Election Commission of Nepal (result.election.gov.np). News
-                updates may be aggregated from third-party RSS feeds and filtered for relevance. We clearly label
-                data sources and refresh intervals. This content is for informational use only; we are not
-                affiliated with the Election Commission or any political party.
+                Some content may be updated automatically or assembled from trusted external signals. We clearly
+                label automated workflows, source links, and refresh intervals where relevant. This content is
+                provided for informational use only.
               </p>
             </section>
           </div>

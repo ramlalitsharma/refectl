@@ -11,6 +11,15 @@ export interface ScrapeTarget {
     linkPattern: RegExp;
 }
 
+export type ArticleMediaIntelligence = {
+    snapshot: string;
+    headline?: string;
+    imageUrl?: string;
+    imageCredit?: string;
+    imageCaption?: string;
+    imageLicense?: 'partner' | 'creative_commons' | 'public_domain' | 'unknown';
+};
+
 const SCRAPE_TARGETS: ScrapeTarget[] = [
     {
         url: 'https://www.bbc.com/news',
@@ -154,8 +163,134 @@ export const AdvancedScraperService = {
             .replace(/\\u0027/g, "'")
             .replace(/&amp;/g, '&')
             .replace(/&quot;/g, '"')
+            .replace(/&#x27;|&#39;|&apos;/g, "'")
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
             .replace(/<[^>]*>?/gm, '')
             .trim();
+    },
+
+    extractMetaContent(html: string, patterns: RegExp[]): string {
+        for (const pattern of patterns) {
+            const match = pattern.exec(html);
+            if (match?.[1]) {
+                return this.cleanHtml(match[1]);
+            }
+        }
+        return '';
+    },
+
+    resolveAbsoluteUrl(baseUrl: string, value?: string): string {
+        if (!value) return '';
+        try {
+            return new URL(value, baseUrl).toString();
+        } catch {
+            return '';
+        }
+    },
+
+    inferImageLicense(imageUrl?: string, articleUrl?: string): 'partner' | 'creative_commons' | 'public_domain' | 'unknown' {
+        const subject = `${imageUrl || ''} ${articleUrl || ''}`.toLowerCase();
+        if (!subject) return 'unknown';
+        if (/creativecommons|cc-by|cc by|publicdomain|public-domain/.test(subject)) return 'creative_commons';
+        if (/unsplash\.com|pexels\.com|pixabay\.com/.test(subject)) return 'partner';
+        if (/wikimedia\.org|wikipedia\.org|nasa\.gov|unspash/.test(subject)) return 'public_domain';
+        return 'unknown';
+    },
+
+    extractArticleIntelligenceFromHtml(html: string, url: string): ArticleMediaIntelligence {
+        const normalized = html
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ');
+
+        const paragraphs = Array.from(normalized.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi))
+            .map((m) => this.cleanHtml(m[1] || ''))
+            .map((p) => p.replace(/\s+/g, ' ').trim())
+            .filter((p) => p.length >= 90)
+            .filter((p) => !/cookie|subscribe|sign up|advertis|newsletter/i.test(p))
+            .slice(0, 10);
+
+        const snapshot = paragraphs.join('\n\n').slice(0, 3500);
+        const headline = this.extractMetaContent(normalized, [
+            /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i,
+            /<meta[^>]+name=["']twitter:title["'][^>]+content=["']([^"']+)["']/i,
+            /<title[^>]*>([\s\S]*?)<\/title>/i,
+            /<h1[^>]*>([\s\S]*?)<\/h1>/i,
+        ]);
+
+        const imageRaw = this.extractMetaContent(normalized, [
+            /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+            /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
+            /<img[^>]+src=["']([^"']+)["'][^>]*>/i,
+        ]);
+        const imageCredit = this.extractMetaContent(normalized, [
+            /<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i,
+            /<meta[^>]+name=["']author["'][^>]+content=["']([^"']+)["']/i,
+        ]);
+        const imageCaption = this.extractMetaContent(normalized, [
+            /<meta[^>]+property=["']og:image:alt["'][^>]+content=["']([^"']+)["']/i,
+            /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/i,
+        ]);
+
+        const imageUrl = this.resolveAbsoluteUrl(url, imageRaw);
+        const imageLicense = this.inferImageLicense(imageUrl, url);
+
+        return {
+            snapshot,
+            headline: headline || undefined,
+            imageUrl: imageUrl || undefined,
+            imageCredit: imageCredit || undefined,
+            imageCaption: imageCaption || undefined,
+            imageLicense,
+        };
+    },
+
+    async extractArticleSnapshot(url: string): Promise<string> {
+        if (!url || !/^https?:\/\//i.test(url)) return '';
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 9000);
+            const response = await fetch(url, {
+                cache: 'no-store',
+                redirect: 'follow',
+                signal: controller.signal,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+                }
+            });
+            clearTimeout(timeout);
+
+            if (!response.ok) return '';
+            const html = await response.text();
+
+            return this.extractArticleIntelligenceFromHtml(html, url).snapshot;
+        } catch {
+            return '';
+        }
+    },
+
+    async extractArticleIntelligence(url: string): Promise<ArticleMediaIntelligence> {
+        if (!url || !/^https?:\/\//i.test(url)) return { snapshot: '' };
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 9000);
+            const response = await fetch(url, {
+                cache: 'no-store',
+                redirect: 'follow',
+                signal: controller.signal,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+                }
+            });
+            clearTimeout(timeout);
+            if (!response.ok) return { snapshot: '' };
+            const html = await response.text();
+            return this.extractArticleIntelligenceFromHtml(html, url);
+        } catch {
+            return { snapshot: '' };
+        }
     },
 
     /**
@@ -186,13 +321,19 @@ export const AdvancedScraperService = {
             const itemRegex = /<item>([\s\S]*?)<\/item>/g;
             const titleRegex = /<title>(.*?)<\/title>/;
             const descRegex = /<description>([\s\S]*?)<\/description>/;
+            const linkRegex = /<link>([\s\S]*?)<\/link>/;
+            const sourceRegex = /<source[^>]*>([\s\S]*?)<\/source>/;
+            const pubDateRegex = /<pubDate>([\s\S]*?)<\/pubDate>/;
 
             let match;
             let limit = 0;
-            while ((match = itemRegex.exec(xml)) !== null && limit < 5) {
+            while ((match = itemRegex.exec(xml)) !== null && limit < 8) {
                 const itemBlock = match[1];
                 const titleMatch = titleRegex.exec(itemBlock);
                 const descMatch = descRegex.exec(itemBlock);
+                const linkMatch = linkRegex.exec(itemBlock);
+                const sourceMatch = sourceRegex.exec(itemBlock);
+                const pubDateMatch = pubDateRegex.exec(itemBlock);
 
                 if (titleMatch) {
                     const title = titleMatch[1].replace(/<!\[CDATA\[(.*?)\]\]>/, '$1');
@@ -202,7 +343,19 @@ export const AdvancedScraperService = {
                         // Clean HTML from description
                         desc = this.cleanHtml(desc);
                     }
-                    items.push(`Title: ${title}\nContext: ${desc}`);
+                    const link = linkMatch?.[1]?.trim() || '';
+                    const source = this.cleanHtml((sourceMatch?.[1] || '').replace(/<!\[CDATA\[(.*?)\]\]>/, '$1'));
+                    const publishedAt = this.cleanHtml(pubDateMatch?.[1] || '');
+                    const articleSnapshot = await this.extractArticleSnapshot(link);
+
+                    items.push([
+                        `Title: ${title}`,
+                        source ? `Source: ${source}` : '',
+                        publishedAt ? `Published: ${publishedAt}` : '',
+                        link ? `URL: ${link}` : '',
+                        `Context: ${desc}`,
+                        articleSnapshot ? `Article Snapshot:\n${articleSnapshot}` : ''
+                    ].filter(Boolean).join('\n'));
                     limit++;
                 }
             }

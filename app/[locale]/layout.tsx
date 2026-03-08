@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Lora } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Suspense } from "react";
 import Script from "next/script";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { RouteAwareShell } from "@/components/layout/RouteAwareShell";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -184,24 +182,6 @@ export default async function RootLayout({
             name="google-adsense-account"
             content="ca-pub-8149507764464883"
           />
-          {/* Google Analytics 4 */}
-          <Script
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-RNZ9J7M4CD"
-            strategy="afterInteractive"
-          />
-          <Script
-            id="gtag-init"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-RNZ9J7M4CD');
-              `,
-            }}
-          />
           <link
             rel="preconnect"
             href="https://clerk.refectl.com"
@@ -278,24 +258,14 @@ export default async function RootLayout({
           )}
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} antialiased bg-background text-foreground transition-colors duration-300 selection:bg-elite-accent-cyan/30 custom-scrollbar`}
+          className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} antialiased bg-background text-foreground transition-colors duration-300 selection:bg-elite-accent-cyan/30 custom-scrollbar ${process.env.NODE_ENV !== "production" ? "dev-no-ads" : ""}`}
         >
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ErrorBoundary>
               <ThemeProvider>
                 <ToastProvider>
                   <GlobalBackButton />
-                  <div className="flex min-h-screen flex-col">
-                    <Suspense>
-                      <Navbar />
-                    </Suspense>
-
-                    {/* MAIN CONTENT */}
-                    <main className="flex-1">
-                      {children}
-                    </main>
-                    <Footer />
-                  </div>
+                  <RouteAwareShell>{children}</RouteAwareShell>
                   <CookieConsent />
                   <ServiceWorkerRegistration />
                 </ToastProvider>

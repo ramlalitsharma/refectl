@@ -4,7 +4,24 @@ import { NewsAIService, NewsDraftResult, ContextBriefResult, EditorialStrategyRe
 import { requireContentWriter } from '@/lib/admin-check';
 import { AdvancedScraperService } from '@/lib/news-scraper';
 import { NewsAutomationService } from '@/lib/news-automation';
+import { NewsScrapeOrchestrator } from '@/lib/news-scrape-orchestrator';
 import { NewsCategory, NewsCountry, News } from '@/lib/models/News';
+
+function normalizeStrategy(strategy: {
+    editorial_summary?: string;
+    operational_tags?: unknown;
+    sentiment?: 'Bullish' | 'Bearish' | 'Neutral';
+    market_entities?: unknown;
+    impact_score?: number;
+}) {
+    return {
+        editorial_summary: String(strategy.editorial_summary || '').trim() || 'Terai Times analysis is continuing as new reporting arrives.',
+        operational_tags: Array.isArray(strategy.operational_tags) ? strategy.operational_tags.filter(Boolean) : [],
+        sentiment: strategy.sentiment || 'Neutral',
+        market_entities: Array.isArray(strategy.market_entities) ? strategy.market_entities.filter(Boolean) : [],
+        impact_score: Number.isFinite(Number(strategy.impact_score)) ? Number(strategy.impact_score) : 55,
+    };
+}
 
 /**
  * Action to synthesize a news draft.
@@ -56,7 +73,7 @@ export async function getEditorialStrategyAction(content: string, title?: string
 /**
  * Action to fetch global trending topics.
  */
-export async function getGlobalTrendsAction(): Promise<{ data?: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; slug?: string }[]; error?: string }> {
+export async function getGlobalTrendsAction(): Promise<{ data?: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string; slug?: string }[]; error?: string }> {
     try {
         await requireContentWriter();
         const data = await NewsAutomationService.fetchGlobalTrends();
@@ -75,6 +92,7 @@ export async function autoGenerateNewsAction(params: {
     country?: NewsCountry;
     author_id: string;
     source_url?: string;
+    source_name?: string;
 }): Promise<{ data?: Partial<News>; error?: string }> {
     try {
         await requireContentWriter();
@@ -121,20 +139,22 @@ export async function scrapeAndGenerateTargetedNewsAction(params: {
             depth: 'Standard',
             sourceMaterial
         });
+        const normalizedStrategy = normalizeStrategy(strategy);
 
         // 5. Assemble Preview payload (Does not save to DB)
         const newsItem: Partial<News> = {
             title: draft.print_headline,
             content: draft.body,
-            summary: strategy.editorial_summary,
+            summary: normalizedStrategy.editorial_summary,
             category: params.category as NewsCategory || 'World',
             country: params.country as NewsCountry || 'Global',
-            tags: strategy.operational_tags,
+            tags: normalizedStrategy.operational_tags,
             author_id: params.author_id,
-            sentiment: strategy.sentiment,
-            market_entities: strategy.market_entities,
-            impact_score: strategy.impact_score,
-            source_url: `${mode === 'AI' ? 'Google News RSS Aggregation' : 'Deterministic Sanitizer Failover'}: ${query}`
+            sentiment: normalizedStrategy.sentiment,
+            market_entities: normalizedStrategy.market_entities,
+            impact_score: normalizedStrategy.impact_score,
+            source_url: `${mode === 'AI' ? 'Google News RSS Aggregation' : 'Deterministic Sanitizer Failover'}: ${query}`,
+            source_name: 'Google News RSS'
         };
 
         return { data: newsItem };
@@ -148,12 +168,103 @@ export async function scrapeAndGenerateTargetedNewsAction(params: {
 /**
  * Public action to ingest a global trend on-demand when a user clicks it essentially.
  */
-export async function ingestPublicTrendAction(trend: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string }): Promise<{ data?: Partial<News>; error?: string }> {
+export async function ingestPublicTrendAction(trend: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string }): Promise<{ data?: Partial<News>; error?: string }> {
     try {
-        const data = await NewsAutomationService.ingestGlobalTrend(trend);
+        const data = await NewsAutomationService.ingestGlobalTrend({
+            ...trend,
+            forcePublish: true,
+        });
         return { data };
     } catch (error: any) {
         console.error('Public Ingest Error:', error);
         return { error: error.message || 'Ingestion Failed' };
+    }
+}
+
+export async function ingestTrendDraftAction(formData: FormData) {
+    try {
+        await requireContentWriter();
+        const title = String(formData.get('title') || '').trim();
+        const category = formData.get('category') as NewsCategory;
+        const country = (formData.get('country') as NewsCountry) || 'Global';
+        const source_url = String(formData.get('source_url') || '').trim();
+        const source_name = String(formData.get('source_name') || '').trim();
+
+        const { auth } = await import('@clerk/nextjs/server');
+        const { userId } = await auth();
+
+        const data = await NewsScrapeOrchestrator.ingestTrend({
+            title,
+            category,
+            country,
+            source_url,
+            source_name,
+            author_id: userId || 'system',
+            status: 'pending_approval'
+        });
+
+        return { data };
+    } catch (error: any) {
+        console.error('Trend Draft Ingest Error:', error);
+        return { error: error.message || 'Trend Draft Failed' };
+    }
+}
+
+export async function ingestTrendPublishAction(formData: FormData) {
+    try {
+        await requireContentWriter();
+        const title = String(formData.get('title') || '').trim();
+        const category = formData.get('category') as NewsCategory;
+        const country = (formData.get('country') as NewsCountry) || 'Global';
+        const source_url = String(formData.get('source_url') || '').trim();
+        const source_name = String(formData.get('source_name') || '').trim();
+
+        const { auth } = await import('@clerk/nextjs/server');
+        const { userId } = await auth();
+
+        const data = await NewsScrapeOrchestrator.ingestTrend({
+            title,
+            category,
+            country,
+            source_url,
+            source_name,
+            author_id: userId || 'system',
+            status: 'published',
+            forcePublish: true,
+        });
+
+        return { data };
+    } catch (error: any) {
+        console.error('Trend Publish Ingest Error:', error);
+        return { error: error.message || 'Trend Publish Failed' };
+    }
+}
+
+export async function scrapeTargetedQueueAction(formData: FormData) {
+    try {
+        await requireContentWriter();
+        const topic = String(formData.get('topic') || '').trim();
+        const category = String(formData.get('category') || 'World');
+        const country = String(formData.get('country') || 'Global');
+        const region = String(formData.get('region') || '').trim();
+        const state = String(formData.get('state') || '').trim();
+
+        const { auth } = await import('@clerk/nextjs/server');
+        const { userId } = await auth();
+
+        const data = await NewsScrapeOrchestrator.ingestTargeted({
+            topic,
+            category,
+            country,
+            region: region || undefined,
+            state: state || undefined,
+            author_id: userId || 'system',
+            status: 'pending_approval'
+        });
+
+        return { data };
+    } catch (error: any) {
+        console.error('Targeted Queue Error:', error);
+        return { error: error.message || 'Targeted Queue Failed' };
     }
 }

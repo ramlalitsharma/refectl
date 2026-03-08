@@ -11,16 +11,16 @@ import { ArrowLeft, FileText, Globe2, TrendingUp } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string; locale: string }> }
 ): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
   const authorId = decodeURIComponent(id);
   const author = await getNewsAuthorById(authorId);
   return {
     title: `${author.name} | Author Desk | Terai Times`,
     description: `Read professional reports and newsroom analysis by ${author.name} at Terai Times.`,
     alternates: {
-      canonical: `${BRAND_URL}/news/author/${encodeURIComponent(authorId)}`,
+      canonical: `${BRAND_URL}/${locale}/news/author/${encodeURIComponent(authorId)}`,
     },
   };
 }

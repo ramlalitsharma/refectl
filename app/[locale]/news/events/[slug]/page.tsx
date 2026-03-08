@@ -10,16 +10,16 @@ import { ArrowLeft } from 'lucide-react';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string; locale: string }> }
 ): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const event = await NewsEventService.getEventBySlug(slug);
   if (!event) return { title: 'Event Not Found | Terai Times' };
   return {
     title: event.metaTitle || `${event.title} | Special Event | Terai Times`,
     description: event.metaDescription || event.summary || `Live special event updates from Terai Times.`,
     alternates: {
-      canonical: `${BRAND_URL}/news/events/${event.slug}`,
+      canonical: `${BRAND_URL}/${locale}/news/events/${event.slug}`,
     },
   };
 }
@@ -49,4 +49,3 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     </div>
   );
 }
-

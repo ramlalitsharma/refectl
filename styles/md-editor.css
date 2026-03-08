@@ -214,6 +214,62 @@
   white-space: nowrap;
   color: var(--color-fg-default);
 }
+
+/* ── News Editor Dark Mode Overrides ─────────────────────────────────────── */
+.news-editor-surface {
+  background: #fdfdfc;
+  color: #0f172a;
+}
+
+.dark .news-editor-surface {
+  background: #0b1220;
+  color: #e2e8f0;
+}
+
+.dark .news-editor-surface .bg-white,
+.dark .news-editor-surface .bg-white\/80,
+.dark .news-editor-surface .bg-white\/90 {
+  background-color: #111827 !important;
+}
+
+.dark .news-editor-surface .border-slate-100,
+.dark .news-editor-surface .border-slate-200,
+.dark .news-editor-surface .border-slate-300 {
+  border-color: #1f2937 !important;
+}
+
+.dark .news-editor-surface .text-slate-900,
+.dark .news-editor-surface .text-slate-800,
+.dark .news-editor-surface .text-slate-700 {
+  color: #e5e7eb !important;
+}
+
+.dark .news-editor-surface .text-slate-600,
+.dark .news-editor-surface .text-slate-500,
+.dark .news-editor-surface .text-slate-400 {
+  color: #9ca3af !important;
+}
+
+.dark .news-editor-surface input,
+.dark .news-editor-surface select,
+.dark .news-editor-surface textarea {
+  background-color: #0f172a !important;
+  color: #e5e7eb !important;
+  border-color: #1f2937 !important;
+}
+
+.dark .news-editor-surface input::placeholder,
+.dark .news-editor-surface textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark .news-editor-surface .w-md-editor,
+.dark .news-editor-surface .w-md-editor-text,
+.dark .news-editor-surface .w-md-editor-text-input,
+.dark .news-editor-surface .w-md-editor-text-pre {
+  background-color: #0b1220 !important;
+  color: #e5e7eb !important;
+}
 .w-md-editor-toolbar li > button:hover,
 .w-md-editor-toolbar li > button:focus {
   background-color: var(--color-neutral-muted);

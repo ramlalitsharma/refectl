@@ -13,6 +13,7 @@ const LOW_QUALITY_PATTERNS = [
   /click here/i,
   /no direct news events found/i,
   /untitled/i,
+  /^global news update$/i,
 ];
 
 function normalizeWhitespace(text: string): string {
@@ -24,8 +25,15 @@ function clamp(n: number, min: number, max: number): number {
 }
 
 export const NewsRevenueMode = {
-  optimizeHeadline(title: string, category?: string, country?: string): string {
-    const clean = normalizeWhitespace(title || 'Global News Update');
+  optimizeHeadline(title: string, category?: string, country?: string, fallbackTopic?: string): string {
+    const baseTitle = normalizeWhitespace(title || '');
+    const fallback = normalizeWhitespace(fallbackTopic || '');
+    const genericHeadline =
+      !baseTitle ||
+      /^global news update$/i.test(baseTitle) ||
+      /^latest insights regarding /i.test(baseTitle) ||
+      baseTitle.length < 12;
+    const clean = genericHeadline ? (fallback || 'Global News Update') : baseTitle;
     const prefix = [category, country].filter(Boolean).join(' • ');
     const candidate = clean.length >= 18 ? clean : `${prefix}: ${clean}`;
     if (candidate.length <= 86) return candidate;

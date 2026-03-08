@@ -1,12 +1,13 @@
 export type NewsStatus = 'draft' | 'pending_approval' | 'published';
 
-export type NewsCategory = 'World' | 'Politics' | 'Technology' | 'Finance' | 'Environment' | 'Culture' | 'Health' | 'Opinion' | 'Local';
+export type NewsCategory = 'World' | 'Politics' | 'Technology' | 'Tech' | 'Finance' | 'Business' | 'Environment' | 'Culture' | 'Health' | 'Opinion' | 'Local' | 'Science';
 
 export type NewsCountry =
     | 'Global' | 'Nepal' | 'India' | 'USA' | 'UK'
     | 'Canada' | 'Australia' | 'Germany' | 'France' | 'Japan'
     | 'China' | 'Brazil' | 'South Africa' | 'UAE' | 'Singapore'
-    | 'Kenya' | 'Mexico' | 'Italy' | 'South Korea' | 'Israel';
+    | 'Kenya' | 'Mexico' | 'Italy' | 'South Korea' | 'Israel'
+    | 'Russia' | 'Indonesia' | 'Saudi Arabia' | 'Turkey' | 'Nigeria' | 'Egypt';
 
 export interface News {
     id: string; // UUID from Supabase

@@ -9,6 +9,12 @@ import Script from 'next/script';
  * which often improves layout stability and ad density.
  */
 export function AdSenseScript() {
+    const enableAds =
+        process.env.NODE_ENV === 'production' ||
+        process.env.NEXT_PUBLIC_ENABLE_ADS_DEV === 'true';
+
+    if (!enableAds) return null;
+
     return (
         <>
             <Script

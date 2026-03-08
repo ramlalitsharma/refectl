@@ -39,6 +39,26 @@ export interface RoleNavigationConfig {
   showViewAs: boolean;
 }
 
+const UTILITIES_ITEMS: NavLink[] = [
+  { href: '/tools', label: 'Utilities Hub', icon: '🛠️' },
+  { href: '/tools/image-to-pdf', label: 'Image to PDF', icon: '🖼️' },
+  { href: '/tools/pdf-merge', label: 'PDF Merge', icon: '🧩' },
+  { href: '/tools/pdf-split', label: 'PDF Split', icon: '✂️' },
+  { href: '/tools/pdf-compress', label: 'PDF Compress', icon: '🗜️' },
+  { href: '/tools/pdf-to-word', label: 'PDF to Word', icon: '📝' },
+  { href: '/tools/pdf-to-excel', label: 'PDF to Excel', icon: '📊' },
+  { href: '/tools/url-to-pdf', label: 'URL to PDF', icon: '🔗' },
+  { href: '/tools/image-convert', label: 'Image Convert/Resize', icon: '🎞️' },
+  { href: '/tools/image-compress', label: 'Image Compress', icon: '📉' },
+  { href: '/tools/ocr', label: 'OCR (Image/PDF → Text)', icon: '🔍' },
+  { href: '/tools/text', label: 'Text Utilities', icon: '✍️' },
+  { href: '/tools/qr', label: 'QR Generator', icon: '🔳' },
+  { href: '/tools/password', label: 'Password Generator', icon: '🔐' },
+  { href: '/tools/timestamp', label: 'Timestamp Converter', icon: '⏱️' },
+  { href: '/tools/unit', label: 'Unit Converter', icon: '📏' },
+  { href: '/tools/calculator', label: 'Commercial Calculator', icon: '🧮' },
+];
+
 export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   // 👑 Super Admin - Full platform access
   superadmin: {
@@ -103,6 +123,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/admin/settings', label: 'System Settings', icon: '⚙️' },
         ],
       },
+
+      // 🛠️ Utilities - Support Tools
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Professional toolkits and calculators',
+        items: UTILITIES_ITEMS,
+      },
     ],
     dashboardLink: { href: '/admin/super', label: 'Super Admin Console' },
     consoleLink: { href: '/admin/super', label: 'Super Admin Console' },
@@ -155,6 +183,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/admin/compliance', label: 'Compliance', icon: '⚖️' },
           { href: '/admin/proctoring', label: 'Proctoring Center', icon: '🔒' },
         ],
+      },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Professional toolkits',
+        items: UTILITIES_ITEMS,
       },
     ],
     dashboardLink: { href: '/admin/dashboard', label: 'Admin Dashboard' },
@@ -219,6 +255,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/question-bank', label: 'Question Bank', icon: '🗂️' },
         ],
       },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Support tools',
+        items: UTILITIES_ITEMS,
+      },
     ],
     dashboardLink: { href: '/teacher/dashboard', label: 'Teacher Dashboard' },
     showAdminBadge: false,
@@ -260,6 +304,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/forum', label: 'Forums', icon: '💬' },
         ],
       },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Support tools',
+        items: UTILITIES_ITEMS,
+      },
     ],
     dashboardLink: { href: '/admin/studio/news', label: 'News Studio' },
     showAdminBadge: true,
@@ -299,6 +351,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/news', label: 'Terai Times', icon: '📰' },
           { href: '/forum', label: 'Forums', icon: '💬' },
         ],
+      },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Support tools',
+        items: UTILITIES_ITEMS,
       },
     ],
     dashboardLink: { href: '/admin/studio/news', label: 'News Studio' },
@@ -350,6 +410,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
 
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Support toolkits',
+        items: UTILITIES_ITEMS,
+      },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
@@ -397,6 +465,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
 
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
+
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Support toolkits',
+        items: UTILITIES_ITEMS,
+      },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
@@ -427,13 +503,21 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
+      // 🛠️ Utilities
+      {
+        label: 'Utilities',
+        icon: '🛠️',
+        description: 'Free toolkits',
+        items: UTILITIES_ITEMS,
+      },
+
       {
         label: 'Start Learning',
         icon: '👑',
         description: 'Join our community',
         items: [
           { href: '/pricing', label: 'Browse Plans', icon: '💎' },
-          { href: '/shop', label: 'Shop', icon: '�' },
+          { href: '/shop', label: 'Shop', icon: '' },
         ],
       },
     ],

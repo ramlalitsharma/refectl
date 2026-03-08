@@ -177,18 +177,49 @@ export default function NewsEditorPage() {
                             </div>
                             <div className="p-8 space-y-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Distribution Sector</label>
-                                    <select
-                                        className="w-full h-12 rounded-xl border-white/10 text-xs font-black bg-white/5 text-white focus:border-elite-accent-cyan/50 focus:ring-0 appearance-none px-4"
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Distribution Sector (Category)</label>
+                                    <input
+                                        type="text"
+                                        list="news-categories"
+                                        className="w-full h-12 rounded-xl border border-white/10 text-xs font-black bg-white/5 text-white focus:border-elite-accent-cyan/50 focus:ring-1 focus:ring-elite-accent-cyan/50 px-4 placeholder:text-slate-600"
+                                        placeholder="Select or type new category..."
                                         value={formData.category}
                                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                                    >
-                                        <option className="bg-elite-bg">Product Update</option>
-                                        <option className="bg-elite-bg">Partnership</option>
-                                        <option className="bg-elite-bg">Course News</option>
-                                        <option className="bg-elite-bg">Events</option>
-                                        <option className="bg-elite-bg">Community</option>
-                                    </select>
+                                    />
+                                    <datalist id="news-categories">
+                                        <option value="World" />
+                                        <option value="Politics" />
+                                        <option value="Business" />
+                                        <option value="Technology" />
+                                        <option value="Finance" />
+                                        <option value="Environment" />
+                                        <option value="Culture" />
+                                        <option value="Health" />
+                                    </datalist>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Reporting Region (Country)</label>
+                                    <input
+                                        type="text"
+                                        list="news-countries"
+                                        className="w-full h-12 rounded-xl border border-white/10 text-xs font-black bg-white/5 text-white focus:border-elite-accent-cyan/50 focus:ring-1 focus:ring-elite-accent-cyan/50 px-4 placeholder:text-slate-600"
+                                        placeholder="Select or type new country..."
+                                        value={typeof formData.country === 'string' ? formData.country : 'Global'}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                                    />
+                                    <datalist id="news-countries">
+                                        <option value="Global" />
+                                        <option value="USA" />
+                                        <option value="UK" />
+                                        <option value="Nepal" />
+                                        <option value="India" />
+                                        <option value="China" />
+                                        <option value="Japan" />
+                                        <option value="Germany" />
+                                        <option value="France" />
+                                        <option value="Brazil" />
+                                    </datalist>
                                 </div>
 
                                 <div className="space-y-3">

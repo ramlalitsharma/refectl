@@ -30,6 +30,12 @@ import { ViewAsSwitcher } from "@/components/admin/ViewAsSwitcher";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { getNavigationForRole, type UserRole } from "@/lib/navigation-config";
 
+function isNewsPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const segments = pathname.toLowerCase().split('/').filter(Boolean);
+  return segments.includes('news');
+}
+
 export function Navbar() {
   const t = useTranslations('Common');
   const pathname = usePathname();
@@ -198,6 +204,46 @@ export function Navbar() {
                 if ('items' in item) {
                   const dropdown = item as import('@/lib/navigation-config').NavDropdown;
                   const isOpen = openDesktopDropdown === idx;
+                  const isLargeMenu = dropdown.items.length > 8;
+                  const utilityLabel = dropdown.label.toLowerCase().includes('utilit');
+                  const utilityGroups = utilityLabel
+                    ? [
+                      {
+                        title: 'PDF Tools',
+                        items: dropdown.items.filter((subItem) => subItem.href.includes('/pdf') || subItem.href.includes('/url-to-pdf')),
+                      },
+                      {
+                        title: 'Image Tools',
+                        items: dropdown.items.filter((subItem) => subItem.href.includes('/image') || subItem.href.includes('/ocr')),
+                      },
+                      {
+                        title: 'Text & Security',
+                        items: dropdown.items.filter((subItem) => subItem.href.includes('/text') || subItem.href.includes('/password') || subItem.href.includes('/qr')),
+                      },
+                      {
+                        title: 'Calculators',
+                        items: dropdown.items.filter((subItem) => subItem.href.includes('/timestamp') || subItem.href.includes('/unit') || subItem.href.includes('/calculator')),
+                      },
+                    ].filter((group) => group.items.length > 0)
+                    : [];
+                  const autoColumns = !utilityLabel && isLargeMenu ? Math.min(4, Math.max(2, Math.ceil(dropdown.items.length / 6))) : 1;
+                  const autoChunkSize = autoColumns > 1 ? Math.ceil(dropdown.items.length / autoColumns) : dropdown.items.length;
+                  const autoGroups =
+                    autoColumns > 1
+                      ? Array.from({ length: autoColumns }, (_, colIdx) => ({
+                        title: colIdx === 0 ? dropdown.label : `${dropdown.label} ${colIdx + 1}`,
+                        items: dropdown.items.slice(colIdx * autoChunkSize, (colIdx + 1) * autoChunkSize),
+                      })).filter((group) => group.items.length > 0)
+                      : [{ title: dropdown.label, items: dropdown.items }];
+                  const groups = utilityLabel ? utilityGroups : autoGroups;
+                  const gridColsClass =
+                    groups.length >= 4
+                      ? 'grid-cols-4'
+                      : groups.length === 3
+                        ? 'grid-cols-3'
+                        : groups.length === 2
+                          ? 'grid-cols-2'
+                          : 'grid-cols-1';
                   return (
                     <div
                       key={idx}
@@ -233,48 +279,64 @@ export function Navbar() {
                       {/* Enhanced Dropdown Menu with Description */}
                       <div
                         id={`desktop-nav-dropdown-${idx}`}
-                        className={`absolute left-0 top-full mt-2 w-72 transition-all duration-200 ease-out z-[1001] ${
-                          isOpen
+                        className={`absolute left-1/2 -translate-x-1/2 top-full mt-3 transition-all duration-200 ease-out z-[1001] max-w-[calc(100vw-2rem)] ${isOpen
                             ? "opacity-100 visible translate-y-0"
                             : "opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
-                        }`}
+                          } ${isLargeMenu ? "w-[min(1000px,92vw)]" : "w-[min(560px,92vw)]"}`}
                       >
-                        <div className="glass-card-premium rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+                        <div className="rounded-2xl border border-white/10 overflow-hidden shadow-[0_34px_90px_rgba(0,0,0,0.72)] bg-[#0a0d13]/96 backdrop-blur-2xl">
                           {/* Dropdown Header with Description */}
                           {dropdown.description && (
-                            <div className="px-5 py-3 bg-white/5 border-b border-white/5">
+                            <div className="px-6 py-4 bg-white/[0.03] border-b border-white/10">
                               <div className="flex items-start gap-2">
                                 {dropdown.icon && <span className="text-base mt-1">{dropdown.icon}</span>}
                                 <div className="flex-1">
-                                  <div className="text-xs font-black text-white mb-1">{dropdown.label}</div>
-                                  <div className="text-[11px] text-slate-400">{dropdown.description}</div>
+                                  <div className="text-[11px] font-black uppercase tracking-[0.14em] text-white/90 mb-1">{dropdown.label}</div>
+                                  <div className="text-[12px] text-slate-300/80">{dropdown.description}</div>
                                 </div>
                               </div>
                             </div>
                           )}
-                          
-                          {/* Dropdown Items */}
-                          <div className="space-y-1 p-2">
-                            {dropdown.items.map((subItem) => {
-                              const isActive = pathname?.startsWith(subItem.href.split("?")[0]);
-                              return (
-                                <Link
-                                  key={subItem.href}
-                                  href={subItem.href}
-                                  className={`block px-4 py-2.5 hover:bg-white/5 transition-all duration-200 ease-out flex items-center gap-3 rounded-lg ${isActive ? 'bg-elite-accent-cyan/10 font-black text-elite-accent-cyan' : 'text-slate-400 hover:text-white'
-                                    }`}
-                                  onClick={() => setOpenDesktopDropdown(null)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Escape") {
-                                      setOpenDesktopDropdown(null);
-                                    }
-                                  }}
+
+                          <div className={`${isLargeMenu ? "max-h-[72vh] overflow-auto custom-scrollbar" : ""}`}>
+                            <div className={`grid ${gridColsClass} gap-0`}>
+                              {groups.map((group, groupIdx) => (
+                                <div
+                                  key={`${dropdown.label}-${group.title}-${groupIdx}`}
+                                  className={`px-5 py-4 ${groupIdx > 0 ? 'border-l border-white/10' : ''}`}
                                 >
-                                  {subItem.icon && <span className="text-base">{subItem.icon}</span>}
-                                  <span className="text-sm">{subItem.label}</span>
-                                </Link>
-                              );
-                            })}
+                                  {isLargeMenu && (
+                                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-3">
+                                      {group.title}
+                                    </div>
+                                  )}
+                                  <div className="space-y-1">
+                                    {group.items.map((subItem) => {
+                                      const isActive = pathname?.startsWith(subItem.href.split("?")[0]);
+                                      return (
+                                        <Link
+                                          key={subItem.href}
+                                          href={subItem.href}
+                                          className={`block px-3 py-2 rounded-lg transition-all duration-200 ease-out text-[14px] leading-5 ${isActive ? 'bg-elite-accent-cyan/15 font-semibold text-elite-accent-cyan' : 'text-slate-200/90 hover:text-white hover:bg-white/6'
+                                            }`}
+                                          onClick={() => setOpenDesktopDropdown(null)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Escape") {
+                                              setOpenDesktopDropdown(null);
+                                            }
+                                          }}
+                                        >
+                                          <span className="inline-flex items-center gap-2.5">
+                                            {subItem.icon && <span className="text-sm opacity-90">{subItem.icon}</span>}
+                                            <span>{subItem.label}</span>
+                                          </span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -545,29 +607,31 @@ export function Navbar() {
                 </div>
               </SignedIn>
             )}
-            <SignedOut>
-              <div className="hidden lg:flex items-center gap-2 shrink-0">
-                <SignInButton mode="modal">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 whitespace-nowrap hidden xl:flex"
-                  >
-                    {t('login')}
-                  </Button>
-                </SignInButton>
-                <SignInButton mode="modal">
-                  <Button variant="outline" size="sm" className="whitespace-nowrap xl:hidden border-slate-200 dark:border-white text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10">
-                    {t('login')}
-                  </Button>
-                </SignInButton>
-                <SignInButton mode="modal">
-                  <Button variant="inverse" size="sm" className="whitespace-nowrap bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white/90">
-                    {t('signup')}
-                  </Button>
-                </SignInButton>
-              </div>
-            </SignedOut>
+            {mounted && (
+              <SignedOut>
+                <div className="hidden lg:flex items-center gap-2 shrink-0">
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 whitespace-nowrap hidden xl:flex"
+                    >
+                      {t('login')}
+                    </Button>
+                  </SignInButton>
+                  <SignInButton mode="modal">
+                    <Button variant="outline" size="sm" className="whitespace-nowrap xl:hidden border-slate-200 dark:border-white text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10">
+                      {t('login')}
+                    </Button>
+                  </SignInButton>
+                  <SignInButton mode="modal">
+                    <Button variant="inverse" size="sm" className="whitespace-nowrap bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white/90">
+                      {t('signup')}
+                    </Button>
+                  </SignInButton>
+                </div>
+              </SignedOut>
+            )}
           </div>
         </div>
 
@@ -596,7 +660,7 @@ export function Navbar() {
               </div>
 
               {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-6">
                 {/* Primary Navigation */}
                 <div className="space-y-4">
                   {navConfig.primaryLinks.map((item, idx) => {
@@ -617,7 +681,7 @@ export function Navbar() {
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Category Items */}
                           <div className="space-y-1 p-2">
                             {dropdown.items.map((subItem) => {

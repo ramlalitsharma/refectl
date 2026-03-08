@@ -54,6 +54,7 @@ export const NewsAIService = {
             return await MultiAgentOrchestrator.runAuthorAgent({
                 topic: params.topic,
                 region: params.region,
+                depth: params.depth,
                 sourceMaterial: params.sourceMaterial
             });
         } catch (error) {
@@ -114,6 +115,7 @@ export const NewsAIService = {
             const initialDraft = await MultiAgentOrchestrator.runAuthorAgent({
                 topic: params.topic,
                 region: params.region,
+                depth: params.depth,
                 sourceMaterial: params.sourceMaterial
             });
 

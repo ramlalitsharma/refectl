@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGlobalTrendsAction, ingestPublicTrendAction } from '@/app/actions/news-ai';
-import { Globe, Zap, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Zap, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function LiveNewsPulse() {
@@ -65,8 +65,8 @@ export function LiveNewsPulse() {
     };
 
     return (
-        <div className="w-full bg-[#fdfdfc]/80 dark:bg-slate-950/80 backdrop-blur-2xl border-y border-slate-200/50 dark:border-white/5 py-3 px-4 overflow-hidden relative z-50">
-            <div className="container mx-auto flex flex-col md:flex-row items-center gap-6">
+        <div className="news-live-pulse w-full bg-[#fdfdfc]/80 dark:bg-slate-950/80 backdrop-blur-2xl border-y border-slate-200/50 dark:border-white/5 py-3 px-4 overflow-hidden relative z-50">
+            <div className="news-live-inner w-full max-w-none px-4 md:px-6 2xl:px-8 flex flex-col md:flex-row items-center gap-6">
                 <div className="flex items-center gap-3 shrink-0">
                     <div className="flex -space-x-2">
                         <div className="w-6 h-6 rounded-full bg-red-700 border-2 border-black flex items-center justify-center">
@@ -127,7 +127,7 @@ export function LiveNewsPulse() {
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 8, ease: "linear" }}
-                className="absolute bottom-0 left-0 h-[1px] bg-red-700 origin-left w-full"
+                className="news-live-progress absolute bottom-0 left-0 h-[1px] bg-red-700 origin-left w-full"
             />
         </div>
     );

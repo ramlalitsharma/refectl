@@ -6,7 +6,7 @@ export default function NewsLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="news-paper-theme font-serif">
+        <div className="news-page-shell news-paper-theme font-serif">
             {children}
         </div>
     );

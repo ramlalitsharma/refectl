@@ -10,7 +10,7 @@ export const NewsService = {
     /**
      * Get all published news for public view with filtering
      */
-    async getPublishedNews(filters?: { country?: string; category?: string }): Promise<News[]> {
+    async getPublishedNews(filters?: { country?: string; category?: string; query?: string; limit?: number }): Promise<News[]> {
         const client = supabaseAdmin || supabase;
 
         let query = client
@@ -24,6 +24,16 @@ export const NewsService = {
 
         if (filters?.category && filters.category !== 'All') {
             query = query.eq('category', filters.category);
+        }
+
+        const queryText = (filters?.query || '').trim();
+        if (queryText) {
+            const escaped = queryText.replace(/[%_,]/g, ' ');
+            query = query.or(`title.ilike.%${escaped}%,summary.ilike.%${escaped}%,content.ilike.%${escaped}%`);
+        }
+
+        if (typeof filters?.limit === 'number' && filters.limit > 0) {
+            query = query.limit(filters.limit);
         }
 
         // Try ordering by published_at first
@@ -60,9 +70,16 @@ export const NewsService = {
                     const matchCountry = !filters?.country || filters.country === 'All' || filters.country === 'Global' || c === filters.country;
                     const matchCategory = !filters?.category || filters.category === 'All' || cat === filters.category;
 
-                    return isPub && matchCountry && matchCategory;
+                    const text = `${n.title || ''} ${n.summary || ''} ${n.content || ''}`.toLowerCase();
+                    const matchQuery = !queryText || text.includes(queryText.toLowerCase());
+
+                    return isPub && matchCountry && matchCategory && matchQuery;
                 });
             }
+        }
+
+        if (typeof filters?.limit === 'number' && filters.limit > 0 && data.length > filters.limit) {
+            data = data.slice(0, filters.limit);
         }
 
         return data;
@@ -174,18 +191,40 @@ export const NewsService = {
      */
     async upsertNews(news: Partial<News>) {
         if (!supabaseAdmin) throw new Error('Admin client not initialized');
-        const { data, error } = await supabaseAdmin
+        const payload = {
+            ...news,
+            updated_at: new Date().toISOString(),
+            published_at:
+                typeof news.published_at !== 'undefined'
+                    ? news.published_at
+                    : (news.status || '').toLowerCase() === 'published'
+                        ? new Date().toISOString()
+                        : null
+        } as any;
+
+        const attempt = await supabaseAdmin
             .from('news')
-            .upsert({
-                ...news,
-                updated_at: new Date().toISOString(),
-                published_at: (news.status || '').toLowerCase() === 'published' ? new Date().toISOString() : null
-            })
+            .upsert(payload)
             .select()
             .single();
 
-        if (error) throw error;
-        return data;
+        if (!attempt.error) return attempt.data;
+
+        const message = attempt.error?.message || '';
+        if (message.includes('source_name') || message.includes('source_url')) {
+            const fallback = { ...payload };
+            delete fallback.source_name;
+            delete fallback.source_url;
+            const retry = await supabaseAdmin
+                .from('news')
+                .upsert(fallback)
+                .select()
+                .single();
+            if (!retry.error) return retry.data;
+            throw retry.error;
+        }
+
+        throw attempt.error;
     },
 
     /**
@@ -199,5 +238,90 @@ export const NewsService = {
             .eq('id', id);
 
         if (error) throw error;
-    }
+    },
+
+    /**
+     * Get unique popular categories (Global Sectors)
+     */
+    async getPopularCategories(limit: number = 6): Promise<string[]> {
+        const client = supabaseAdmin || supabase;
+        // Supabase doesn't easily do DISTINCT over RPC without custom functions, 
+        // so we fetch recent items and extract unique categories in memory
+        const { data, error } = await client
+            .from('news')
+            .select('category')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error || !data) return ['Geopolitics', 'Markets & Finance', 'Technology & AI', 'Global Trade'];
+
+        const counts = data.reduce((acc, curr) => {
+            if (curr.category) acc[curr.category] = (acc[curr.category] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, limit)
+            .map(e => e[0]);
+    },
+
+    /**
+     * Get unique popular countries (Global Regions)
+     */
+    async getPopularCountries(limit: number = 6): Promise<string[]> {
+        const client = supabaseAdmin || supabase;
+        const { data, error } = await client
+            .from('news')
+            .select('country')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error || !data) return ['Global', 'USA', 'UK', 'China'];
+
+        const counts = data.reduce((acc, curr) => {
+            if (curr.country && curr.country !== 'Global') acc[curr.country] = (acc[curr.country] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, limit)
+            .map(e => e[0]);
+    },
+
+    async getAvailableFilters(): Promise<{ countries: string[]; categories: string[] }> {
+        const client = supabaseAdmin || supabase;
+        const { data, error } = await client
+            .from('news')
+            .select('country, category, created_at')
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .order('created_at', { ascending: false })
+            .limit(1000);
+
+        if (error || !data) {
+            return {
+                countries: ['All', 'Global', 'USA', 'India', 'Nepal'],
+                categories: ['World', 'Politics', 'Business'],
+            };
+        }
+
+        const countriesSet = new Set<string>();
+        const categoriesSet = new Set<string>();
+
+        for (const item of data as Array<{ country?: string | null; category?: string | null }>) {
+            const country = (item.country || '').trim();
+            const category = (item.category || '').trim();
+
+            if (country) countriesSet.add(country);
+            if (category) categoriesSet.add(category);
+        }
+
+        const countries = ['All', ...Array.from(countriesSet).filter((c) => c !== 'All').sort((a, b) => a.localeCompare(b))];
+        const categories = Array.from(categoriesSet).sort((a, b) => a.localeCompare(b));
+
+        return { countries, categories };
+    },
 };
