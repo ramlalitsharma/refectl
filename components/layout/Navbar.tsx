@@ -29,6 +29,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ViewAsSwitcher } from "@/components/admin/ViewAsSwitcher";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { getNavigationForRole, type UserRole } from "@/lib/navigation-config";
+import { TOOLS, CATEGORIES } from "@/lib/tools-registry";
 
 function isNewsPath(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -205,28 +206,20 @@ export function Navbar() {
                   const dropdown = item as import('@/lib/navigation-config').NavDropdown;
                   const isOpen = openDesktopDropdown === idx;
                   const isLargeMenu = dropdown.items.length > 8;
-                  const utilityLabel = dropdown.label.toLowerCase().includes('utilit');
-                  const utilityGroups = utilityLabel
-                    ? [
-                      {
-                        title: 'PDF Tools',
-                        items: dropdown.items.filter((subItem) => subItem.href.includes('/pdf') || subItem.href.includes('/url-to-pdf')),
-                      },
-                      {
-                        title: 'Image Tools',
-                        items: dropdown.items.filter((subItem) => subItem.href.includes('/image') || subItem.href.includes('/ocr')),
-                      },
-                      {
-                        title: 'Text & Security',
-                        items: dropdown.items.filter((subItem) => subItem.href.includes('/text') || subItem.href.includes('/password') || subItem.href.includes('/qr')),
-                      },
-                      {
-                        title: 'Calculators',
-                        items: dropdown.items.filter((subItem) => subItem.href.includes('/timestamp') || subItem.href.includes('/unit') || subItem.href.includes('/calculator')),
-                      },
-                    ].filter((group) => group.items.length > 0)
+                  const isUtilityMenu = dropdown.label.toLowerCase().includes('utilit');
+                  const utilityGroups = isUtilityMenu
+                    ? CATEGORIES.map(cat => ({
+                      title: cat.title,
+                      icon: cat.icon,
+                      items: TOOLS.filter(t => t.category === cat.id && t.featured !== false).map(t => ({
+                        href: `/tools/${t.slug}`,
+                        label: t.title,
+                        description: t.shortDesc,
+                        icon: t.icon
+                      }))
+                    })).filter(g => g.items.length > 0)
                     : [];
-                  const autoColumns = !utilityLabel && isLargeMenu ? Math.min(4, Math.max(2, Math.ceil(dropdown.items.length / 6))) : 1;
+                  const autoColumns = !isUtilityMenu && isLargeMenu ? Math.min(4, Math.max(2, Math.ceil(dropdown.items.length / 6))) : 1;
                   const autoChunkSize = autoColumns > 1 ? Math.ceil(dropdown.items.length / autoColumns) : dropdown.items.length;
                   const autoGroups =
                     autoColumns > 1
@@ -235,14 +228,14 @@ export function Navbar() {
                         items: dropdown.items.slice(colIdx * autoChunkSize, (colIdx + 1) * autoChunkSize),
                       })).filter((group) => group.items.length > 0)
                       : [{ title: dropdown.label, items: dropdown.items }];
-                  const groups = utilityLabel ? utilityGroups : autoGroups;
+                  const groups = isUtilityMenu ? utilityGroups : autoGroups;
                   const gridColsClass =
                     groups.length >= 4
-                      ? 'grid-cols-4'
+                      ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4'
                       : groups.length === 3
-                        ? 'grid-cols-3'
+                        ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
                         : groups.length === 2
-                          ? 'grid-cols-2'
+                          ? 'grid-cols-1 md:grid-cols-2'
                           : 'grid-cols-1';
                   return (
                     <div
@@ -280,56 +273,119 @@ export function Navbar() {
                       <div
                         id={`desktop-nav-dropdown-${idx}`}
                         className={`absolute left-1/2 -translate-x-1/2 top-full mt-3 transition-all duration-200 ease-out z-[1001] max-w-[calc(100vw-2rem)] ${isOpen
-                            ? "opacity-100 visible translate-y-0"
-                            : "opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
-                          } ${isLargeMenu ? "w-[min(1000px,92vw)]" : "w-[min(560px,92vw)]"}`}
+                          ? "opacity-100 visible translate-y-0"
+                          : "opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                          } ${groups.length >= 4 ? "w-[min(1140px,96vw)]" : groups.length === 3 ? "w-[min(1000px,94vw)]" : "w-[min(600px,92vw)]"}`}
                       >
                         <div className="rounded-2xl border border-white/10 overflow-hidden shadow-[0_34px_90px_rgba(0,0,0,0.72)] bg-[#0a0d13]/96 backdrop-blur-2xl">
                           {/* Dropdown Header with Description */}
-                          {dropdown.description && (
-                            <div className="px-6 py-4 bg-white/[0.03] border-b border-white/10">
-                              <div className="flex items-start gap-2">
-                                {dropdown.icon && <span className="text-base mt-1">{dropdown.icon}</span>}
-                                <div className="flex-1">
-                                  <div className="text-[11px] font-black uppercase tracking-[0.14em] text-white/90 mb-1">{dropdown.label}</div>
-                                  <div className="text-[12px] text-slate-300/80">{dropdown.description}</div>
+                          {(dropdown.description || isUtilityMenu) && (
+                            <div className="px-8 py-6 bg-gradient-to-r from-white/[0.04] to-transparent border-b border-white/10">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
+                                    <Zap className="h-5 w-5 text-elite-accent-cyan animate-pulse-slow" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="text-[12px] font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                                      {dropdown.label}
+                                      <span className="h-1 w-1 rounded-full bg-elite-accent-cyan"></span>
+                                      <span className="text-elite-accent-cyan/60 text-[10px]">v2.0 Elite</span>
+                                    </div>
+                                    <div className="text-[13px] text-slate-400 font-medium mt-0.5 tracking-tight line-clamp-1">
+                                      {isUtilityMenu ? "Next-generation professional toolkits & algorithmic utilities" : dropdown.description}
+                                    </div>
+                                  </div>
                                 </div>
+                                {isUtilityMenu && (
+                                  <div className="hidden xl:flex items-center gap-4 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Global Index</span>
+                                      <span className="text-[11px] font-black text-elite-accent-cyan">500+ Tools</span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}
 
-                          <div className={`${isLargeMenu ? "max-h-[72vh] overflow-auto custom-scrollbar" : ""}`}>
+                          <div className={`${isLargeMenu || isUtilityMenu ? "max-h-[72vh] overflow-auto custom-scrollbar" : ""}`}>
+                            {isUtilityMenu && (
+                              <div className="px-8 py-5 bg-white/[0.02] border-b border-white/5">
+                                <Link
+                                  href="/tools"
+                                  className="group/all w-full flex items-center justify-between p-4 rounded-2xl bg-elite-accent-cyan/5 hover:bg-elite-accent-cyan/10 border border-elite-accent-cyan/20 hover:border-elite-accent-cyan/40 transition-all duration-500 shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+                                  onClick={() => setOpenDesktopDropdown(null)}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-elite-accent-cyan/10 ring-1 ring-elite-accent-cyan/20">
+                                      <Library className="h-4 w-4 text-elite-accent-cyan group-hover/all:rotate-12 transition-transform" />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[12px] font-black uppercase tracking-widest text-elite-accent-cyan">Access Elite Repository</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-elite-accent-cyan text-black text-[9px] font-black uppercase">500+ Tools</span>
+                                      </div>
+                                      <span className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Explore the world's largest collection of AI & Utility toolsets</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-elite-accent-cyan">
+                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/all:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 whitespace-nowrap">Enter the Forge</span>
+                                    <Zap className="h-4 w-4 group-hover/all:scale-125 transition-transform" />
+                                  </div>
+                                </Link>
+                              </div>
+                            )}
                             <div className={`grid ${gridColsClass} gap-0`}>
                               {groups.map((group, groupIdx) => (
                                 <div
                                   key={`${dropdown.label}-${group.title}-${groupIdx}`}
-                                  className={`px-5 py-4 ${groupIdx > 0 ? 'border-l border-white/10' : ''}`}
+                                  className={`px-6 py-6 ${groupIdx > 0 ? 'border-l border-white/[0.03]' : ''}`}
                                 >
-                                  {isLargeMenu && (
-                                    <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400 mb-3">
-                                      {group.title}
+                                  {(isLargeMenu || isUtilityMenu) && (
+                                    <div className="flex items-center gap-2.5 mb-5 group/cat">
+                                      <div className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-elite-accent-cyan group-hover/cat:bg-elite-accent-cyan/10 transition-colors">
+                                        {typeof group.icon === 'string' ? group.icon : <group.icon className="h-3.5 w-3.5" />}
+                                      </div>
+                                      <div className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 group-hover/cat:text-slate-300 transition-colors">
+                                        {group.title}
+                                      </div>
                                     </div>
                                   )}
-                                  <div className="space-y-1">
+                                  <div className="space-y-2">
                                     {group.items.map((subItem) => {
                                       const isActive = pathname?.startsWith(subItem.href.split("?")[0]);
+                                      const Icon = subItem.icon;
                                       return (
                                         <Link
                                           key={subItem.href}
                                           href={subItem.href}
-                                          className={`block px-3 py-2 rounded-lg transition-all duration-200 ease-out text-[14px] leading-5 ${isActive ? 'bg-elite-accent-cyan/15 font-semibold text-elite-accent-cyan' : 'text-slate-200/90 hover:text-white hover:bg-white/6'
+                                          className={`group/item flex items-start gap-3.5 p-2 -mx-2 rounded-2xl transition-all duration-300 ease-out ${isActive
+                                            ? 'bg-elite-accent-cyan/5 border border-elite-accent-cyan/20'
+                                            : 'hover:bg-white/[0.04] border border-transparent hover:border-white/10'
                                             }`}
                                           onClick={() => setOpenDesktopDropdown(null)}
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Escape") {
-                                              setOpenDesktopDropdown(null);
-                                            }
-                                          }}
                                         >
-                                          <span className="inline-flex items-center gap-2.5">
-                                            {subItem.icon && <span className="text-sm opacity-90">{subItem.icon}</span>}
-                                            <span>{subItem.label}</span>
-                                          </span>
+                                          <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 border ${isActive
+                                            ? 'bg-elite-accent-cyan/20 border-elite-accent-cyan/30 text-elite-accent-cyan'
+                                            : 'bg-white/5 border-white/10 text-slate-400 group-hover/item:text-white group-hover/item:bg-elite-accent-cyan/10 group-hover/item:border-elite-accent-cyan/30 group-hover/item:scale-110'
+                                            }`}>
+                                            {Icon && (
+                                              <span className="text-sm">
+                                                {typeof Icon === 'string' ? Icon : <Icon className="h-4 w-4" />}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex flex-col min-w-0 py-0.5">
+                                            <span className={`text-[13px] font-bold tracking-tight transition-colors ${isActive ? 'text-elite-accent-cyan' : 'text-slate-200 group-hover/item:text-white'}`}>
+                                              {subItem.label}
+                                            </span>
+                                            {(isUtilityMenu || subItem.description) && (
+                                              <span className="text-[11px] text-slate-500 leading-tight mt-0.5 line-clamp-2 group-hover/item:text-slate-400 transition-colors">
+                                                {subItem.description || "Professional toolset utility"}
+                                              </span>
+                                            )}
+                                          </div>
                                         </Link>
                                       );
                                     })}
@@ -337,6 +393,7 @@ export function Navbar() {
                                 </div>
                               ))}
                             </div>
+                            {/* Bottom CTA moved to top */}
                           </div>
                         </div>
                       </div>
@@ -670,42 +727,102 @@ export function Navbar() {
                       return (
                         <div key={idx} className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
                           {/* Category Header */}
-                          <div className="px-4 py-3 bg-white/5 border-b border-white/5">
-                            <div className="flex items-start gap-3">
-                              {dropdown.icon && <span className="text-lg mt-0.5">{dropdown.icon}</span>}
-                              <div className="flex-1">
-                                <div className="text-xs font-black text-white uppercase tracking-widest">{dropdown.label}</div>
-                                {dropdown.description && (
-                                  <div className="text-[11px] text-slate-400 font-medium mt-1">{dropdown.description}</div>
-                                )}
+                          {(() => {
+                            const isUtilityMenu = dropdown.label.toLowerCase().includes('utilit');
+                            return (
+                              <div className="px-4 py-3 bg-white/5 border-b border-white/5">
+                                <div className="flex items-start gap-3">
+                                  {dropdown.icon && <span className="text-lg mt-0.5">{dropdown.icon}</span>}
+                                  <div className="flex-1">
+                                    <div className="text-xs font-black text-white uppercase tracking-widest">{dropdown.label}</div>
+                                    {dropdown.description && (
+                                      <div className="text-[11px] text-slate-400 font-medium mt-1">{dropdown.description}</div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
+                            );
+                          })()}
 
                           {/* Category Items */}
                           <div className="space-y-1 p-2">
-                            {dropdown.items.map((subItem) => {
-                              const isActive = pathname?.startsWith(subItem.href.split("?")[0]);
-                              return (
-                                <Link
-                                  key={subItem.href}
-                                  href={subItem.href}
-                                  className={`touch-target px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${isActive
-                                    ? 'bg-white/10 font-black text-white border border-elite-accent-cyan/30'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10'
-                                    }`}
-                                  onClick={() => setMobileOpen(false)}
-                                >
-                                  {subItem.icon && <span className="text-lg">{subItem.icon}</span>}
-                                  <span className="text-sm font-medium">{subItem.label}</span>
-                                  {subItem.badge && (
-                                    <span className="ml-auto text-[10px] bg-elite-accent-cyan/20 text-elite-accent-cyan px-2 py-0.5 rounded-full font-black">
-                                      {subItem.badge}
-                                    </span>
-                                  )}
-                                </Link>
-                              );
-                            })}
+                            {isUtilityMenu && (
+                              <Link
+                                href="/tools"
+                                className="mb-3 flex items-center justify-between px-4 py-3 bg-elite-accent-cyan/10 text-elite-accent-cyan rounded-xl border border-elite-accent-cyan/20 active:scale-[0.98] transition-all"
+                                onClick={() => setMobileOpen(false)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Library className="h-4 w-4" />
+                                  <span className="text-[11px] font-black uppercase tracking-widest">Global Repository</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[9px] font-black opacity-60">500+</span>
+                                  <Zap className="h-3 w-3" />
+                                </div>
+                              </Link>
+                            )}
+                            {isUtilityMenu ? (
+                              CATEGORIES.map(cat => {
+                                const catTools = TOOLS.filter(t => t.category === cat.id && t.featured !== false);
+                                if (catTools.length === 0) return null;
+                                return (
+                                  <div key={cat.id} className="mt-2 first:mt-0">
+                                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/5 rounded-lg mb-1 flex items-center gap-2">
+                                      {typeof cat.icon === 'string' ? cat.icon : <cat.icon className="h-3 w-3" />}
+                                      {cat.title}
+                                    </div>
+                                    {catTools.map(t => {
+                                      const href = `/tools/${t.slug}`;
+                                      const isActive = pathname?.startsWith(href);
+                                      const Icon = t.icon;
+                                      return (
+                                        <Link
+                                          key={t.id}
+                                          href={href}
+                                          className={`touch-target px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${isActive
+                                            ? 'bg-white/10 font-black text-white border border-elite-accent-cyan/30'
+                                            : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10'
+                                            }`}
+                                          onClick={() => setMobileOpen(false)}
+                                        >
+                                          {Icon && (
+                                            <span className="text-lg">
+                                              {typeof Icon === 'string' ? Icon : <Icon className="h-4 w-4" />}
+                                            </span>
+                                          )}
+                                          <span className="text-sm font-medium">{t.title}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              dropdown.items.map((subItem) => {
+                                const isActive = pathname?.startsWith(subItem.href.split("?")[0]);
+                                return (
+                                  <Link
+                                    key={subItem.href}
+                                    href={subItem.href}
+                                    className={`touch-target px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${isActive
+                                      ? 'bg-white/10 font-black text-white border border-elite-accent-cyan/30'
+                                      : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10'
+                                      }`}
+                                    onClick={() => setMobileOpen(false)}
+                                  >
+                                    {subItem.icon && <span className="text-lg">{subItem.icon}</span>}
+                                    <span className="text-sm font-medium">{subItem.label}</span>
+                                    {subItem.badge && (
+                                      <span className="ml-auto text-[10px] bg-elite-accent-cyan/20 text-elite-accent-cyan px-2 py-0.5 rounded-full font-black">
+                                        {subItem.badge}
+                                      </span>
+                                    )}
+                                  </Link>
+                                );
+                              })
+                            )}
+                            {/* Mobile CTA moved to top */}
                           </div>
                         </div>
                       );

@@ -39,25 +39,13 @@ export interface RoleNavigationConfig {
   showViewAs: boolean;
 }
 
-const UTILITIES_ITEMS: NavLink[] = [
-  { href: '/tools', label: 'Utilities Hub', icon: '🛠️' },
-  { href: '/tools/image-to-pdf', label: 'Image to PDF', icon: '🖼️' },
-  { href: '/tools/pdf-merge', label: 'PDF Merge', icon: '🧩' },
-  { href: '/tools/pdf-split', label: 'PDF Split', icon: '✂️' },
-  { href: '/tools/pdf-compress', label: 'PDF Compress', icon: '🗜️' },
-  { href: '/tools/pdf-to-word', label: 'PDF to Word', icon: '📝' },
-  { href: '/tools/pdf-to-excel', label: 'PDF to Excel', icon: '📊' },
-  { href: '/tools/url-to-pdf', label: 'URL to PDF', icon: '🔗' },
-  { href: '/tools/image-convert', label: 'Image Convert/Resize', icon: '🎞️' },
-  { href: '/tools/image-compress', label: 'Image Compress', icon: '📉' },
-  { href: '/tools/ocr', label: 'OCR (Image/PDF → Text)', icon: '🔍' },
-  { href: '/tools/text', label: 'Text Utilities', icon: '✍️' },
-  { href: '/tools/qr', label: 'QR Generator', icon: '🔳' },
-  { href: '/tools/password', label: 'Password Generator', icon: '🔐' },
-  { href: '/tools/timestamp', label: 'Timestamp Converter', icon: '⏱️' },
-  { href: '/tools/unit', label: 'Unit Converter', icon: '📏' },
-  { href: '/tools/calculator', label: 'Commercial Calculator', icon: '🧮' },
+// This will be populated dynamically in the Navbar component to avoid circular dependencies
+// or we can use a basic structure here and enrich it in the client.
+export const UTILITIES_ITEMS: NavLink[] = [
+  { href: '/tools', label: 'All Utilities Hub', icon: '🚀' },
 ];
+
+export const GAMES_LINK: NavLink = { href: '/games', label: 'Games', icon: '🎮' };
 
 export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
   // 👑 Super Admin - Full platform access
@@ -93,6 +81,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
 
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
+
+      // 🎮 Games - Play online
+      GAMES_LINK,
 
       // 🎯 Practice Hub - Assessments & tests
       {
@@ -170,6 +161,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
+      // 🎮 Games - Play online
+      GAMES_LINK,
+
       {
         label: 'Administration',
         icon: '🛡️',
@@ -230,6 +224,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
 
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
+
+      // 🎮 Games - Play online
+      GAMES_LINK,
 
       {
         label: 'Teaching Studio',
@@ -305,6 +302,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
+      // 🎮 Games - Play online
+      GAMES_LINK,
+
       // 🛠️ Utilities
       {
         label: 'Utilities',
@@ -352,6 +352,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/forum', label: 'Forums', icon: '💬' },
         ],
       },
+
+      // 🎮 Games - Play online
+      GAMES_LINK,
 
       // 🛠️ Utilities
       {
@@ -411,6 +414,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
+      // 🎮 Games - Play online
+      GAMES_LINK,
+
       // 🛠️ Utilities
       {
         label: 'Utilities',
@@ -466,6 +472,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       // 🛒 Forge Shop - Premium tools & software
       { href: '/shop', label: 'Forge Shop', icon: '🛒' },
 
+      // 🎮 Games - Play online
+      GAMES_LINK,
+
       // 🛠️ Utilities
       {
         label: 'Utilities',
@@ -502,6 +511,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/news', label: 'News', icon: '📰' },
         ],
       },
+
+      // 🎮 Games - Play online
+      GAMES_LINK,
 
       // 🛠️ Utilities
       {

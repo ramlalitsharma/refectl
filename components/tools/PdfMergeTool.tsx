@@ -3,8 +3,18 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { PDFDocument, degrees, StandardFonts, rgb } from 'pdf-lib';
 import { createWorker } from 'tesseract.js';
-import { FabricPdfEditor } from './FabricPdfEditor';
 import JSZip from 'jszip';
+import dynamic from 'next/dynamic';
+
+const FabricPdfEditor = dynamic(() => import('./FabricPdfEditor').then(mod => mod.FabricPdfEditor), {
+    ssr: false,
+    loading: () => (
+        <div className="w-full h-96 flex flex-col items-center justify-center bg-slate-950/40 rounded-3xl border border-white/5 animate-pulse gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Initializing Engine...</span>
+        </div>
+    )
+});
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -140,7 +150,8 @@ function HighResEditorWrapper({
                         if (blob && isMounted) {
                             const url = URL.createObjectURL(blob);
                             setRenderedUrl(url);
-                            setDims({ width: canvas.width, height: canvas.height });
+                            // Use the 1x viewport for display sizing so fit-to-width works as expected
+                            setDims({ width: rawVp.width, height: rawVp.height });
                             setLoading(false);
                         }
                     }, 'image/png');
@@ -180,25 +191,16 @@ function HighResEditorWrapper({
     );
 
     return (
-        <div className="w-full h-full overflow-hidden flex flex-col gap-6">
-            <div className="flex items-center justify-center">
-                <button
-                    onClick={runOcr}
-                    disabled={ocrLoading}
-                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-900/50 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-500/20 transition-all border border-indigo-400/30 font-sans"
-                >
-                    {ocrLoading ? (
-                        <>
-                            <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                            Scanning...
-                        </>
-                    ) : (
-                        <>
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" /></svg>
-                            Scan to Text (OCR)
-                        </>
-                    )}
-                </button>
+        <div className="w-full h-full min-h-0 overflow-hidden flex flex-col gap-4">
+            <div className="flex-1 min-h-0">
+                <FabricPdfEditor
+                    imageUrl={renderedUrl}
+                    width={dims.width}
+                    height={dims.height}
+                    annotations={page.annotations}
+                    onSave={(newAnns) => onUpdate({ annotations: newAnns })}
+                    ocrAction={{ onClick: runOcr, loading: ocrLoading }}
+                />
             </div>
 
             {ocrResult && (
@@ -216,13 +218,6 @@ function HighResEditorWrapper({
                 </div>
             )}
 
-            <FabricPdfEditor
-                imageUrl={renderedUrl}
-                width={dims.width}
-                height={dims.height}
-                annotations={page.annotations}
-                onSave={(newAnns) => onUpdate({ annotations: newAnns })}
-            />
         </div>
     );
 }
@@ -758,9 +753,9 @@ export function PdfMergeTool({ initialMode }: { initialMode?: string } = {}) {
 
             {/* Modal & Overlays */}
             {viewerPage && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg p-4 animate-in fade-in duration-200" onClick={() => setViewerPage(null)}>
-                    <div className="w-full max-w-5xl h-[90vh] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="h-20 shrink-0 flex items-center justify-between px-8 border-b border-white/5 bg-slate-800/50">
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/90 backdrop-blur-lg p-3 sm:p-4 animate-in fade-in duration-200" onClick={() => setViewerPage(null)}>
+                    <div className="w-[95vw] max-w-[1400px] h-[92vh] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-white/5 bg-slate-800/50">
                             <div>
                                 <h4 className="text-white font-black text-sm uppercase tracking-widest leading-none truncate max-w-[200px] mb-1">{viewerPage.fileName}</h4>
                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-tighter">Page {viewerPage.srcIndex + 1}</p>
@@ -791,7 +786,7 @@ export function PdfMergeTool({ initialMode }: { initialMode?: string } = {}) {
                                 <button onClick={() => setViewerPage(null)} className="p-2 text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-xl"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto p-4 sm:p-8 bg-slate-900/50 scrollbar-elegant flex items-center justify-center">
+                        <div className="flex-1 min-h-0 overflow-hidden p-2 sm:p-3 bg-slate-900/50 flex items-stretch justify-start">
                             <HighResEditorWrapper page={viewerPage} sources={sources} onUpdate={(u) => updatePage(viewerPage.id, u)} />
                         </div>
                     </div>
