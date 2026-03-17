@@ -23,6 +23,25 @@ export function LudoPage() {
         { label: 'Avg Match', value: '10–15 min' },
         { label: 'Modes', value: 'Online + Friends' },
       ]}
+      guide={{
+        heading: 'How to play Ludo Royale',
+        subheading: 'Roll the dice, move tokens safely, and race to the center before your rivals.',
+        steps: [
+          'Roll to unlock your first token and enter the track.',
+          'Move clockwise, protecting tokens in safe zones.',
+          'Capture rival tokens to reset their progress.',
+          'Reach the center with all tokens to win the match.',
+        ],
+        tips: [
+          'Prioritize unlocking multiple tokens early for flexibility.',
+          'Stay in safe zones when opponents are nearby.',
+          'Chain captures to slow down the leader.',
+        ],
+        highlights: [
+          { title: 'Instant Matchmaking', description: 'Jump into competitive rooms with global players in seconds.' },
+          { title: 'Friend Rooms', description: 'Create private tables for friends and family instantly.' },
+        ],
+      }}
     >
       <LudoArena variant="canvas" />
     </GamePageShell>

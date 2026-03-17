@@ -161,6 +161,62 @@ export function GamesHome({ locale }: { locale: string }) {
           </div>
         </div>
       </section>
+
+      <section className="py-16 px-4">
+        <div className="max-w-6xl mx-auto space-y-10">
+          <div className="grid lg:grid-cols-[1.2fr_1fr] gap-10 items-start">
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Play Online</p>
+              <h2 className="text-3xl md:text-5xl font-[var(--font-lora)] font-semibold text-white">
+                Global-Grade Browser Gaming, Ready Instantly
+              </h2>
+              <p className="text-slate-300 text-lg leading-relaxed">
+                Reflect Games delivers premium online games optimized for every device. Launch in one tap, enjoy
+                fast matchmaking, and stay immersed with smooth, neon-grade visuals built for competitive play.
+              </p>
+              <div className="grid sm:grid-cols-3 gap-4 pt-2">
+                {[
+                  { label: 'Zero Installs', value: 'Instant Play' },
+                  { label: 'Optimized', value: 'Mobile + Desktop' },
+                  { label: 'Secure', value: 'Privacy First' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
+                    <p className="text-lg font-black text-white mt-2">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">FAQ</p>
+                <div className="mt-4 space-y-4 text-sm text-slate-300">
+                  <div>
+                    <p className="font-bold text-white">Is Reflect Games free?</p>
+                    <p>Yes. All games run in the browser with optional ads to keep the platform free.</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Do I need to install anything?</p>
+                    <p>No installs. Launch instantly on desktop, tablet, or mobile.</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-white">Can I play with friends?</p>
+                    <p>Multiplayer and friend rooms are built in for select titles.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 p-6">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-300">Performance</p>
+                <p className="text-lg text-white font-semibold mt-2">Instant load times with adaptive quality</p>
+                <p className="text-sm text-slate-300 mt-2">
+                  Every game dynamically scales for your device to keep gameplay smooth and responsive.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

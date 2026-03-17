@@ -14,6 +14,13 @@ interface GamePageShellProps {
   accent?: string;
   children: React.ReactNode;
   stats?: { label: string; value: string }[];
+  guide?: {
+    heading?: string;
+    subheading?: string;
+    steps?: string[];
+    tips?: string[];
+    highlights?: { title: string; description: string }[];
+  };
 }
 
 export function GamePageShell({
@@ -24,6 +31,7 @@ export function GamePageShell({
   accent = '#22d3ee',
   children,
   stats = [],
+  guide,
 }: GamePageShellProps) {
   return (
     <GameModeProvider>
@@ -86,6 +94,65 @@ export function GamePageShell({
             <GameModePanel />
           </div>
         </section>
+
+        {guide && (
+          <section className="mx-auto max-w-6xl px-4 pb-20">
+            <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
+              <div className="rounded-[2.5rem] border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-400">How To Play</p>
+                <h2 className="mt-3 text-3xl font-[var(--font-lora)] font-semibold text-white">
+                  {guide.heading ?? `Master ${title} in Minutes`}
+                </h2>
+                {guide.subheading && (
+                  <p className="mt-3 text-slate-300 text-sm leading-relaxed">{guide.subheading}</p>
+                )}
+                {guide.steps && guide.steps.length > 0 && (
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                    {guide.steps.map((step, index) => (
+                      <div
+                        key={`${step}-${index}`}
+                        className="rounded-2xl border border-white/10 bg-slate-950/60 p-4"
+                      >
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Step {index + 1}</p>
+                        <p className="mt-2 text-sm text-slate-200 font-medium">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                {guide.tips && guide.tips.length > 0 && (
+                  <div className="rounded-[2rem] border border-white/10 bg-slate-900/70 p-6">
+                    <p className="text-xs uppercase tracking-[0.35em] text-slate-400">Pro Tips</p>
+                    <div className="mt-4 space-y-3">
+                      {guide.tips.map((tip, index) => (
+                        <div key={`${tip}-${index}`} className="flex items-start gap-3 text-sm text-slate-300">
+                          <span className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {guide.highlights && guide.highlights.length > 0 && (
+                  <div className="grid gap-4">
+                    {guide.highlights.map((item) => (
+                      <div
+                        key={item.title}
+                        className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/5 via-white/0 to-transparent p-6"
+                      >
+                        <p className="text-sm font-semibold text-white">{item.title}</p>
+                        <p className="mt-2 text-sm text-slate-300">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </GameModeProvider>
   );

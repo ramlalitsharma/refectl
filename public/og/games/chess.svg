@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Nebula Chess - Reflect Games">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#070611" />
+      <stop offset="55%" stop-color="#171227" />
+      <stop offset="100%" stop-color="#0b0b17" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.18" r="0.65">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <rect x="90" y="90" width="230" height="230" rx="28" fill="#111827" stroke="#a855f7" stroke-opacity="0.45" />
+  <path d="M160 250h90l-10-40 20-30-25-20 10-35h-60l10 35-25 20 20 30z" fill="#a855f7" />
+  <text x="360" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#94a3b8" letter-spacing="6">REFLECT GAMES</text>
+  <text x="360" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Nebula Chess</text>
+  <text x="360" y="310" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#cbd5f5">Master openings and tactics in a cinematic arena.</text>
+  <rect x="360" y="350" width="240" height="54" rx="27" fill="#a855f7" />
+  <text x="395" y="386" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#0c0a16">COMING SOON</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Tic Tac Toe - Reflect Games">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#050713" />
+      <stop offset="55%" stop-color="#0b1428" />
+      <stop offset="100%" stop-color="#060912" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.15" r="0.65">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <g fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round">
+    <path d="M140 140h220M140 230h220M210 90v260M290 90v260" />
+  </g>
+  <g stroke="#22d3ee" stroke-width="12" stroke-linecap="round">
+    <path d="M150 160l60 60m0-60l-60 60" />
+    <circle cx="300" cy="210" r="30" fill="none" />
+  </g>
+  <text x="380" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#94a3b8" letter-spacing="6">REFLECT GAMES</text>
+  <text x="380" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Tic Tac Toe</text>
+  <text x="380" y="310" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#cbd5f5">Lightning-fast tactical duels in the browser.</text>
+  <rect x="380" y="350" width="210" height="54" rx="27" fill="#22d3ee" />
+  <text x="415" y="386" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#04131f">PLAY NOW</text>
+</svg>

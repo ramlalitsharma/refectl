@@ -1,16 +1,22 @@
-import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { TicTacToePage } from '@/games/tic-tac-toe/frontend/TicTacToePage';
-import { BRAND_NAME } from '@/lib/brand';
+import { buildGameJsonLd, buildGameMetadata } from '@/games/shared/seo';
+import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: `Tic Tac Toe | ${BRAND_NAME} Games`,
-  description: 'A lightning-fast tactical duel. Outsmart your opponent in a premium browser arena.',
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return buildGameMetadata(locale, 'tictac');
+}
 
 export default async function TicTacToeRoute({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const jsonLd = buildGameJsonLd(locale, 'tictac');
 
-  return <TicTacToePage />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <TicTacToePage />
+    </>
+  );
 }

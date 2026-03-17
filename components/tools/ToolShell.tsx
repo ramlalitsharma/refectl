@@ -1,14 +1,38 @@
 import { ReactNode } from 'react';
 import { Link } from '@/lib/navigation';
 import { ToolMetadata } from '@/lib/tools-registry';
+import { Wrench } from 'lucide-react';
 
 type ToolShellProps = {
-  tool: ToolMetadata;
+  tool?: ToolMetadata;
+  title?: string;
+  description?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  seoContent?: ToolMetadata['seoContent'];
   children: ReactNode;
   backHref?: string;
 };
 
-export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProps) {
+const defaultSeoContent = (title: string): ToolMetadata['seoContent'] => ({
+  howTo: [
+    `Open the ${title} tool.`,
+    'Adjust the settings for your needs.',
+    'Generate the result instantly.',
+    'Download or copy the output.',
+  ],
+  faq: [
+    { q: `Is ${title} free to use?`, a: 'Yes. All processing happens locally in your browser.' },
+    { q: 'Do my files get uploaded?', a: 'No. Your data stays on your device.' },
+  ],
+  benefits: ['Fast', 'Private', 'No sign-up', 'Works on all devices'],
+});
+
+export function ToolShell({ tool, title, description, icon, seoContent, backHref = '/tools', children }: ToolShellProps) {
+  const resolvedTitle = tool?.title ?? title ?? 'Utility Tool';
+  const resolvedDescription = tool?.description ?? description ?? 'Professional browser-first utilities built for speed and privacy.';
+  const ResolvedIcon = tool?.icon ?? icon ?? Wrench;
+  const resolvedSeo = tool?.seoContent ?? seoContent ?? defaultSeoContent(resolvedTitle);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 selection:bg-blue-500/30">
       <div className="max-w-6xl mx-auto space-y-12">
@@ -21,13 +45,13 @@ export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProp
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <tool.icon className="w-8 h-8 text-blue-500" />
+                <ResolvedIcon className="w-8 h-8 text-blue-500" />
                 <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
-                  {tool.title}
+                  {resolvedTitle}
                 </h1>
               </div>
               <p className="text-slate-500 dark:text-slate-400 max-w-2xl text-lg font-medium">
-                {tool.description}
+                {resolvedDescription}
               </p>
             </div>
 
@@ -59,9 +83,9 @@ export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProp
           <div className="lg:col-span-2 space-y-16">
             {/* How to Use Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">How to use {tool.title}</h2>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">How to use {resolvedTitle}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                {tool.seoContent.howTo.map((step, i) => (
+                {resolvedSeo.howTo.map((step, i) => (
                   <div key={i} className="p-6 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 flex gap-4">
                     <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-black text-xs">{i + 1}</span>
                     <p className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{step}</p>
@@ -74,7 +98,7 @@ export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProp
             <section className="space-y-6">
               <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Frequently Asked Questions</h2>
               <div className="space-y-4">
-                {tool.seoContent.faq.map((item, i) => (
+                {resolvedSeo.faq.map((item, i) => (
                   <details key={i} className="group p-6 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5 cursor-pointer">
                     <summary className="list-none flex items-center justify-between font-bold text-slate-900 dark:text-white">
                       {item.q}
@@ -94,7 +118,7 @@ export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProp
             <div className="p-8 bg-blue-600 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20">
               <h3 className="text-xl font-black uppercase tracking-widest mb-6">Why Refectl?</h3>
               <ul className="space-y-4">
-                {tool.seoContent.benefits.map((benefit, i) => (
+                {resolvedSeo.benefits.map((benefit, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <svg className="w-5 h-5 text-blue-200 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
                     <span className="font-bold text-sm tracking-tight">{benefit}</span>
@@ -114,3 +138,4 @@ export function ToolShell({ tool, backHref = '/tools', children }: ToolShellProp
   );
 }
 
+export default ToolShell;

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Ludo Royale - Reflect Games">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#060712" />
+      <stop offset="55%" stop-color="#121a2e" />
+      <stop offset="100%" stop-color="#0b0f1f" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.1" r="0.6">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+  <g fill="none" stroke="#1b243a" stroke-width="1">
+    <path d="M0 120h1200M0 250h1200M0 380h1200M0 510h1200" />
+    <path d="M160 0v630M360 0v630M560 0v630M760 0v630M960 0v630" />
+  </g>
+  <rect x="80" y="80" width="240" height="240" rx="36" fill="#111827" stroke="#f59e0b" stroke-opacity="0.4" />
+  <circle cx="140" cy="140" r="28" fill="#f59e0b" />
+  <circle cx="220" cy="140" r="28" fill="#f59e0b" />
+  <circle cx="140" cy="220" r="28" fill="#f59e0b" />
+  <circle cx="220" cy="220" r="28" fill="#f59e0b" />
+  <text x="360" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#94a3b8" letter-spacing="6">REFLECT GAMES</text>
+  <text x="360" y="250" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Ludo Royale</text>
+  <text x="360" y="310" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#cbd5f5">Classic strategy board play with neon polish.</text>
+  <rect x="360" y="350" width="210" height="54" rx="27" fill="#f59e0b" />
+  <text x="395" y="386" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#0b0f1f">PLAY NOW</text>
+</svg>

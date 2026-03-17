@@ -1,16 +1,22 @@
-import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { GamesHome } from '@/games/portal/frontend/GamesHome';
-import { BRAND_NAME } from '@/lib/brand';
+import { buildGamesHubJsonLd, buildGamesHubMetadata } from '@/games/shared/seo';
+import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: `Games | ${BRAND_NAME}`,
-  description: 'Play premium browser games with instant launch, neon visuals, and competitive depth.',
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return buildGamesHubMetadata(locale);
+}
 
 export default async function GamesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const jsonLd = buildGamesHubJsonLd(locale);
 
-  return <GamesHome locale={locale} />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <GamesHome locale={locale} />
+    </>
+  );
 }
