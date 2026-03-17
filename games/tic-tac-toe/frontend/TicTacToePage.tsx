@@ -18,6 +18,8 @@ export function TicTacToePage() {
       description="A lightning-fast tactical duel. Outsmart your opponent with perfect positioning and timing."
       status="LIVE"
       accent="#22d3ee"
+      logoSrc="/games/logos/tictac.svg"
+      heroSrc="/og/games/tictac.svg"
       stats={[
         { label: 'Players', value: '2 Players' },
         { label: 'Avg Match', value: '2–4 min' },

@@ -33,6 +33,14 @@ export const FEATURED_GAMES = [
     href: '/games/ludo',
     accent: '#f59e0b',
     gradient: 'from-amber-400/25 via-orange-500/10 to-slate-900/0',
+    thumbnail: '/og/games/ludo.svg',
+    logo: '/games/logos/ludo.svg',
+    meta: {
+      players: '2-4 Players',
+      playtime: '10-15 min',
+      devices: 'Mobile + Desktop',
+    },
+    tags: ['Multiplayer', 'Board', 'Classic'],
   },
   {
     id: 'tictac',
@@ -43,6 +51,14 @@ export const FEATURED_GAMES = [
     href: '/games/tictac',
     accent: '#22d3ee',
     gradient: 'from-cyan-400/25 via-sky-500/10 to-slate-900/0',
+    thumbnail: '/og/games/tictac.svg',
+    logo: '/games/logos/tictac.svg',
+    meta: {
+      players: '2 Players',
+      playtime: '2-4 min',
+      devices: 'Any Device',
+    },
+    tags: ['Quick Match', 'Puzzle', 'Competitive'],
   },
   {
     id: 'chess',
@@ -53,6 +69,14 @@ export const FEATURED_GAMES = [
     href: '/games/chess',
     accent: '#a855f7',
     gradient: 'from-purple-400/25 via-fuchsia-500/10 to-slate-900/0',
+    thumbnail: '/og/games/chess.svg',
+    logo: '/games/logos/chess.svg',
+    meta: {
+      players: '1v1 Ranked',
+      playtime: 'Rapid + Blitz',
+      devices: 'Cross-platform',
+    },
+    tags: ['Ranked', 'Classic', 'Tactics'],
   },
   {
     id: 'snake',
@@ -63,5 +87,13 @@ export const FEATURED_GAMES = [
     href: '/games/snake',
     accent: '#34d399',
     gradient: 'from-emerald-400/25 via-green-500/10 to-slate-900/0',
+    thumbnail: '/og/games/snake.svg',
+    logo: '/games/logos/snake.svg',
+    meta: {
+      players: 'Solo',
+      playtime: 'Endless',
+      devices: 'Mobile + Desktop',
+    },
+    tags: ['Arcade', 'Reflex', 'Endless'],
   },
 ];

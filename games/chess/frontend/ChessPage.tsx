@@ -18,6 +18,8 @@ export function ChessPage() {
       description="A modern chess arena with sleek visuals, fast matchmaking, and advanced analysis tools."
       status="COMING SOON"
       accent="#a855f7"
+      logoSrc="/games/logos/chess.svg"
+      heroSrc="/og/games/chess.svg"
       stats={[
         { label: 'Players', value: '1v1 Ranked' },
         { label: 'Skill', value: 'ELO Matchmaking' },

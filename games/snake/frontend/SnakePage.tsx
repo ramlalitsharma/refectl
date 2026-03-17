@@ -18,6 +18,8 @@ export function SnakePage() {
       description="An electrified snake arena with speed scaling, neon visuals, and endless replayability."
       status="COMING SOON"
       accent="#34d399"
+      logoSrc="/games/logos/snake.svg"
+      heroSrc="/og/games/snake.svg"
       stats={[
         { label: 'Mode', value: 'Endless' },
         { label: 'Speed', value: 'Adaptive' },

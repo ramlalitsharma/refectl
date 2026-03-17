@@ -18,6 +18,8 @@ export function LudoPage() {
       description="Race your tokens to the center, block rivals, and claim victory. Built for fast matchmaking, rich visuals, and competitive play."
       status="LIVE"
       accent="#f59e0b"
+      logoSrc="/games/logos/ludo.svg"
+      heroSrc="/og/games/ludo.svg"
       stats={[
         { label: 'Players', value: '2–4 Online' },
         { label: 'Avg Match', value: '10–15 min' },

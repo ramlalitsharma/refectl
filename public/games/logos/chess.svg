@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Nebula Chess logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#0b0b17" />
+  <rect x="12" y="12" width="104" height="104" rx="22" fill="url(#bg)" opacity="0.2" />
+  <path d="M64 28l12 12-6 10 10 8-10 8 6 10-12 12-12-12 6-10-10-8 10-8-6-10z" fill="#a855f7" />
+  <text x="64" y="116" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" text-anchor="middle" fill="#c4b5fd">CHESS</text>
+</svg>
