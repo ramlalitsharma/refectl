@@ -31,12 +31,6 @@ import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { getNavigationForRole, type UserRole } from "@/lib/navigation-config";
 import { TOOLS, CATEGORIES } from "@/lib/tools-registry";
 
-function isNewsPath(pathname: string | null): boolean {
-  if (!pathname) return false;
-  const segments = pathname.toLowerCase().split('/').filter(Boolean);
-  return segments.includes('news');
-}
-
 export function Navbar() {
   const t = useTranslations('Common');
   const pathname = usePathname();
@@ -165,7 +159,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className={`sticky top-0 z-[1000] bg-elite-bg/90 dark:bg-elite-bg/95 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/5 dark:border-white/[0.06] transition-all duration-300 supports-[backdrop-filter]:bg-elite-bg/80 ${isCondensed ? "shadow-xl" : "shadow-2xl"}`}>
+    <header className={`sticky top-0 z-[1000] bg-gradient-to-r from-slate-50/95 via-slate-100/95 to-slate-50/95 dark:from-elite-bg/95 dark:via-elite-bg/95 dark:to-elite-bg/95 backdrop-blur-2xl backdrop-saturate-150 border-b border-slate-200/90 dark:border-white/[0.06] transition-all duration-300 supports-[backdrop-filter]:from-slate-50/85 supports-[backdrop-filter]:via-slate-100/85 supports-[backdrop-filter]:to-slate-50/85 dark:supports-[backdrop-filter]:from-elite-bg/80 dark:supports-[backdrop-filter]:via-elite-bg/80 dark:supports-[backdrop-filter]:to-elite-bg/80 ${isCondensed ? "shadow-[0_18px_45px_rgba(15,23,42,0.10)] dark:shadow-xl" : "shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:shadow-2xl"}`}>
       {!isOnline && (
         <div className="bg-red-500 text-white text-xs font-medium py-1.5 px-4 text-center">
           <AlertTriangle className="inline-block h-3.5 w-3.5 mr-1 align-[-2px]" />
@@ -189,7 +183,7 @@ export function Navbar() {
       {isViewingAs && (
         <div className="bg-elite-accent-cyan text-black text-[11px] font-black uppercase tracking-[0.2em] py-1.5 px-4 text-center">
           Monitoring Protocol: Active Viewing as {viewAsRole} •
-          <Link href="/admin/super" className="underline ml-2 hover:text-white transition-colors">
+          <Link href="/admin/super" className="underline ml-2 hover:text-slate-900/70 transition-colors">
             Terminate Session
           </Link>
         </div>
@@ -246,7 +240,11 @@ export function Navbar() {
                     >
                       <button
                         type="button"
-                        className="px-2.5 xl:px-4 py-2 rounded-xl transition-all duration-200 ease-out hover:bg-white/5 hover:-translate-y-[1px] text-slate-400 hover:text-white flex items-center gap-1.5 xl:gap-2"
+                        className={`px-2.5 xl:px-4 py-2 rounded-xl border transition-all duration-200 ease-out hover:-translate-y-[1px] flex items-center gap-1.5 xl:gap-2 ${
+                          isOpen
+                            ? "bg-white/85 dark:bg-white/10 text-slate-950 dark:text-white border-slate-300 dark:border-white/10 shadow-[0_8px_26px_rgba(15,23,42,0.10)] dark:shadow-[0_8px_26px_rgba(0,0,0,0.25)]"
+                            : "bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/70 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/10"
+                        }`}
                         aria-haspopup="true"
                         aria-expanded={isOpen}
                         aria-controls={`desktop-nav-dropdown-${idx}`}
@@ -277,28 +275,28 @@ export function Navbar() {
                           : "opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                           } ${groups.length >= 4 ? "w-[min(1140px,96vw)]" : groups.length === 3 ? "w-[min(1000px,94vw)]" : "w-[min(600px,92vw)]"}`}
                       >
-                        <div className="rounded-2xl border border-white/10 overflow-hidden shadow-[0_34px_90px_rgba(0,0,0,0.72)] bg-[#0a0d13]/96 backdrop-blur-2xl">
+                        <div className="rounded-[1.75rem] border border-slate-200/90 dark:border-white/10 overflow-hidden shadow-[0_34px_90px_rgba(15,23,42,0.14)] dark:shadow-[0_34px_90px_rgba(0,0,0,0.72)] bg-gradient-to-br from-white via-slate-50/95 to-slate-100/95 dark:from-[#0a0d13]/96 dark:via-[#0a0d13]/96 dark:to-[#05070b]/96 backdrop-blur-2xl ring-1 ring-slate-200/60 dark:ring-white/5">
                           {/* Dropdown Header with Description */}
                           {(dropdown.description || isUtilityMenu) && (
-                            <div className="px-8 py-6 bg-gradient-to-r from-white/[0.04] to-transparent border-b border-white/10">
+                            <div className="px-8 py-6 bg-gradient-to-r from-slate-200/90 via-white/60 to-transparent dark:from-white/[0.04] border-b border-slate-200 dark:border-white/10">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-start gap-3">
-                                  <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
+                                  <div className="w-10 h-10 rounded-2xl bg-white/90 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-inner">
                                     <Zap className="h-5 w-5 text-elite-accent-cyan animate-pulse-slow" />
                                   </div>
                                   <div className="flex-1">
-                                    <div className="text-[12px] font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                                    <div className="text-[12px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white flex items-center gap-2">
                                       {dropdown.label}
                                       <span className="h-1 w-1 rounded-full bg-elite-accent-cyan"></span>
                                       <span className="text-elite-accent-cyan/60 text-[10px]">v2.0 Elite</span>
                                     </div>
-                                    <div className="text-[13px] text-slate-400 font-medium mt-0.5 tracking-tight line-clamp-1">
+                                    <div className="text-[13px] text-slate-600 dark:text-slate-400 font-medium mt-0.5 tracking-tight line-clamp-1">
                                       {isUtilityMenu ? "Next-generation professional toolkits & algorithmic utilities" : dropdown.description}
                                     </div>
                                   </div>
                                 </div>
                                 {isUtilityMenu && (
-                                  <div className="hidden xl:flex items-center gap-4 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                                  <div className="hidden xl:flex items-center gap-4 px-4 py-2 rounded-xl bg-white/80 dark:bg-white/5 border border-slate-200 dark:border-white/5 shadow-[0_8px_30px_rgba(148,163,184,0.14)] dark:shadow-none">
                                     <div className="flex flex-col items-end">
                                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Global Index</span>
                                       <span className="text-[11px] font-black text-elite-accent-cyan">500+ Tools</span>
@@ -311,10 +309,10 @@ export function Navbar() {
 
                           <div className={`${isLargeMenu || isUtilityMenu ? "max-h-[72vh] overflow-auto custom-scrollbar" : ""}`}>
                             {isUtilityMenu && (
-                              <div className="px-8 py-5 bg-white/[0.02] border-b border-white/5">
+                              <div className="px-8 py-5 bg-gradient-to-r from-slate-100/90 to-white/70 dark:from-white/[0.02] dark:to-transparent border-b border-slate-200 dark:border-white/5">
                                 <Link
                                   href="/tools"
-                                  className="group/all w-full flex items-center justify-between p-4 rounded-2xl bg-elite-accent-cyan/5 hover:bg-elite-accent-cyan/10 border border-elite-accent-cyan/20 hover:border-elite-accent-cyan/40 transition-all duration-500 shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+                                  className="group/all w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-elite-accent-cyan/8 to-white/80 dark:from-elite-accent-cyan/5 dark:to-transparent hover:bg-elite-accent-cyan/10 border border-elite-accent-cyan/20 hover:border-elite-accent-cyan/40 transition-all duration-500 shadow-[0_12px_34px_rgba(15,23,42,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
                                   onClick={() => setOpenDesktopDropdown(null)}
                                 >
                                   <div className="flex items-center gap-3">
@@ -340,14 +338,18 @@ export function Navbar() {
                               {groups.map((group, groupIdx) => (
                                 <div
                                   key={`${dropdown.label}-${group.title}-${groupIdx}`}
-                                  className={`px-6 py-6 ${groupIdx > 0 ? 'border-l border-white/[0.03]' : ''}`}
+                                  className={`px-6 py-6 ${groupIdx > 0 ? 'border-l border-slate-200/80 dark:border-white/[0.03]' : ''}`}
                                 >
                                   {(isLargeMenu || isUtilityMenu) && (
                                     <div className="flex items-center gap-2.5 mb-5 group/cat">
-                                      <div className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-elite-accent-cyan group-hover/cat:bg-elite-accent-cyan/10 transition-colors">
-                                        {typeof group.icon === 'string' ? group.icon : <group.icon className="h-3.5 w-3.5" />}
+                                      <div className="p-1.5 rounded-lg bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-elite-accent-cyan group-hover/cat:bg-elite-accent-cyan/10 transition-colors">
+                                        {(() => {
+                                          const CatIcon = group.icon;
+                                          if (!CatIcon) return null;
+                                          return typeof CatIcon === 'string' ? CatIcon : <CatIcon className="h-3.5 w-3.5" />;
+                                        })()}
                                       </div>
-                                      <div className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 group-hover/cat:text-slate-300 transition-colors">
+                                      <div className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-slate-500 group-hover/cat:text-slate-700 dark:group-hover/cat:text-slate-300 transition-colors">
                                         {group.title}
                                       </div>
                                     </div>
@@ -360,15 +362,15 @@ export function Navbar() {
                                         <Link
                                           key={subItem.href}
                                           href={subItem.href}
-                                          className={`group/item flex items-start gap-3.5 p-2 -mx-2 rounded-2xl transition-all duration-300 ease-out ${isActive
-                                            ? 'bg-elite-accent-cyan/5 border border-elite-accent-cyan/20'
-                                            : 'hover:bg-white/[0.04] border border-transparent hover:border-white/10'
+                                          className={`group/item flex items-start gap-3.5 p-2.5 -mx-2 rounded-2xl transition-all duration-300 ease-out ${isActive
+                                            ? 'bg-gradient-to-r from-elite-accent-cyan/10 via-elite-accent-cyan/5 to-transparent border border-elite-accent-cyan/30 shadow-[0_10px_28px_rgba(6,182,212,0.08)]'
+                                            : 'hover:bg-white/75 dark:hover:bg-white/[0.04] border border-transparent hover:border-slate-300 dark:hover:border-white/10 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:hover:shadow-none'
                                             }`}
                                           onClick={() => setOpenDesktopDropdown(null)}
                                         >
                                           <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 border ${isActive
                                             ? 'bg-elite-accent-cyan/20 border-elite-accent-cyan/30 text-elite-accent-cyan'
-                                            : 'bg-white/5 border-white/10 text-slate-400 group-hover/item:text-white group-hover/item:bg-elite-accent-cyan/10 group-hover/item:border-elite-accent-cyan/30 group-hover/item:scale-110'
+                                            : 'bg-white/70 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 group-hover/item:text-slate-900 dark:group-hover/item:text-white group-hover/item:bg-elite-accent-cyan/10 group-hover/item:border-elite-accent-cyan/30 group-hover/item:scale-110'
                                             }`}>
                                             {Icon && (
                                               <span className="text-sm">
@@ -377,7 +379,7 @@ export function Navbar() {
                                             )}
                                           </div>
                                           <div className="flex flex-col min-w-0 py-0.5">
-                                            <span className={`text-[13px] font-bold tracking-tight transition-colors ${isActive ? 'text-elite-accent-cyan' : 'text-slate-200 group-hover/item:text-white'}`}>
+                                            <span className={`text-[13px] font-bold tracking-tight transition-colors ${isActive ? 'text-elite-accent-cyan' : 'text-slate-700 dark:text-slate-200 group-hover/item:text-slate-900 dark:group-hover/item:text-white'}`}>
                                               {subItem.label}
                                             </span>
                                             {(isUtilityMenu || subItem.description) && (
@@ -407,7 +409,7 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`relative shrink-0 px-2.5 lg:px-3 xl:px-3.5 2xl:px-4 py-2 rounded-xl transition-all duration-200 ease-out hover:-translate-y-[1px] flex items-center gap-1.5 xl:gap-2 whitespace-nowrap ${isActive ? "bg-white/5 text-white border border-white/10" : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                    className={`relative shrink-0 px-2.5 lg:px-3 xl:px-3.5 2xl:px-4 py-2 rounded-xl transition-all duration-200 ease-out hover:-translate-y-[1px] flex items-center gap-1.5 xl:gap-2 whitespace-nowrap ${isActive ? "bg-gradient-to-r from-white to-slate-100 dark:from-white/10 dark:to-white/5 text-slate-950 dark:text-white border border-slate-300 dark:border-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.10)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.22)]" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/70 dark:hover:bg-white/5 border border-transparent hover:border-slate-300 dark:hover:border-white/10"
                       }`}
                     title={link.label}
                   >
@@ -419,7 +421,7 @@ export function Navbar() {
                       </span>
                     )}
                     {isActive && (
-                      <span className="absolute left-2 right-2 -bottom-[1px] h-[2px] rounded-full bg-elite-accent-cyan/80" />
+                      <span className="absolute left-2 right-2 -bottom-[1px] h-[2px] rounded-full bg-gradient-to-r from-transparent via-elite-accent-cyan/90 to-transparent" />
                     )}
                   </Link>
                 );
@@ -438,11 +440,11 @@ export function Navbar() {
               type="button"
               aria-label="Open menu"
               aria-expanded={mobileOpen}
-              className="inline-flex lg:!hidden touch-target items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-all duration-200 p-2.5 sm:p-3 shrink-0"
+              className="inline-flex lg:!hidden touch-target items-center justify-center rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 active:bg-slate-300 dark:active:bg-white/30 transition-all duration-200 p-2.5 sm:p-3 shrink-0"
               onClick={() => setMobileOpen((v) => !v)}
             >
               <svg
-                className="w-6 h-6 text-white"
+                className="w-6 h-6 text-slate-900 dark:text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -467,7 +469,7 @@ export function Navbar() {
                   <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest border transition-all ${effectiveRole === 'superadmin' ? 'bg-elite-accent-purple/20 text-elite-accent-purple border-elite-accent-purple/30 glow-purple' :
                     effectiveRole === 'admin' ? 'bg-elite-accent-cyan/20 text-elite-accent-cyan border-elite-accent-cyan/30 glow-cyan' :
                       effectiveRole === 'teacher' ? 'bg-elite-accent-emerald/20 text-elite-accent-emerald border-elite-accent-emerald/30 glow-emerald' :
-                        'bg-white/5 text-white/50 border-white/10'
+                        'bg-slate-200/70 dark:bg-white/5 text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/10'
                     }`}>
                     <span className="relative flex h-1.5 w-1.5 mr-1">
                       <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${effectiveRole === 'superadmin' ? 'bg-elite-accent-purple' : effectiveRole === 'admin' ? 'bg-elite-accent-cyan' : 'bg-elite-accent-emerald'}`}></span>
@@ -485,7 +487,11 @@ export function Navbar() {
                 type="button"
                 onClick={() => setActionsOpen((v) => !v)}
                 aria-expanded={actionsOpen}
-                className="flex items-center gap-2 px-3 xl:px-4 2xl:px-5 py-2.5 rounded-2xl bg-white/5 hover:bg-white/10 transition-all duration-200 ease-out text-white border border-white/5 hover:border-elite-accent-cyan/30 hover:shadow-lg hover:shadow-elite-accent-cyan/10 hover:-translate-y-[1px] active:scale-95 group"
+                className={`flex items-center gap-2 px-3 xl:px-4 2xl:px-5 py-2.5 rounded-2xl transition-all duration-200 ease-out text-slate-900 dark:text-white border hover:border-elite-accent-cyan/30 hover:shadow-lg hover:shadow-elite-accent-cyan/10 hover:-translate-y-[1px] active:scale-95 group ${
+                  actionsOpen
+                    ? "bg-gradient-to-r from-white to-slate-100 dark:from-white/10 dark:to-white/5 border-slate-300 dark:border-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.10)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.22)]"
+                    : "bg-white/70 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 border-slate-200 dark:border-white/5"
+                }`}
                 aria-label="Refectl Hub"
                 title="Refectl Hub"
               >
@@ -496,7 +502,7 @@ export function Navbar() {
 
               {actionsOpen && (
                 <div
-                  className="fixed mt-6 w-96 rounded-[2.5rem] bg-white/90 dark:bg-elite-bg/95 text-slate-900 dark:text-white shadow-[0_30px_100px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_100px_-15px_rgba(0,0,0,0.8)] border border-slate-200 dark:border-white/10 z-[9999] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 backdrop-blur-3xl ring-1 ring-black/5 dark:ring-white/5 max-h-[85vh] overflow-y-auto custom-scrollbar"
+                  className="fixed mt-6 w-96 rounded-[2.5rem] bg-gradient-to-br from-white via-slate-50/95 to-slate-100/95 dark:from-elite-bg/95 dark:via-elite-bg/95 dark:to-[#07090d]/95 text-slate-900 dark:text-white shadow-[0_30px_100px_-15px_rgba(15,23,42,0.18)] dark:shadow-[0_30px_100px_-15px_rgba(0,0,0,0.8)] border border-slate-200 dark:border-white/10 z-[9999] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 backdrop-blur-3xl ring-1 ring-slate-200/70 dark:ring-white/5 max-h-[85vh] overflow-y-auto custom-scrollbar"
                   style={{
                     right: 'max(1rem, calc((100vw - 1280px) / 2 + 1rem))',
                     top: isCondensed ? '4rem' : '4.5rem'
@@ -510,18 +516,18 @@ export function Navbar() {
                   ) : (
                     <div className="flex flex-col">
                       {/* 🚀 Creation Studio Section */}
-                      <div className="p-6 border-b border-white/5 bg-white/5">
+                      <div className="p-6 border-b border-slate-200 dark:border-white/5 bg-slate-100/70 dark:bg-white/5">
                         <div className="flex items-center justify-between px-2 mb-4">
                           <span className="text-[11px] uppercase font-black text-slate-500 tracking-[0.35em]">Creation Studio</span>
                         </div>
                         <div className="grid gap-2">
                           {(effectiveRole === 'teacher' || effectiveRole === 'admin' || effectiveRole === 'superadmin') && (
-                            <Link href="/admin/studio/courses" className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" onClick={() => setActionsOpen(false)}>
+                            <Link href="/admin/studio/courses" className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all group" onClick={() => setActionsOpen(false)}>
                               <div className="w-10 h-10 rounded-xl bg-elite-accent-cyan/10 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
                                 <BookOpen className="h-5 w-5 text-elite-accent-cyan" />
                               </div>
                               <div className="flex flex-col">
-                                <span className="text-[11px] font-black uppercase tracking-widest text-white">Course Architect</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Course Architect</span>
                                 <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Design new curricula</span>
                               </div>
                             </Link>
@@ -561,22 +567,22 @@ export function Navbar() {
                       </div>
 
                       {/* 🛒 Elite Marketplace Section */}
-                      <div className="p-6 border-b border-white/5">
+                      <div className="p-6 border-b border-slate-200 dark:border-white/5">
                         <div className="flex items-center justify-between px-2 mb-4">
                           <span className="text-[11px] uppercase font-black text-slate-500 tracking-[0.35em]">Elite Marketplace</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <Link href="/shop" className="flex flex-col gap-2 p-4 rounded-3xl bg-white/5 hover:bg-elite-accent-cyan/10 border border-white/5 hover:border-elite-accent-cyan/30 transition-all group" onClick={() => setActionsOpen(false)}>
+                          <Link href="/shop" className="flex flex-col gap-2 p-4 rounded-3xl bg-slate-100/80 dark:bg-white/5 hover:bg-elite-accent-cyan/10 border border-slate-200 dark:border-white/5 hover:border-elite-accent-cyan/30 transition-all group" onClick={() => setActionsOpen(false)}>
                             <ShoppingBag className="h-6 w-6 text-elite-accent-cyan group-hover:scale-110 transition-transform" />
                             <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white">Forge Shop</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Forge Shop</span>
                               <span className="text-[10px] text-slate-500 uppercase font-bold">Premium Software</span>
                             </div>
                           </Link>
-                          <Link href="/ebooks" className="flex flex-col gap-2 p-4 rounded-3xl bg-white/5 hover:bg-elite-accent-emerald/10 border border-white/5 hover:border-elite-accent-emerald/30 transition-all group" onClick={() => setActionsOpen(false)}>
+                          <Link href="/ebooks" className="flex flex-col gap-2 p-4 rounded-3xl bg-slate-100/80 dark:bg-white/5 hover:bg-elite-accent-emerald/10 border border-slate-200 dark:border-white/5 hover:border-elite-accent-emerald/30 transition-all group" onClick={() => setActionsOpen(false)}>
                             <Library className="h-6 w-6 text-elite-accent-emerald group-hover:scale-110 transition-transform" />
                             <div className="flex flex-col">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white">Resources</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Resources</span>
                               <span className="text-[10px] text-slate-500 uppercase font-bold">Digital Assets</span>
                             </div>
                           </Link>
@@ -584,7 +590,7 @@ export function Navbar() {
                       </div>
 
                       {/* ⚙️ Preferences Section */}
-                      <div className="p-6 border-b border-white/5">
+                      <div className="p-6 border-b border-slate-200 dark:border-white/5">
                         <div className="px-2 mb-4 text-[11px] uppercase font-black text-slate-500 tracking-[0.35em]">Preferences</div>
                         <div className="flex items-center justify-between gap-4 px-2">
                           <div className="flex-1">
@@ -597,7 +603,7 @@ export function Navbar() {
                       </div>
 
                       {/* 🔔 Notifications Section */}
-                      <div className="p-6 border-b border-white/5 bg-white/5">
+                      <div className="p-6 border-b border-slate-200 dark:border-white/5 bg-slate-100/70 dark:bg-white/5">
                         <div className="px-2 mb-4 flex items-center justify-between">
                           <span className="text-[11px] uppercase font-black text-slate-500 tracking-[0.35em]">Intelligence Alerts</span>
                           <NotificationBell />
@@ -614,18 +620,18 @@ export function Navbar() {
                               Command Console
                             </Link>
                           )}
-                          <Link href="/dashboard" className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all group" onClick={() => setActionsOpen(false)}>
-                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg group-hover:rotate-12 transition-transform">
-                              <LayoutDashboard className="h-5 w-5 text-white" />
+                          <Link href="/dashboard" className="flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all group" onClick={() => setActionsOpen(false)}>
+                            <div className="w-10 h-10 rounded-xl bg-slate-200/70 dark:bg-white/5 flex items-center justify-center text-lg group-hover:rotate-12 transition-transform">
+                              <LayoutDashboard className="h-5 w-5 text-slate-900 dark:text-white" />
                             </div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-white">Universal Dashboard</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">Universal Dashboard</span>
                           </Link>
                         </div>
-                        <div className="mt-6 flex items-center justify-between px-5 py-4 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
+                        <div className="mt-6 flex items-center justify-between px-5 py-4 bg-slate-100/80 dark:bg-white/5 rounded-3xl border border-slate-200 dark:border-white/10 shadow-inner">
                           <div className="flex items-center gap-4">
                             <UserButton afterSignOutUrl="/" />
                             <div className="flex flex-col">
-                              <span className="text-[11px] font-black text-white uppercase tracking-tight">Active Node</span>
+                              <span className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-tight">Active Node</span>
                               <span className="text-[10px] text-elite-accent-cyan font-black uppercase tracking-[0.18em]">{effectiveRole}</span>
                             </div>
                           </div>
@@ -699,14 +705,14 @@ export function Navbar() {
             onClick={() => setMobileOpen(false)}
           >
             <div
-              className="absolute top-0 right-0 w-full max-w-sm h-full bg-elite-bg text-white shadow-2xl flex flex-col border-l border-white/5 animate-in slide-in-from-right duration-300"
+              className="absolute top-0 right-0 w-full max-w-sm h-full bg-slate-100 dark:bg-elite-bg text-slate-900 dark:text-white shadow-2xl flex flex-col border-l border-slate-200 dark:border-white/5 animate-in slide-in-from-right duration-300"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/5 shrink-0">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-white/5 shrink-0">
                 <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Menu</span>
                 <button
-                  className="touch-target text-white bg-white/5 rounded-xl flex items-center justify-center hover:bg-white/10 active:bg-white/15 transition-all"
+                  className="touch-target text-slate-900 dark:text-white bg-slate-200 dark:bg-white/5 rounded-xl flex items-center justify-center hover:bg-slate-300 dark:hover:bg-white/10 active:bg-slate-300 dark:active:bg-white/15 transition-all"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                 >
@@ -725,24 +731,19 @@ export function Navbar() {
                     if ('items' in item) {
                       const dropdown = item as import('@/lib/navigation-config').NavDropdown;
                       return (
-                        <div key={idx} className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                        <div key={idx} className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] overflow-hidden">
                           {/* Category Header */}
-                          {(() => {
-                            const isUtilityMenu = dropdown.label.toLowerCase().includes('utilit');
-                            return (
-                              <div className="px-4 py-3 bg-white/5 border-b border-white/5">
-                                <div className="flex items-start gap-3">
-                                  {dropdown.icon && <span className="text-lg mt-0.5">{dropdown.icon}</span>}
-                                  <div className="flex-1">
-                                    <div className="text-xs font-black text-white uppercase tracking-widest">{dropdown.label}</div>
-                                    {dropdown.description && (
-                                      <div className="text-[11px] text-slate-400 font-medium mt-1">{dropdown.description}</div>
-                                    )}
-                                  </div>
-                                </div>
+                          <div className="px-4 py-3 bg-slate-200/70 dark:bg-white/5 border-b border-slate-200 dark:border-white/5">
+                            <div className="flex items-start gap-3">
+                              {dropdown.icon && <span className="text-lg mt-0.5">{dropdown.icon}</span>}
+                              <div className="flex-1">
+                                <div className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">{dropdown.label}</div>
+                                {dropdown.description && (
+                                  <div className="text-[11px] text-slate-600 dark:text-slate-400 font-medium mt-1">{dropdown.description}</div>
+                                )}
                               </div>
-                            );
-                          })()}
+                            </div>
+                          </div>
 
                           {/* Category Items */}
                           <div className="space-y-1 p-2">
@@ -768,8 +769,12 @@ export function Navbar() {
                                 if (catTools.length === 0) return null;
                                 return (
                                   <div key={cat.id} className="mt-2 first:mt-0">
-                                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-white/5 rounded-lg mb-1 flex items-center gap-2">
-                                      {typeof cat.icon === 'string' ? cat.icon : <cat.icon className="h-3 w-3" />}
+                                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-200/70 dark:bg-white/5 rounded-lg mb-1 flex items-center gap-2">
+                                      {(() => {
+                                        const CatIcon = cat.icon;
+                                        if (!CatIcon) return null;
+                                        return typeof CatIcon === 'string' ? CatIcon : <CatIcon className="h-3 w-3" />;
+                                      })()}
                                       {cat.title}
                                     </div>
                                     {catTools.map(t => {
@@ -781,8 +786,8 @@ export function Navbar() {
                                           key={t.id}
                                           href={href}
                                           className={`touch-target px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${isActive
-                                            ? 'bg-white/10 font-black text-white border border-elite-accent-cyan/30'
-                                            : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10'
+                                            ? 'bg-slate-200/90 dark:bg-white/10 font-black text-slate-900 dark:text-white border border-elite-accent-cyan/30'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10'
                                             }`}
                                           onClick={() => setMobileOpen(false)}
                                         >
@@ -806,8 +811,8 @@ export function Navbar() {
                                     key={subItem.href}
                                     href={subItem.href}
                                     className={`touch-target px-4 py-3 rounded-lg flex items-center gap-3 transition-all ${isActive
-                                      ? 'bg-white/10 font-black text-white border border-elite-accent-cyan/30'
-                                      : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10'
+                                      ? 'bg-slate-200/90 dark:bg-white/10 font-black text-slate-900 dark:text-white border border-elite-accent-cyan/30'
+                                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10'
                                       }`}
                                     onClick={() => setMobileOpen(false)}
                                   >
@@ -836,8 +841,8 @@ export function Navbar() {
                         key={link.href}
                         href={link.href}
                         className={`touch-target px-4 py-3 rounded-xl flex items-center gap-3 transition-all border ${isActive
-                          ? 'bg-white/10 font-black text-white border-elite-accent-cyan/30'
-                          : 'text-slate-400 hover:text-white hover:bg-white/5 active:bg-white/10 border-transparent'
+                          ? 'bg-slate-200/90 dark:bg-white/10 font-black text-slate-900 dark:text-white border-elite-accent-cyan/30'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 border-transparent'
                           }`}
                         onClick={() => setMobileOpen(false)}
                       >
@@ -854,11 +859,11 @@ export function Navbar() {
                 </div>
 
                 {/* Relay Hub shortcut - shown when desktop Hub is hidden */}
-                <div className="xl:hidden pt-4 border-t border-white/5 rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+                <div className="xl:hidden pt-4 border-t border-slate-200 dark:border-white/5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] p-2">
                   <div className="text-xs font-semibold text-slate-500 mb-3 px-3 uppercase tracking-wide">Hub</div>
                   <Link
                     href="/dashboard"
-                    className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                    className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                     onClick={() => setMobileOpen(false)}
                   >
                     <Zap className="h-5 w-5 text-elite-accent-cyan" />
@@ -866,7 +871,7 @@ export function Navbar() {
                   </Link>
                   <Link
                     href="/shop"
-                    className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                    className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                     onClick={() => setMobileOpen(false)}
                   >
                     <ShoppingBag className="h-5 w-5 text-elite-accent-cyan" />
@@ -876,13 +881,13 @@ export function Navbar() {
 
                 {/* Actions Section */}
                 {(effectiveRole === 'superadmin' || effectiveRole === 'admin' || effectiveRole === 'teacher' || effectiveRole === 'student' || effectiveRole === 'content_writer' || effectiveRole === 'news_writer' || effectiveRole === 'guest') && (
-                  <div className="pt-4 border-t border-white/5 rounded-2xl border border-white/10 bg-white/[0.03] p-2">
+                  <div className="pt-4 border-t border-slate-200 dark:border-white/5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] p-2">
                     <div className="text-xs font-semibold text-slate-500 mb-3 px-3 uppercase tracking-wide">Quick Actions</div>
                     <div className="space-y-1">
                       {(effectiveRole === 'superadmin' || effectiveRole === 'admin' || effectiveRole === 'teacher') && (
                         <Link
                           href="/admin/studio/courses"
-                          className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                          className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                           onClick={() => setMobileOpen(false)}
                         >
                           <BookOpen className="h-5 w-5 text-elite-accent-cyan" />
@@ -892,7 +897,7 @@ export function Navbar() {
                       {(effectiveRole === 'superadmin' || effectiveRole === 'admin' || effectiveRole === 'content_writer') && (
                         <Link
                           href="/admin/studio/news"
-                          className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                          className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                           onClick={() => setMobileOpen(false)}
                         >
                           <Newspaper className="h-5 w-5 text-red-500" />
@@ -901,7 +906,7 @@ export function Navbar() {
                       )}
                       <Link
                         href="/admin/studio/blogs"
-                        className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                        className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                         onClick={() => setMobileOpen(false)}
                       >
                         <PenSquare className="h-5 w-5 text-elite-accent-purple" />
@@ -910,7 +915,7 @@ export function Navbar() {
                       {effectiveRole === 'student' && (
                         <Link
                           href="/admin/studio/practice"
-                          className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                          className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                           onClick={() => setMobileOpen(false)}
                         >
                           <Target className="h-5 w-5 text-emerald-400" />
@@ -920,10 +925,10 @@ export function Navbar() {
                       {(effectiveRole === 'superadmin' || effectiveRole === 'admin') && (
                         <Link
                           href="/admin/users"
-                          className="touch-target px-4 py-3 rounded-xl hover:bg-white/5 active:bg-white/10 flex items-center gap-3 text-slate-300 transition-all"
+                          className="touch-target px-4 py-3 rounded-xl hover:bg-slate-200/70 dark:hover:bg-white/5 active:bg-slate-200 dark:active:bg-white/10 flex items-center gap-3 text-slate-700 dark:text-slate-300 transition-all"
                           onClick={() => setMobileOpen(false)}
                         >
-                          <Users className="h-5 w-5 text-slate-300" />
+                          <Users className="h-5 w-5 text-slate-600 dark:text-slate-300" />
                           <span className="text-sm">Manage Users</span>
                         </Link>
                       )}
@@ -931,7 +936,7 @@ export function Navbar() {
                   </div>
                 )}
                 {/* Mobile Auth Buttons */}
-                <div className="pt-6 mt-6 border-t border-white/5 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+                <div className="pt-6 mt-6 border-t border-slate-200 dark:border-white/5 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] p-3">
                   <SignedOut>
                     <div className="grid grid-cols-2 gap-3">
                       <SignInButton mode="modal">
@@ -956,8 +961,8 @@ export function Navbar() {
                     <div className="flex items-center gap-3 px-2">
                       <UserButton afterSignOutUrl="/" />
                       <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white">My Account</span>
-                        <span className="text-xs text-slate-400">Manage your profile</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-white">My Account</span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400">Manage your profile</span>
                       </div>
                     </div>
                   </SignedIn>
@@ -969,7 +974,7 @@ export function Navbar() {
 
         {/* Mobile Search (Row 2) - below main navbar on small screens */}
         <div className="md:hidden mt-2 -mx-1 px-1">
-          <div className="glass-card-premium rounded-2xl border-white/10 shadow-xl overflow-hidden">
+          <div className="rounded-2xl border border-slate-200 bg-slate-100/90 dark:glass-card-premium dark:border-white/10 shadow-xl overflow-hidden">
             <GlobalSearch />
           </div>
         </div>

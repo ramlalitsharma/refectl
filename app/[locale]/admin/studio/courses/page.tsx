@@ -12,6 +12,34 @@ interface PageProps {
   searchParams?: Promise<{ slug?: string } | undefined>;
 }
 
+function toIsoDateString(value: unknown): string | undefined {
+  if (!value) return undefined;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
+  }
+
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
+
+  if (typeof value === 'number') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+  }
+
+  if (typeof value === 'object' && value !== null && 'toISOString' in value && typeof (value as { toISOString?: unknown }).toISOString === 'function') {
+    try {
+      return (value as { toISOString: () => string }).toISOString();
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
 export default async function CourseStudioPage({ searchParams }: PageProps) {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
@@ -37,7 +65,7 @@ export default async function CourseStudioPage({ searchParams }: PageProps) {
     title: course.title,
     status: course.status || 'draft',
     level: course.level,
-    createdAt: course.createdAt ? course.createdAt.toISOString() : undefined,
+    createdAt: toIsoDateString(course.createdAt),
   }));
 
   const params = searchParams ? await searchParams : undefined;
@@ -70,9 +98,9 @@ export default async function CourseStudioPage({ searchParams }: PageProps) {
         metadata,
         price,
         seo,
-        createdAt: createdAt ? createdAt.toISOString() : undefined,
-        updatedAt: updatedAt ? updatedAt.toISOString() : undefined,
-        workflowUpdatedAt: workflowUpdatedAt ? workflowUpdatedAt.toISOString() : undefined,
+        createdAt: toIsoDateString(createdAt),
+        updatedAt: toIsoDateString(updatedAt),
+        workflowUpdatedAt: toIsoDateString(workflowUpdatedAt),
         workflowUpdatedBy: workflowUpdatedBy || undefined,
         modules: modules.map((module: any) => ({
           title: module.title,

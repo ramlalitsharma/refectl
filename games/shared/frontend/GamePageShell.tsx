@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/Badge';
-import { GameModeProvider } from './GameModeContext';
+import { GameModeProvider, type GameMode } from './GameModeContext';
 import { GameModePanel } from './GameModePanel';
 
 interface GamePageShellProps {
@@ -17,6 +17,10 @@ interface GamePageShellProps {
   stats?: { label: string; value: string }[];
   logoSrc?: string;
   heroSrc?: string;
+  actions?: React.ReactNode;
+  aside?: React.ReactNode;
+  defaultMode?: GameMode;
+  asideLayout?: 'side' | 'below';
   guide?: {
     heading?: string;
     subheading?: string;
@@ -36,10 +40,14 @@ export function GamePageShell({
   stats = [],
   logoSrc,
   heroSrc,
+  actions,
+  aside,
+  defaultMode = 'online',
+  asideLayout = 'side',
   guide,
 }: GamePageShellProps) {
   return (
-    <GameModeProvider>
+    <GameModeProvider defaultMode={defaultMode}>
       <div
         className="min-h-screen bg-slate-950 text-white"
         style={{ ['--game-accent' as string]: accent }}
@@ -57,7 +65,7 @@ export function GamePageShell({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center"
+              className={`grid items-center gap-10 ${heroSrc ? 'lg:grid-cols-[1.1fr_0.9fr]' : ''}`}
             >
               <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
@@ -90,6 +98,7 @@ export function GamePageShell({
                     ))}
                   </div>
                 )}
+                {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
               </div>
               {heroSrc && (
                 <div className="relative">
@@ -113,17 +122,35 @@ export function GamePageShell({
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16">
-          <div className="grid gap-10 lg:grid-cols-[1fr,320px]">
-            <div className="rounded-[2.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
-              <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-4 shadow-[inset_0_0_50px_rgba(8,10,20,0.8)]">
-                <div className="relative aspect-[16/10] w-full min-h-[420px]">
-                  <canvas className="absolute inset-0 h-full w-full opacity-0 pointer-events-none" aria-hidden="true" />
-                  <div className="relative h-full w-full">{children}</div>
+          {asideLayout === 'below' ? (
+            <div className="space-y-8">
+              <div id="game-board" className="rounded-[2.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+                <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-4 shadow-[inset_0_0_50px_rgba(8,10,20,0.8)]">
+                  <div className="relative w-full min-h-[380px] sm:min-h-[460px] lg:min-h-[620px]">
+                    <canvas className="absolute inset-0 h-full w-full opacity-0 pointer-events-none" aria-hidden="true" />
+                    <div className="relative h-full w-full">{children}</div>
+                  </div>
                 </div>
               </div>
+              <div id="game-modes">
+                {aside ?? <GameModePanel />}
+              </div>
             </div>
-            <GameModePanel />
-          </div>
+          ) : (
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+              <div id="game-board" className="rounded-[2.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+                <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-4 shadow-[inset_0_0_50px_rgba(8,10,20,0.8)]">
+                  <div className="relative w-full min-h-[380px] sm:min-h-[460px] lg:min-h-[620px]">
+                    <canvas className="absolute inset-0 h-full w-full opacity-0 pointer-events-none" aria-hidden="true" />
+                    <div className="relative h-full w-full">{children}</div>
+                  </div>
+                </div>
+              </div>
+              <div id="game-modes" className="lg:sticky lg:top-24">
+                {aside ?? <GameModePanel />}
+              </div>
+            </div>
+          )}
         </section>
 
         {guide && (
