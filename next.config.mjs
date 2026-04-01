@@ -4,7 +4,6 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
   webpack: (config, { isServer }) => {
     // pdfjs-dist requires canvas on the server; alias it to empty module to prevent errors
     if (isServer) {
@@ -136,7 +135,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  outputFileTracingRoot: process.cwd(),
   experimental: {
     serverActions: {
       bodySizeLimit: "1gb",
