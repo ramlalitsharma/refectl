@@ -270,7 +270,7 @@ export function Navbar() {
                       {/* Enhanced Dropdown Menu with Description */}
                       <div
                         id={`desktop-nav-dropdown-${idx}`}
-                        className={`absolute left-1/2 -translate-x-1/2 top-full mt-3 transition-all duration-200 ease-out z-[1001] max-w-[calc(100vw-2rem)] ${isOpen
+                        className={`absolute top-full mt-3 transition-all duration-200 ease-out z-[1001] max-w-[calc(100vw-2rem)] ${idx <= 1 ? "left-0" : idx >= navConfig.primaryLinks.length - 2 ? "right-0" : "left-1/2 -translate-x-1/2"} ${isOpen
                           ? "opacity-100 visible translate-y-0"
                           : "opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                           } ${groups.length >= 4 ? "w-[min(1140px,96vw)]" : groups.length === 3 ? "w-[min(1000px,94vw)]" : "w-[min(600px,92vw)]"}`}
