@@ -186,12 +186,37 @@ export const NewsDiscoveryService = {
                     });
                     jsonResponse = JSON.parse(resp.choices[0]?.message?.content || '{"scores": []}');
                 } catch (openaiError: any) {
-                    console.error('[Discovery] OpenAI fallback failed:', openaiError);
-                    // If it's a 429, we definitely need to return the generic pool
-                    if (openaiError?.status === 429) {
-                        console.warn('[Discovery] OpenAI Quota Exceeded. Using zero-cost baseline.');
+                    if (openaiError?.status === 429 || openaiError?.code === 'insufficient_quota') {
+                        console.warn('[Discovery] OpenAI Quota Exceeded. Entering automatic cooldown.');
                         this.startOpenAiCooldown();
+                    } else {
+                        console.warn('[Discovery] OpenAI fallback failed:', openaiError.message || openaiError);
                     }
+                }
+            }
+
+            // 3. Fallback to Gemini 1.5 Flash (Google AI Switchboard) if others failed
+            const googleKey = process.env.GOOGLE_AI_API_KEY;
+            if (!jsonResponse && googleKey) {
+                try {
+                    console.log('[Discovery] Falling back to Gemini 1.5 Flash (Google AI)...');
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: 'You are an elite news editor. Output ONLY a valid JSON object. ' + prompt }] }],
+                            generationConfig: { response_mime_type: 'application/json' }
+                        })
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"scores": []}';
+                        jsonResponse = JSON.parse(text);
+                    } else {
+                        console.warn('[Discovery] Gemini HTTP error:', response.status);
+                    }
+                } catch (geminiError: any) {
+                    console.warn('[Discovery] Gemini fallback failed:', geminiError.message || 'Unknown Error');
                 }
             }
 
