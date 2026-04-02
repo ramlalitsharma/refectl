@@ -26,13 +26,17 @@ export class TeraiTimesArticleService extends FeatureModule {
     const news = await this.getArticleBySlug(slug);
     if (!news) return { news: null, author: null, related: [], engagement: null };
 
+    // Async increment view count for analytics
+    NewsService.incrementViewCount(slug).catch(err => console.error('Tracker error:', err));
+
     // Modular parallel fetching for the Engagement Hub
-    const [trendingNews, recentNews, popularCategories, popularCountries, author] = await Promise.all([
+    const [trendingNews, recentNews, popularCategories, popularCountries, author, networkAnalytics] = await Promise.all([
       NewsService.getTrendingNews(4),
       NewsService.getRecentNews(4),
       NewsService.getPopularCategories(5),
       NewsService.getPopularCountries(5),
       this.getAuthor(news.author_id || 'system'),
+      NewsService.getAnalyticsSummary(),
     ]);
 
     const related = (Array.isArray(trendingNews) ? trendingNews : []).filter((n: any) => n.id !== news.id);
@@ -41,7 +45,8 @@ export class TeraiTimesArticleService extends FeatureModule {
       popular: trendingNews.filter((n: any) => n.id !== news.id).slice(0, 3),
       recent: recentNews.filter((n: any) => n.id !== news.id).slice(0, 3),
       categories: popularCategories,
-      countries: popularCountries
+      countries: popularCountries,
+      networkAnalytics // Secure analytics for the detail page
     };
 
     return { news, author, related, engagement };

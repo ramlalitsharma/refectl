@@ -65,17 +65,38 @@ function isNoiseItem(item: DiscoveredTrend): boolean {
 }
 
 const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[] = [
-    { url: 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en', source: 'Google News', defaultCategory: 'World' as NewsCategory },
-    { url: 'https://techcrunch.com/feed/', source: 'TechCrunch', defaultCategory: 'Technology' as NewsCategory },
-    { url: 'https://www.theverge.com/rss/index.xml', source: 'The Verge', defaultCategory: 'Technology' as NewsCategory },
-    { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera', defaultCategory: 'World' as NewsCategory },
-    { url: 'https://www.wired.com/feed/rss', source: 'WIRED', defaultCategory: 'Technology' as NewsCategory }
+    // World & Global
+    { url: 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en', source: 'Google News', defaultCategory: 'World' },
+    { url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC News', defaultCategory: 'World' },
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera', defaultCategory: 'World' },
+    { url: 'https://www.theguardian.com/world/rss', source: 'The Guardian', defaultCategory: 'World' },
+    { url: 'http://rss.cnn.com/rss/edition.rss', source: 'CNN International', defaultCategory: 'World' },
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', source: 'NY Times', defaultCategory: 'World' },
+    
+    // Technology & AI
+    { url: 'https://techcrunch.com/feed/', source: 'TechCrunch', defaultCategory: 'Technology' },
+    { url: 'https://www.theverge.com/rss/index.xml', source: 'The Verge', defaultCategory: 'Technology' },
+    { url: 'https://www.wired.com/feed/rss', source: 'WIRED', defaultCategory: 'Technology' },
+    { url: 'https://arstechnica.com/feed/', source: 'Ars Technica', defaultCategory: 'Technology' },
+    { url: 'https://www.zdnet.com/news/rss.xml', source: 'ZDNet', defaultCategory: 'Technology' },
+    
+    // Business & Finance
+    { url: 'https://www.forbes.com/business/feed/', source: 'Forbes', defaultCategory: 'Finance' },
+    { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', source: 'CNBC Business', defaultCategory: 'Finance' },
+    { url: 'https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml', source: 'Wall Street Journal', defaultCategory: 'Finance' },
+    { url: 'https://www.economist.com/business/rss.xml', source: 'The Economist', defaultCategory: 'Finance' },
+    
+    // Regional & Multilingual (International Context)
+    { url: 'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada', source: 'El País (ES)', defaultCategory: 'World' },
+    { url: 'https://www.aajtak.in/rssfeed.xml', source: 'Aaj Tak (HI)', defaultCategory: 'World' },
+    { url: 'http://www.xinhuanet.com/english/rss/world.xml', source: 'Xinhua (ZH)', defaultCategory: 'World' },
+    { url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms', source: 'Economic Times', defaultCategory: 'Finance' },
+    { url: 'https://www.dawn.com/feeds/home/', source: 'DAWN', defaultCategory: 'World' },
+    { url: 'https://www.scmp.com/rss/31819/feed', source: 'SCMP', defaultCategory: 'World' }
 ];
 
+
 export const NewsDiscoveryService = {
-    /**
-     * Fetches and parses RSS feeds to discover live trending topics.
-     */
     async getLiveTrends(): Promise<DiscoveredTrend[]> {
         const discovered: DiscoveredTrend[] = [];
 
@@ -86,7 +107,12 @@ export const NewsDiscoveryService = {
                         cache: 'no-store',
                         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
                     });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    if (!response.ok) {
+                        console.warn(`[Discovery] Skipping feed ${feed.source} (HTTP ${response.status})`);
+                        return [];
+                    }
+
                     const text = await response.text();
 
                     // Lightweight XML parsing for titles and links
@@ -195,12 +221,12 @@ export const NewsDiscoveryService = {
                 }
             }
 
-            // 3. Fallback to Gemini 1.5 Flash (Google AI Switchboard) if others failed
+            // 3. Fallback to Gemini Flash (Google AI Switchboard) if others failed
             const googleKey = process.env.GOOGLE_AI_API_KEY;
             if (!jsonResponse && googleKey) {
                 try {
-                    console.log('[Discovery] Falling back to Gemini 1.5 Flash (Google AI)...');
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+                    console.log('[Discovery] Falling back to Gemini Flash (Google AI)...');
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${googleKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { getGlobalTrendsAction, ingestPublicTrendAction } from '@/app/actions/news-ai';
 import { Zap, Loader2 } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function LiveNewsPulse() {
@@ -11,6 +11,8 @@ export function LiveNewsPulse() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isIngesting, setIsIngesting] = useState(false);
     const router = useRouter();
+    const params = useParams();
+    const locale = params?.locale as string || 'en';
 
     useEffect(() => {
         const fetch = async () => {
@@ -46,7 +48,8 @@ export function LiveNewsPulse() {
             const { data, error } = await ingestPublicTrendAction({
                 title: currentTrend.title,
                 category: currentTrend.category as any,
-                source_url: currentTrend.source_url
+                source_url: currentTrend.source_url,
+                locale
             });
             if (data?.slug) {
                 router.push(`/news/${data.slug}`);

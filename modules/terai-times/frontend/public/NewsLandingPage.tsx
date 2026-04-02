@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { NewsNavbar } from '@/components/layout/NewsNavbar';
-import { NewsFeedClient } from '@/components/news/NewsFeedClient';
+import NewsFeedClient from '@/components/news/NewsFeedClient';
 import { NewsAutoAdGuard } from '@/components/news/NewsAutoAdGuard';
-import { TeraiTimesPublicService, TeraiTimesSeoService } from '@/modules/terai-times/backend/services';
+import { TeraiTimesPublicService, TeraiTimesSeoService, type TeraiTimesLandingPayload } from '@/modules/terai-times/backend/services';
 
 export async function generateNewsLandingMetadata({
   searchParams,
@@ -24,7 +24,7 @@ export async function NewsLandingPage({
   const resolvedParams = await searchParams;
   const category = (resolvedParams?.category as string) || undefined;
   const country = (resolvedParams?.country as string) || undefined;
-  let payload = {
+  let payload: TeraiTimesLandingPayload = {
     category: 'All',
     country: 'All',
     initialItems: [] as any[],
@@ -39,6 +39,7 @@ export async function NewsLandingPage({
       pendingApprovalCount: null as number | null,
       maintenanceMode: 'degraded' as 'healthy' | 'degraded',
     },
+    networkAnalytics: undefined as any,
   };
 
   try {
@@ -59,6 +60,7 @@ export async function NewsLandingPage({
           initialTrending={payload.initialTrending}
           initialEvents={payload.initialEvents}
           automationStatus={payload.automationStatus}
+          networkAnalytics={payload.networkAnalytics}
         />
       </main>
     </div>

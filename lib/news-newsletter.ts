@@ -20,13 +20,20 @@ export const NewsNewsletterService = {
 
         const { data: recentNews, error } = await supabaseAdmin
             .from('news')
-            .select('title, summary, category, country, sentiment, slug')
+            .select('title, summary, category, country, sentiment, slug, tags')
             .eq('status', 'published')
+            .not('tags', 'cs', '{"integrity_failure"}') // Exclude any with integrity failure
             .gte('created_at', yesterday.toISOString())
             .order('view_count', { ascending: false })
             .limit(5);
 
-        if (error || !recentNews || recentNews.length === 0) {
+        // Client-side secondary filter for robustness
+        const filteredNews = (recentNews || []).filter((n: any) => {
+            const tags = n.tags || [];
+            return !tags.some((t: string) => t.startsWith('integrity_failure:'));
+        });
+
+        if (error || !filteredNews || filteredNews.length === 0) {
             console.log('[Newsletter] No new stories in the past 24h to compile.');
             return false;
         }

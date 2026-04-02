@@ -121,4 +121,64 @@ export class TeraiTimesSeoService extends SeoModule {
       return { title: 'Terai Times News' };
     }
   }
+
+  /**
+   * Generates NewsArticle JSON-LD for Search Engines
+   */
+  async getArticleSchema(slug: string, locale: string = 'en') {
+    try {
+      const news = await this.articleService.getArticleBySlug(slug);
+      if (!news) return null;
+      const author = await this.articleService.getAuthor(news.author_id || 'system');
+      const publishedDate = news.published_at || news.created_at;
+
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: news.title,
+        description: news.summary,
+        image: [news.cover_image].filter(Boolean),
+        datePublished: publishedDate,
+        dateModified: news.updated_at || publishedDate,
+        author: [
+          {
+            '@type': 'Person',
+            name: author.name || 'Refectl Intelligence Agency',
+            url: `${BRAND_URL}/${locale}/news/author/${author.id || 'system'}`,
+          },
+        ],
+        publisher: {
+          '@type': 'Organization',
+          name: 'Terai Times',
+          logo: {
+            '@type': 'ImageObject',
+            url: `${BRAND_URL}/logo-premium.png`,
+          },
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `${BRAND_URL}/${locale}/news/${slug}`,
+        },
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Generates CollectionPage JSON-LD for the News Landing
+   */
+  getLandingSchema(locale: string = 'en') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Terai Times Global Intelligence Desk',
+      description: 'World-class news coverage and strategic market intelligence.',
+      url: `${BRAND_URL}/${locale}/news`,
+      publisher: {
+        '@type': 'Organization',
+        name: 'Terai Times',
+      },
+    };
+  }
 }

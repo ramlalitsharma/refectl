@@ -22,6 +22,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Button } from "@/components/ui/Button";
+import { Trophy } from "lucide-react";
 
 type NavLabels = {
   home: string;
@@ -216,6 +217,19 @@ export function NewsNavbar() {
                   </li>
                 );
               })}
+
+              {/* IPL LIVE SPECIAL LINK */}
+              <li className="h-full flex items-center">
+                <Link
+                  href={buildNewsHref("IPL-Live", currentCountry)}
+                  className={`h-full flex items-center px-4 gap-2 transition-all group ${currentCategory === 'IPL-Live' ? 'text-orange-500 border-b-[3px] border-orange-500 bg-orange-500/5' : 'text-[#333333] dark:text-gray-300 hover:text-orange-500 border-b-[3px] border-transparent'}`}
+                  style={{ marginBottom: "-1px" }}
+                >
+                  <Trophy size={14} className={`${currentCategory === 'IPL-Live' ? 'text-orange-500' : 'text-slate-400 group-hover:text-orange-500'} transition-colors`} />
+                  <span className="font-black uppercase tracking-widest text-[11px]">IPL Live</span>
+                  <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
+                </Link>
+              </li>
 
               <li className="relative group/world h-full flex items-center">
                 <button

@@ -22,5 +22,5 @@ export default async function NewsPage({
 }: {
   searchParams: Promise<Record<string, any>>;
 }) {
-  return NewsLandingPage({ searchParams });
+  return <NewsLandingPage searchParams={searchParams} />;
 }

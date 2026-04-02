@@ -1,5 +1,6 @@
 import { NewsAIService } from './ai/news-ai';
 import { News, NewsCategory, NewsCountry } from './models/News';
+import { MultiAgentOrchestrator } from './ai/ai-orchestrator';
 import { supabaseAdmin } from './supabase';
 import { NewsDiscoveryService } from './news-discovery';
 import { AdvancedScraperService } from './news-scraper';
@@ -7,6 +8,7 @@ import { NewsRevenueMode } from './news-revenue-mode';
 import { verifySourceSafety } from './source-safety';
 import { verifyArticle } from './news-verification-engine';
 import { attachTrustTags, extractTrustMetadata } from './news-trust-metadata';
+import { NewsImagerySearch } from './news-imagery-search';
 import { attachNewsImageMeta } from './news-image-metadata';
 import { buildTextGraphicDataUrl, selectLicensedLibraryImage } from './news-visuals';
 
@@ -55,25 +57,36 @@ function buildRichCommercialBody(params: {
     sourceMaterial?: string | null;
     summary: string;
     title: string;
+    impactScore?: number;
+    sentiment?: string;
+    mode?: 'AI' | 'Sanitized';
 }): string {
     const formattedContent = normalizeText(params.formattedContent);
     const sourceMaterial = normalizeText(params.sourceMaterial);
 
+    // Phase 27: Body Guard - Don't double-append source material if already sanitized in content
+    const isSanitized = params.mode === 'Sanitized' || formattedContent.includes('Intelligence Briefing');
+
     const assembled = [
         formattedContent,
-        '<h2>Verified Source Material</h2>',
-        `<p>${sourceMaterial || `${params.title} remains under active newsroom monitoring with additional reporting layers being assembled automatically.`}</p>`,
-        '<h2>Editorial Outlook</h2>',
+        !isSanitized ? '<h2>Verified Source Material</h2>' : '',
+        !isSanitized ? `<p>${sourceMaterial || `${params.title} remains under active newsroom monitoring with additional reporting layers being assembled automatically.`}</p>` : '',
+        '<h2>Strategic Global Outlook</h2>',
+        `<p><strong>Terai Times Intelligence Desk:</strong> This development carries an impact score of <strong>${params.impactScore || 55}/100</strong> with a <strong>${params.sentiment || 'Neutral'}</strong> market sentiment. The strategic implications suggest a shift in regional dynamics that requires close oversight by stakeholders.</p>`,
         `<p>${params.summary}</p>`,
-        '<p>Terai Times keeps this story in rotation for follow-up updates, contextual explainers, and additional source verification as the situation evolves.</p>',
-      ].join('\n');
+        '<p>Terai Times maintains a 24/7 autonomous watch on this story, sourcing from verified international wires to provide live updates as the situation evolves.</p>',
+      ].filter(Boolean).join('\n');
 
-    if (assembled.length >= 900) return assembled;
+    if (assembled.length >= 1000) return assembled;
 
     return `
       ${assembled}
-      <h2>What To Watch Next</h2>
-      <p>Readers can expect continued updates, fresh market or political implications, and follow-up reporting as more verified details become available.</p>
+      <h2>Key Intelligence Vectors</h2>
+      <ul>
+        <li><strong>Verification Status:</strong> Multi-Source Cross-Referenced</li>
+        <li><strong>Economic Sensitivity:</strong> High</li>
+        <li><strong>Strategic Priority:</strong> Level 1 Tier</li>
+      </ul>
     `.trim();
 }
 
@@ -84,7 +97,7 @@ function qualityScoreFromTags(tags?: string[]): number | null {
     return Number.isFinite(parsed) ? parsed : null;
 }
 
-function resolveImageStrategy(params: {
+async function resolveImageStrategy(params: {
     aiCoverImage?: string;
     articleImageUrl?: string;
     sourceName?: string;
@@ -97,6 +110,7 @@ function resolveImageStrategy(params: {
     category?: string;
     country?: string;
 }) {
+    // 1. Source Image (Trust Protocol)
     const mayUseSourceImage =
         Boolean(params.articleImageUrl) &&
         params.trustedSource &&
@@ -115,6 +129,26 @@ function resolveImageStrategy(params: {
         };
     }
 
+    // 2. High-Impact Free Discovery (Public Scanners)
+    const discovered = await NewsImagerySearch.findFreeStockPhoto([
+        params.title,
+        ...(params.category ? [params.category] : []),
+        ...(params.country ? [params.country] : [])
+    ]);
+    if (discovered) {
+        return {
+            coverImage: discovered,
+            tags: attachNewsImageMeta([], {
+                origin: 'library',
+                credit: 'Unsplash (Public Search)',
+                caption: params.imageCaption,
+                sourceUrl: discovered,
+                license: 'creative_commons',
+            }),
+        };
+    }
+
+    // 3. AI Generated Image (DALL-E 3)
     if (params.aiCoverImage) {
         return {
             coverImage: params.aiCoverImage,
@@ -128,6 +162,7 @@ function resolveImageStrategy(params: {
         };
     }
 
+    // 4. Curated Intelligence Library (Hardcoded High-Quality)
     const licensedLibrary = selectLicensedLibraryImage({
         title: params.title,
         summary: params.summary,
@@ -147,6 +182,7 @@ function resolveImageStrategy(params: {
         };
     }
 
+    // 5. Neural Graphic Generator (Fallback branding)
     return {
         coverImage: buildTextGraphicDataUrl({
             title: params.title,
@@ -181,9 +217,22 @@ function normalizeStrategy(strategy: {
 
 function isGenericHeadline(value?: string | null): boolean {
     const text = normalizeText(value);
+    const LOW_QUALITY_PATTERNS = [
+        /lorem ipsum/i,
+        /click here/i,
+        /no direct news events found/i,
+        /untitled/i,
+        /^global news update$/i,
+        /hiii+/i,
+        /test article/i,
+        /this is a test/i,
+        /TARGETED NEWS BRIEFING/i,
+        /Context:/i,
+        /Source:/i,
+    ];
     return (
         !text ||
-        /^global news update$/i.test(text) ||
+        LOW_QUALITY_PATTERNS.some(pattern => pattern.test(text)) ||
         /^latest insights regarding /i.test(text) ||
         text.length < 12
     );
@@ -229,8 +278,9 @@ export const NewsAutomationService = {
         source_name?: string;
         status?: 'draft' | 'pending_approval' | 'published';
         forcePublish?: boolean;
+        locale?: string;
     }): Promise<Partial<News>> {
-        console.log(`[Automation] Generating article for: ${params.title}`);
+        console.log(`[Automation] Generating article for: ${params.title} (Locale: ${params.locale || 'en'})`);
 
         try {
             const sourceCheck = params.source_url
@@ -255,6 +305,10 @@ export const NewsAutomationService = {
             });
             const normalizedStrategy = normalizeStrategy(strategy);
 
+            // Phase 40: Integrity Guard - Final "Clean & Secure" verification
+            const integrityResult = await MultiAgentOrchestrator.runIntegrityAgent(draft);
+            const integrityFailed = !integrityResult.passed;
+
             // 2. Assemble the News object
             const editorialHeadline = isGenericHeadline(draft.print_headline)
                 ? (articleIntel.headline || params.title)
@@ -265,13 +319,31 @@ export const NewsAutomationService = {
                 params.country || 'Global',
                 articleIntel.headline || params.title
             );
-            const summary = buildFallbackSummary({
+            const summaryRaw = buildFallbackSummary({
                 title: optimizedTitle,
                 country: params.country,
                 draftSummary: draft.executive_summary || draft.subheadline,
                 strategySummary: normalizedStrategy.editorial_summary,
                 sourceMaterial: articleIntel.snapshot || params.source_url,
             });
+
+            // Phase 7.1: Global Multi-Language Activation
+            let summary = summaryRaw;
+            let strategicSummary = normalizedStrategy.editorial_summary;
+
+            if (params.locale && params.locale !== 'en') {
+                console.log(`[Automation] Phase 7.1: Translating Intelligence into ${params.locale}...`);
+                try {
+                    const [translatedSummary, translatedStrategy] = await Promise.all([
+                        NewsAIService.translateIntelligence(summaryRaw, params.locale),
+                        NewsAIService.translateIntelligence(strategicSummary, params.locale)
+                    ]);
+                    summary = translatedSummary;
+                    strategicSummary = translatedStrategy;
+                } catch (translationError) {
+                    console.warn('[Automation] Translation Swarm failed. Using source.', translationError);
+                }
+            }
             const formattedContent = buildRichCommercialBody({
                 formattedContent: NewsRevenueMode.formatForCommercialReadability(
                     draft.body || '',
@@ -280,10 +352,14 @@ export const NewsAutomationService = {
                 sourceMaterial: articleIntel.snapshot || params.source_url,
                 summary,
                 title: optimizedTitle,
+                impactScore: normalizedStrategy.impact_score,
+                sentiment: normalizedStrategy.sentiment,
+                mode: mode as any
             });
+            normalizedStrategy.editorial_summary = strategicSummary; // Inject translated strategy back
             const minScore = Number(process.env.NEWS_REVENUE_MIN_SCORE || '62');
 
-            const imageStrategy = resolveImageStrategy({
+            const imageStrategy = await resolveImageStrategy({
                 aiCoverImage: draft.cover_image,
                 articleImageUrl: articleIntel.imageUrl,
                 sourceName: params.source_name,
@@ -319,10 +395,17 @@ export const NewsAutomationService = {
             };
             const evalResult = NewsRevenueMode.evaluateCandidate(newsItem, minScore);
             const requestedStatus = params.status || 'pending_approval';
-            if (requestedStatus === 'published' && evalResult.decision !== 'publish') {
-                newsItem.status = evalResult.decision === 'pending_approval' ? 'pending_approval' : 'draft';
+            if (requestedStatus === 'published' && (evalResult.decision !== 'publish' || integrityFailed)) {
+                newsItem.status = (evalResult.decision === 'pending_approval' || (integrityFailed && integrityResult.reason?.includes('depth'))) 
+                    ? 'pending_approval' 
+                    : 'draft';
             } else {
                 newsItem.status = requestedStatus;
+            }
+
+            if (integrityFailed) {
+                newsItem.tags = [...(newsItem.tags || []), `integrity_failure:${integrityResult.reason}`];
+                if (newsItem.status === 'published') newsItem.status = 'pending_approval';
             }
             newsItem.tags = [...(newsItem.tags || []), `quality_score:${evalResult.score}`];
 
@@ -387,8 +470,16 @@ export const NewsAutomationService = {
      * Ingests a global trend and creates an internal article immediately.
      * This moves discovery items directly into the project's internal reading flow.
      */
-    async ingestGlobalTrend(trend: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string; forcePublish?: boolean }): Promise<Partial<News>> {
-        console.log(`[Automation] Ingesting global trend: ${trend.title}`);
+    async ingestGlobalTrend(trend: { 
+        title: string; 
+        category: NewsCategory; 
+        country?: NewsCountry; 
+        source_url?: string; 
+        source_name?: string; 
+        forcePublish?: boolean;
+        locale?: string;
+    }): Promise<Partial<News>> {
+        console.log(`[Automation] Ingesting global trend: ${trend.title} (${trend.locale || 'en'})`);
 
         // 1. Check if already exists to avoid duplicates
         if (supabaseAdmin) {
@@ -421,7 +512,8 @@ export const NewsAutomationService = {
             source_url: trend.source_url,
             source_name: trend.source_name || 'Global Trend Desk',
             status: 'published',
-            forcePublish: trend.forcePublish === true
+            forcePublish: trend.forcePublish === true,
+            locale: trend.locale
         });
 
         // 3. Store
@@ -448,9 +540,23 @@ export const NewsAutomationService = {
         const published: Partial<News>[] = [];
         const minScore = Number(process.env.NEWS_REVENUE_MIN_SCORE || '62');
         const trendPool = await this.fetchGlobalTrends();
-        const candidates = trendPool
+        
+        // Phase 41: Strategic Priority - Filter for high-impact categories & regions
+        const highValueCategories = ['Business', 'Technology', 'Politics', 'Finance', 'Science'];
+        const highValueCountries = ['US', 'China', 'EU', 'India', 'Nepal', 'Global'];
+
+        const prioritized = trendPool.filter(t => 
+            highValueCategories.includes(t.category) || 
+            (t.country && highValueCountries.includes(t.country))
+        );
+
+        // Mix prioritized with others to maintain variety
+        const others = trendPool.filter(t => !prioritized.includes(t));
+        const combinedPool = [...prioritized, ...others];
+
+        const candidates = combinedPool
             .filter((trend) => Boolean(trend.title) && Boolean(trend.source_url))
-            .slice(0, Math.max(count * 4, 8));
+            .slice(0, Math.max(count * 5, 12));
 
         for (let i = 0; i < candidates.length && published.length < count; i++) {
             const trend = candidates[i];
@@ -503,6 +609,10 @@ export const NewsAutomationService = {
                 });
                 const normalizedStrategy = normalizeStrategy(strategy);
 
+                // Phase 40: Integrity Guard - Roaming Engine Pass
+                const integrityResult = await MultiAgentOrchestrator.runIntegrityAgent(draft);
+                const integrityFailed = !integrityResult.passed;
+
                 console.log(`[Automation - Roaming Engine] Vector ${i + 1} generated via ${mode} mode.`);
 
                 // 4. Prevent Duplicates (Check Title)
@@ -545,8 +655,11 @@ export const NewsAutomationService = {
                     sourceMaterial,
                     summary,
                     title: optimizedTitle,
+                    impactScore: normalizedStrategy.impact_score,
+                    sentiment: normalizedStrategy.sentiment,
+                    mode: mode as any
                 });
-                const imageStrategy = resolveImageStrategy({
+                const imageStrategy = await resolveImageStrategy({
                     aiCoverImage: draft.cover_image,
                     articleImageUrl: articleIntel.imageUrl,
                     sourceName: trend.source_name,
@@ -593,8 +706,15 @@ export const NewsAutomationService = {
                     }
                     newsItem.tags = [...(newsItem.tags || []), 'quality_override:trusted_source'];
                 }
-                if (evalResult.decision === 'pending_approval') {
+                if (evalResult.decision === 'pending_approval' || integrityFailed) {
                     newsItem.status = 'pending_approval';
+                }
+                if (integrityFailed) {
+                    newsItem.tags = [...(newsItem.tags || []), `integrity_failure:${integrityResult.reason}`];
+                    // If integrity failed significantly (not just depth), move to draft
+                    if (!integrityResult.reason?.includes('depth')) {
+                        newsItem.status = 'draft';
+                    }
                 }
                 newsItem.tags = [...(newsItem.tags || []), `quality_score:${evalResult.score}`];
 

@@ -130,6 +130,38 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.aljazeera.net",
       },
+      {
+        protocol: "https",
+        hostname: "economictimes.indiatimes.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.indiatimes.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.scmp.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.dawn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.prothomalo.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.asahi.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.elpais.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.lemonde.fr",
+      },
     ],
   },
   typescript: {

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './lib/navigation';
 
+
 const intlMiddleware = createMiddleware(routing);
 
 
@@ -40,6 +41,13 @@ function addSecurityHeaders(response: NextResponse) {
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.headers.set('Content-Security-Policy', csp);
     response.headers.set('Permissions-Policy', 'camera=(self "https://meet.jit.si" "https://*.meet.jit.si"), microphone=(self "https://meet.jit.si" "https://*.meet.jit.si"), geolocation=()');
+    
+    // Add caching hints for localized static content to improve global performance
+    const pathname = response.headers.get('x-next-intl-locale') ? 'localized' : 'default';
+    if (pathname === 'localized' && !response.headers.has('Cache-Control')) {
+        response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    }
+
     response.headers.delete('X-Powered-By');
     return response;
 }

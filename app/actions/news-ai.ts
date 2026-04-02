@@ -168,7 +168,14 @@ export async function scrapeAndGenerateTargetedNewsAction(params: {
 /**
  * Public action to ingest a global trend on-demand when a user clicks it essentially.
  */
-export async function ingestPublicTrendAction(trend: { title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string }): Promise<{ data?: Partial<News>; error?: string }> {
+export async function ingestPublicTrendAction(trend: { 
+    title: string; 
+    category: NewsCategory; 
+    country?: NewsCountry; 
+    source_url?: string; 
+    source_name?: string;
+    locale?: string;
+}): Promise<{ data?: Partial<News>; error?: string }> {
     try {
         const data = await NewsAutomationService.ingestGlobalTrend({
             ...trend,

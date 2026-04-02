@@ -11,6 +11,8 @@ import { EngagementHubPanel } from '@/components/news/EngagementHubPanel';
 import { TeraiTimesArticleService, TeraiTimesSeoService } from '@/modules/terai-times/backend/services';
 import { extractTrustMetadata } from '@/lib/news-trust-metadata';
 import { getPublicNewsTags, getRenderableNewsImage } from '@/lib/news-image-metadata';
+import { GoogleAdUnit } from '@/components/news/GoogleAdUnit';
+import { Bot, Zap, Activity, ShieldCheck, Lock } from 'lucide-react';
 
 function formatDate(value?: string) {
   const d = value ? new Date(value) : new Date();
@@ -57,6 +59,23 @@ function cleanPresentationText(value?: string | null): string {
     .trim();
 }
 
+function enhanceContentPresentation(html: string): string {
+  if (!html) return '';
+  if (html.includes('nda-dropcap')) return html;
+  
+  // Inject dropcap into the first <p> that has text
+  let replaced = false;
+  return html.replace(/<p>(.*?)<\/p>/g, (match, p1) => {
+    if (replaced) return match;
+    const stripped = p1.replace(/<[^>]+>/g, '').trim();
+    if (!stripped) return match; // skip empty paragraphs
+    
+    // Find the first letter in the actual text content of p1
+    replaced = true;
+    return `<p>` + p1.replace(/^[ ]*([A-Za-z0-9"'])/, `<span class="nda-dropcap">$1</span>`) + `</p>`;
+  });
+}
+
 export async function generateNewsDetailMetadata(
   { params }: { params: Promise<{ slug: string; locale: string }> }
 ): Promise<Metadata> {
@@ -73,6 +92,7 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
   let related: any[] = [];
   let author = { authorId: 'system', name: 'Terai Times Bureau', role: 'News Desk' } as any;
   let engagement = null;
+  let articleSchema: any = null;
 
   try {
     const payload = await service.getDetailPayload(slug);
@@ -80,6 +100,10 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
     related = payload.related;
     author = payload.author || author;
     engagement = payload.engagement || null;
+    
+    // SEO Phase 4: Fetch Structured Data
+    const seo = new TeraiTimesSeoService();
+    articleSchema = await seo.getArticleSchema(slug, locale);
   } catch (err) {
     console.error(err);
   }
@@ -102,42 +126,15 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
     <div className="news-page-shell news-paper-theme min-h-screen">
       <NewsNavbar />
 
-      <script
-        id="news-article-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'NewsArticle',
-            headline: cleanPresentationText(news.title),
-            description: cleanPresentationText(news.summary),
-            image: heroImage.src || `${BRAND_URL}/og-news.png`,
-            datePublished: news.published_at || news.created_at,
-            dateModified: news.updated_at || news.published_at || news.created_at,
-            articleSection: categoryLabel,
-            inLanguage: locale,
-            author: {
-              '@type': 'Organization',
-              name: authorName,
-            },
-            publisher: {
-              '@type': 'Organization',
-              name: 'Terai Times',
-              url: BRAND_URL,
-              logo: { '@type': 'ImageObject', url: `${BRAND_URL}/logo.png` },
-            },
-            ...(sourceHref
-              ? {
-                isBasedOn: sourceHref,
-              }
-              : {}),
-            mainEntityOfPage: {
-              '@type': 'WebPage',
-              '@id': `${BRAND_URL}/${locale}/news/${slug}`,
-            },
-          }),
-        }}
-      />
+      {articleSchema && (
+        <script
+          id="news-article-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(articleSchema),
+          }}
+        />
+      )}
 
       {heroImage.src && (
         <section className="nda-hero">
@@ -195,10 +192,13 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
                   <span className="nda-byline-role">{author.role || 'Global News Desk'}</span>
                 </div>
               </div>
-              <div className="nda-byline-meta">
+                <div className="nda-byline-meta">
                 <span className="nda-byline-date">{formatDate(news.published_at || news.created_at)}</span>
+                <span className="nda-meta-pill bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                   <Activity size={10} className="animate-pulse" />
+                   {engagement?.networkAnalytics?.activeTerminals || 14} Active Terminals
+                </span>
                 <span className="nda-meta-pill">{readMinutes} min read</span>
-                <span className="nda-meta-pill">Impact {news.impact_score || 'Live'}</span>
                 <button type="button" className="nda-share-btn" title="Save Article">
                   <Bookmark size={13} /> Save
                 </button>
@@ -224,15 +224,6 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               </div>
             )}
 
-            <div className="nda-trust-bar">
-              <div className="nda-trust-pill">Trust Score: {trustMeta.trustScore ?? '—'}</div>
-              <div className="nda-trust-pill">Verification: {trustMeta.verificationCount ?? 0}</div>
-              <div className="nda-trust-pill">Neutrality: {trustMeta.neutralityScore ?? '—'}</div>
-              <div className={`nda-trust-pill nda-trust-${trustMeta.sourceVerdict || 'unverified'}`}>
-                Source: {trustMeta.sourceVerdict || 'unverified'}
-              </div>
-            </div>
-
             {!heroImage.src && (
               <div className="nda-inline-cover">
                 <NewsImage
@@ -254,7 +245,6 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
                 <ul className="list-disc pl-5 text-[#333333] dark:text-gray-300 space-y-2 text-[15px] leading-relaxed marker:text-gray-400">
                   <li>{news.summary.split('.')[0]}.</li>
                   {news.summary.split('.').length > 1 && news.summary.split('.')[1].trim().length > 0 && <li>{news.summary.split('.')[1]}.</li>}
-                  {news.impact_score && <li>Significant geopolitical / market impacts observed (Impact Score: {news.impact_score}/100)</li>}
                 </ul>
               </div>
             )}
@@ -280,10 +270,35 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               <strong>{news.country ? `${news.country.toUpperCase()}` : 'GLOBAL'} (Terai Times) - </strong>
             </div>
 
-            <div
-              className="nda-body"
-              dangerouslySetInnerHTML={{ __html: news.content }}
-            />
+            {/* Phase 3: Revenue & Premium Gating */}
+            {news.impact_score && news.impact_score > 85 ? (
+              <div className="relative group/premium">
+                <div 
+                  className="nda-body blur-md select-none pointer-events-none transition-all group-hover/premium:blur-sm"
+                  dangerouslySetInnerHTML={{ __html: enhanceContentPresentation(news.content) }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-[var(--news-bg)] via-transparent to-transparent">
+                  <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-24 p-8 max-w-md text-center shadow-2xl animate-in fade-in zoom-in duration-700">
+                    <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                      <Lock className="text-slate-950" size={32} />
+                    </div>
+                    <h3 className="text-2xl font-black text-white mb-3">Locked Analysis</h3>
+                    <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+                      This is a high-impact intelligence report with a strategic score of <span className="text-amber-500 font-bold">{news.impact_score}/100</span>. Full access requires a premium intelligence membership.
+                    </p>
+                    <Link href="/news/subscribe" className="inline-flex items-center gap-2 bg-amber-500 text-slate-950 px-6 py-3 rounded-full font-black uppercase text-xs tracking-widest hover:bg-amber-400 transition-colors shadow-lg">
+                      <Zap size={14} className="fill-slate-950" />
+                      Unlock Full Brief
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="nda-body"
+                dangerouslySetInnerHTML={{ __html: enhanceContentPresentation(news.content) }}
+              />
+            )}
 
             {publicTags.length > 0 && (
               <div className="nda-tags">
@@ -347,51 +362,7 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               </section>
             )}
 
-            {news.impact_score !== undefined && news.impact_score > 0 && (
-              <section className="nda-rail-card">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="nda-rail-title !mb-0">
-                    <BarChart3 size={14} className="text-[var(--news-accent)]" />
-                    Market Impact
-                  </h3>
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm ${news.sentiment === 'Bullish' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                    news.sentiment === 'Bearish' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
-                      'bg-slate-500/10 text-slate-600 dark:text-slate-400'
-                    }`}>
-                    {news.sentiment || 'Neutral'}
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      <span>Impact Severity</span>
-                      <span className="text-[var(--news-text)]">{news.impact_score}/100</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[var(--news-accent)] transition-all duration-1000"
-                        style={{ width: `${news.impact_score}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {(news.market_entities || []).length > 0 && (
-                    <div className="pt-2 border-t border-[var(--news-border)]">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Entities Monitored</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(news.market_entities || []).map((entity: string) => (
-                          <span key={entity} className="text-[11px] font-bold text-[var(--news-text)] bg-[var(--news-surface)] border border-[var(--news-border)] px-2 py-1 rounded">
-                            {entity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
+            <GoogleAdUnit className="mb-6" adSlot="ad-article-sidebar" />
             <section className="nda-subscribe">
               <p className="nda-subscribe-kicker">Daily Briefing</p>
               <h3 className="nda-subscribe-title">Stay Ahead of Global Signals.</h3>

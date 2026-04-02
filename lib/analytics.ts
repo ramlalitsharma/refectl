@@ -105,13 +105,17 @@ export function trackEvent(
   eventName: AnalyticsEvent | string,
   params?: AnalyticsEventParams
 ) {
+  // Capture locale if available on window
+  const locale = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : undefined;
+  const enrichedParams = { ...params, locale };
+
   // Primary: PostHog
-  posthog.trackEvent(eventName, params);
+  posthog.trackEvent(eventName, enrichedParams);
 
   // Secondary: GA4 (if available)
   if (typeof window !== 'undefined' && (window as any).gtag) {
     (window as any).gtag('event', eventName, {
-      ...params,
+      ...enrichedParams,
       timestamp: new Date().toISOString(),
     });
   }
@@ -125,17 +129,22 @@ export function trackPageView(
   pageTitle?: string,
   additionalParams?: AnalyticsEventParams
 ) {
-  // PostHog pageview tracking is handled in PostHogProvider
-  // but we provide this for manual calls if needed
+  const locale = typeof window !== 'undefined' ? pagePath.split('/')[1] : undefined;
+  
   posthog.trackPageView(pagePath, pageTitle);
 
   if (typeof window !== 'undefined' && (window as any).gtag) {
     (window as any).gtag('event', 'page_view', {
       page_path: pagePath,
       page_title: pageTitle || document.title,
+      locale,
       ...additionalParams,
     });
   }
+}
+
+export function trackLocaleSwitch(from: string, to: string) {
+  trackEvent('locale_switched', { from, to });
 }
 
 // Map specialized functions to PostHog wrappers while maintaining signatures

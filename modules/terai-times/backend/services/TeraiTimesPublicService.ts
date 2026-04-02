@@ -19,6 +19,13 @@ export type TeraiTimesLandingPayload = {
     pendingApprovalCount: number | null;
     maintenanceMode: 'healthy' | 'degraded';
   };
+  networkAnalytics?: {
+    totalReads: number;
+    activeTerminals: number;
+    scannedNodes: number;
+    networkPulse: string;
+    ingressRate: string;
+  };
 };
 
 export class TeraiTimesPublicService extends FeatureModule {
@@ -33,11 +40,16 @@ export class TeraiTimesPublicService extends FeatureModule {
     const category = params.category || 'All';
     const country = params.country || 'All';
 
-    const [published, trending, events, automationStatus] = await Promise.all([
-      NewsService.getPublishedNews({ category, country }),
+    // Phase 42: Category Mapping for Live Relays
+    // If the category is IPL-Live, we fetch Sports news from the database
+    const dbCategory = category === 'IPL-Live' ? 'Sports' : category;
+
+    const [published, trending, events, automationStatus, networkAnalytics] = await Promise.all([
+      NewsService.getPublishedNews({ category: dbCategory, country }),
       NewsService.getTrendingNews(6),
       NewsEventService.getPublishedForNews(country, 4),
       this.getAutomationStatus(),
+      NewsService.getAnalyticsSummary(),
     ]);
 
     let initialItems = Array.isArray(published) ? published : [];
@@ -54,21 +66,9 @@ export class TeraiTimesPublicService extends FeatureModule {
     }
 
     if (automationStatus.autoPublishEnabled && this.shouldBackfill(initialItems, automationStatus)) {
-      try {
-        await NewsAutomationService.ingestRoamingGlobalNews(Math.max(1, automationStatus.targetPerHour));
-        const [refreshedItems, refreshedTrending] = await Promise.all([
-          NewsService.getPublishedNews({ category, country }),
-          NewsService.getTrendingNews(6),
-        ]);
-        if (Array.isArray(refreshedItems) && refreshedItems.length) {
-          initialItems = refreshedItems;
-        }
-        if (Array.isArray(refreshedTrending) && refreshedTrending.length) {
-          initialTrending = refreshedTrending;
-        }
-      } catch (error) {
-        console.error('TeraiTimesPublicService backfill failed:', error);
-      }
+      // Fire-and-forget background ingestion to keep the landing page fast and resilient
+      NewsAutomationService.ingestRoamingGlobalNews(Math.max(1, automationStatus.targetPerHour))
+        .catch(err => console.error('[PublicService] Background ingestion failed:', err));
     }
 
     return {
@@ -78,6 +78,7 @@ export class TeraiTimesPublicService extends FeatureModule {
       initialTrending,
       initialEvents,
       automationStatus,
+      networkAnalytics,
     };
   }
 

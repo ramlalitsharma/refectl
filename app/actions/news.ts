@@ -74,6 +74,7 @@ export async function createNews(formData: FormData) {
             source_url,
             source_name,
             author_id: userId || 'system',
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         });
     } catch (e) {
         console.error(e);
@@ -151,7 +152,8 @@ export async function updateNews(id: string, formData: FormData) {
             is_trending,
             tags: decoratedTags,
             source_url,
-            source_name
+            source_name,
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         });
     } catch (e) {
         console.error(e);

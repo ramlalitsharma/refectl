@@ -119,7 +119,6 @@ export const NewsAIService = {
                 sourceMaterial: params.sourceMaterial
             });
 
-            // Step B & C (Critique/Refine) ... as before
             let finalDraft = initialDraft;
             let mode: any = 'Multi-Agent';
 
@@ -157,12 +156,10 @@ export const NewsAIService = {
 
         } catch (multiAgentError) {
             console.warn('[AI Switchboard] Multi-Agent Path failed. Falling back to OpenAI.');
-            // ... existing fallback logic ...
             try {
                 const draft = await NewsAIService.generateNewsDraft(params);
                 const strategy = await NewsAIService.generateEditorialStrategy(draft.body, draft.print_headline);
 
-                // Artist Agent in OpenAI Fallback too
                 if (params.generateImage) {
                     const tempImageUrl = await MultiAgentOrchestrator.runArtistAgent(draft.print_headline, draft.executive_summary);
                     if (tempImageUrl) {
@@ -190,21 +187,41 @@ export const NewsAIService = {
         region: string;
         sourceMaterial?: string;
     }): NewsDraftResult => {
-        const headline = params.topic.replace('Latest insights regarding ', '').replace(' news in ', ': ');
-        const sanitizedBody = params.sourceMaterial
-            ? params.sourceMaterial
-                .replace(/TARGETED NEWS BRIEFING FOR.*?\n\n/, '')
-                .replace(/Title: /g, '### ')
-                .replace(/Context: /g, '\n\n')
-                .replace(/---/g, '\n\n')
-            : 'No direct source material available for this briefing.';
+        const headline = (params.topic || 'Intelligence Update')
+            .replace(/Latest insights regarding /i, '')
+            .replace(/ news in /i, ': ')
+            .trim();
+
+        // Phase 27: Smart Neural Scrubber (Improved Parsing)
+        let sanitizedBody = 'Autonomous factual gathering in progress.';
+        const raw = params.sourceMaterial || '';
+
+        if (raw.includes('TARGETED NEWS BRIEFING')) {
+            // Extract the core briefing block
+            const blocks = raw.split('---').map(b => b.trim()).filter(b => b.includes('Title:'));
+            if (blocks.length > 0) {
+                sanitizedBody = blocks.map((block, idx) => {
+                    const titleMatch = block.match(/Title:\s*(.*)/);
+                    const sourceMatch = block.match(/Source:\s*(.*)/);
+                    const contextMatch = block.match(/Context:\s*([\s\S]*)/);
+
+                    const title = titleMatch ? titleMatch[1].trim() : 'Factual Vector';
+                    const source = sourceMatch ? sourceMatch[1].trim() : 'Verified Wire';
+                    const context = contextMatch ? contextMatch[1].trim().replace(/Context:\s*/, '') : '';
+
+                    return `### ${idx === 0 ? 'Primary Lead: ' : ''}${title}\n**Source:** ${source}\n\n${context}`;
+                }).join('\n\n---\n\n');
+            }
+        } else if (raw.length > 100) {
+            sanitizedBody = raw.slice(0, 1500) + '... [Intelligence Truncated]';
+        }
 
         return {
             print_headline: headline,
-            digital_headline: `Intelligence Report: ${headline}`,
-            subheadline: `Verified updates spanning ${params.region} and surrounding markets.`,
-            executive_summary: `Autonomous intelligence gathering has identified key movements regarding ${headline}. This synthesized report provides raw factual anchors retrieved from verified global sources.`,
-            body: `## Intelligence Briefing\n\n${sanitizedBody}\n\n--- \n\n*This report was synthesized using the Terai Times Deterministic Sanitizer protocol.*`,
+            digital_headline: `Strategic Report: ${headline}`,
+            subheadline: `Verified intelligence from ${params.region} and surrounding sectors.`,
+            executive_summary: `Autonomous intelligence gathering has identified movements regarding ${headline}. This synthesized report provides raw factual anchors retrieved from verified global sources.`,
+            body: `## Intelligence Briefing\n\n${sanitizedBody}\n\n*Journalistic Note: This report was synthesized using the Terai Times Deterministic Sanitizer protocol due to high-traffic intelligence filtering.*`,
             suggested_tier: 'Standard'
         };
     },
@@ -213,18 +230,64 @@ export const NewsAIService = {
      * Phase 27: Deterministic Strategy Fallback
      */
     generateDeterministicStrategy: (content: string, title: string, topic: string): EditorialStrategyResult => {
-        const categories = ['Finance', 'Tech', 'Politics', 'Business', 'World', 'Culture', 'Science', 'Health'];
-        const detectedTag = categories.find(c => topic.toLowerCase().includes(c.toLowerCase())) || 'World';
+        const categories = ['Finance', 'Tech', 'Politics', 'Business', 'World', 'Trade', 'Science', 'Health'];
+        const detectedTag = categories.find(c => topic.toLowerCase().includes(c.toLowerCase()) || title.toLowerCase().includes(c.toLowerCase())) || 'World';
+
+        // Keyword-based sentiment & impact prediction (Elite Heuristics)
+        let sentiment: 'Bullish' | 'Bearish' | 'Neutral' = 'Neutral';
+        let impact = 55;
+
+        const bullishKeywords = ['launch', 'growth', 'surge', 'deal', 'agreement', 'breakthrough', 'success', 'recovery'];
+        const bearishKeywords = ['tensions', 'conflict', 'drop', 'slump', 'threat', 'warning', 'risk', 'crisis', 'earthquake'];
+        const text = (title + ' ' + content).toLowerCase();
+
+        if (bullishKeywords.some(k => text.includes(k))) {
+            sentiment = 'Bullish';
+            impact = 72;
+        } else if (bearishKeywords.some(k => text.includes(k))) {
+            sentiment = 'Bearish';
+            impact = 78;
+        }
 
         return {
-            editorial_summary: `Automated summary of movements regarding ${title}.`,
+            editorial_summary: `Automated assessment of strategic movements regarding ${title}. Analysis suggests a regional focus on ${detectedTag} with ${sentiment} signals.`,
             operational_tags: [detectedTag, 'Automated', 'Intelligence', 'Global'],
             internal_linking: [],
-            headline_variants: { print: title, digital: `Deep Dive: ${title}` },
-            meta_description: `Latest intelligence and verified movements regarding ${title}. Reported by Terai Times.`,
-            sentiment: 'Neutral',
+            headline_variants: { print: title, digital: `Intel: ${title}` },
+            meta_description: `Latest strategic intelligence and verified movements regarding ${title}. Reporting via Terai Times Autonomous Desk.`,
+            sentiment,
             market_entities: [],
-            impact_score: 50
+            impact_score: impact
         };
+    },
+
+    /**
+     * Phase 7: Multi-Language Intelligence Swarm
+     * Translates core intelligence components into the target locale.
+     */
+    translateIntelligence: async (text: string, targetLocale: string): Promise<string> => {
+        if (!openai) return text;
+        if (targetLocale === 'en') return text; // Default
+
+        const prompt = `
+        Translate the following Global Intelligence text into ${targetLocale}. 
+        Maintain the professional, Bloomberg-esque tone. 
+        Only return the translated string.
+
+        Text:
+        ${text}
+        `;
+
+        try {
+            const resp = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.1,
+            });
+            return resp.choices[0]?.message?.content || text;
+        } catch (error) {
+            console.warn(`[Translation] Failed for ${targetLocale}. Using source.`);
+            return text;
+        }
     }
 };

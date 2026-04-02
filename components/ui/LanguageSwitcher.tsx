@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/lib/navigation';
 import { Button } from '@/components/ui/Button';
 import { locales } from '@/lib/navigation';
+import { trackLocaleSwitch } from '@/lib/analytics';
 import { Languages, ChevronDown } from 'lucide-react';
 
 export function LanguageSwitcher() {
@@ -15,7 +16,10 @@ export function LanguageSwitcher() {
     const pathname = usePathname();
 
     const handleLanguageChange = (newLocale: string) => {
-        router.replace(pathname, { locale: newLocale });
+        if (newLocale !== locale) {
+            trackLocaleSwitch(locale, newLocale);
+            router.replace(pathname, { locale: newLocale });
+        }
         setIsOpen(false);
     };
 

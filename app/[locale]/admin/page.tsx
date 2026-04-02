@@ -237,6 +237,14 @@ export default async function AdminPage() {
       icon: '📊',
       action: 'View analytics',
     },
+    {
+      name: 'Strategic Insights',
+      description: 'AI-driven worldwide problem analysis and market expansion solutions.',
+      href: '/admin/insights',
+      icon: '🧠',
+      action: 'Launch intelligence',
+      metric: 'Global BI Active',
+    },
   ];
 
   return (
