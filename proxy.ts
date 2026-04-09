@@ -56,10 +56,18 @@ export default clerkMiddleware(async (auth, req) => {
     const start = Date.now();
     const { pathname } = req.nextUrl;
 
-    // Skip middleware for sitemap and robots.txt to avoid redirect errors
-    if (pathname === '/sitemap.xml' || pathname === '/robots.txt' || pathname.startsWith('/api')) {
+    // Skip middleware for static files that must be served at root path (no locale prefix)
+    if (
+        pathname === '/sitemap.xml' ||
+        pathname === '/sitemap.txt' ||
+        pathname === '/robots.txt' ||
+        pathname === '/ads.txt' ||
+        pathname === '/app-ads.txt' ||
+        pathname.startsWith('/api')
+    ) {
         return NextResponse.next();
     }
+
 
     if (isProtectedRoute(req)) {
         await auth.protect();
@@ -85,9 +93,10 @@ export const config = {
         '/',
         // Set locales in path
         '/(en|es|hi|zh|ja|ko|fr|de|it|pt|ru|ar|ur|ms|id|tr|vi|bn|he)/:path*',
-        // Skip Next.js internals and all static files, unless found in search params
-        '/((?!api|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+        // Skip Next.js internals, static files, and root-level txt files (ads.txt, robots.txt, etc.)
+        '/((?!api|_next|ads\.txt|robots\.txt|sitemap\.xml|sitemap\.txt|app-ads\.txt|[^?]*\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
         // Always run for API routes
         '/(api|trpc)(.*)',
     ],
+
 };
