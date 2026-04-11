@@ -28,25 +28,37 @@
   }
 
   .dark .news-paper-theme {
-    --news-bg: #080c14;
-    --news-surface: #0e1624;
-    --news-text: #f0f2f5;
-    --news-text-muted: #a0a8b8;
-    --news-text-subtle: #606878;
-    --news-accent: #e8203a;
-    --news-accent-hover: #ff3050;
-    --news-accent-gold: #d4a017;
-    --news-border: rgba(255, 255, 255, 0.07);
-    --news-border-strong: rgba(255, 255, 255, 0.14);
-    --news-muted: #8090a8;
-    --news-subtle: #505868;
-    --news-card-bg: #0e1624;
-    --news-card-hover: #121c2e;
-    --news-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
-    --news-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 1px 6px rgba(0, 0, 0, 0.3);
-    --news-shadow-lg: 0 16px 60px rgba(0, 0, 0, 0.7), 0 6px 20px rgba(0, 0, 0, 0.4);
-    --news-shadow-hover: 0 24px 80px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0, 0, 0, 0.5);
-    --news-divider: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.08) 70%, transparent);
+    --news-bg: #030407;
+    --news-surface: #0a0c12;
+    --news-text: #f8fafc;
+    --news-text-muted: #94a3b8;
+    --news-text-subtle: #475569;
+    --news-accent: #06b6d4;
+    --news-accent-hover: #22d3ee;
+    --news-accent-gold: #fbbf24;
+    --news-accent-emerald: #10b981;
+    --news-accent-rose: #f43f5e;
+    --news-border: rgba(255, 255, 255, 0.05);
+    --news-border-strong: rgba(255, 255, 255, 0.1);
+    --news-muted: #64748b;
+    --news-subtle: #334155;
+    --news-card-bg: rgba(10, 12, 18, 0.7);
+    --news-card-hover: rgba(15, 18, 26, 0.9);
+    --news-glass-bg: rgba(3, 4, 7, 0.75);
+    --news-glass-border: rgba(255, 255, 255, 0.08);
+    --news-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --news-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --news-shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.8);
+    --news-divider: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.05) 70%, transparent);
+    
+    /* Innovation Gradients */
+    --news-grad-intel: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    --news-grad-signal: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --news-grad-impact: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+
+    /* Performance & Fidelity */
+    --news-pulse-speed: 2s;
+    --news-ease-elite: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -149,16 +161,196 @@
 }
 
 .news-ticker-label {
-  background: #0c0c0e;
+  background: #000;
   color: #fff;
   font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.25em;
   font-weight: 900;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1.25rem;
   white-space: nowrap;
   flex-shrink: 0;
-  border-right: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Innovation Glassmorphism ─────────────────────────────────────────────── */
+.glass-terminal {
+  background: var(--news-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--news-glass-border);
+  box-shadow: var(--news-shadow);
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* ── Intelligence Skeleton System ────────────────────────────────────────── */
+.intel-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 37%,
+    rgba(255, 255, 255, 0.03) 63%
+  );
+  background-size: 400% 100%;
+  animation: elite-skeleton-pulse var(--news-pulse-speed) var(--news-ease-elite) infinite;
+  border-radius: 4px;
+}
+
+@keyframes elite-skeleton-pulse {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.intel-skeleton-hero {
+  height: 70vh;
+  width: 100%;
+  border-radius: 0;
+}
+
+.intel-skeleton-card {
+  height: 200px;
+  width: 100%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--news-border);
+}
+
+.glass-card-news {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-news:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Global Stage Hero ────────────────────────────────────────────────────── */
+.hero-stage-shell {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 600px;
+  overflow: hidden;
+  border-radius: 0; /* Full edge dominance */
+}
+
+.hero-stage-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 4rem 8% 6rem;
+  z-index: 10;
+  background: linear-gradient(to top, rgba(3, 4, 7, 0.95) 0%, rgba(3, 4, 7, 0.6) 50%, transparent 100%);
+}
+
+.hero-stage-title {
+  font-size: clamp(2.5rem, 5vw, 5.5rem) !important;
+  font-weight: 900 !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.04em !important;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  max-width: 18ch;
+}
+
+/* ── Data Overlays ───────────────────────────────────────────────────────── */
+.intel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  color: #06b6d4;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.impact-pulse {
+  position: relative;
+  display: inline-block;
+}
+
+.impact-pulse::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  border-radius: inherit;
+  transform: translate(-50%, -50%);
+  animation: pulse-out 2s infinite;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+@keyframes pulse-out {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+/* ── Professional Article Feed ───────────────────────────────────────────── */
+.intel-card-modern {
+  display: flex;
+  flex-direction: column;
+  background: var(--news-surface);
+  border-bottom: 1px solid var(--news-border);
+  padding: 2rem 0;
+  transition: background 0.3s;
+}
+
+.intel-card-modern:hover {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.intel-header {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: var(--news-accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.intel-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--news-text);
+  transition: color 0.2s;
+}
+
+.intel-card-modern:hover .intel-title {
+  color: var(--news-accent);
+}
+
+.intel-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.7rem;
+  color: var(--news-text-muted);
+  font-weight: 600;
 }
 
 .news-ticker-track {

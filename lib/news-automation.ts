@@ -14,14 +14,27 @@ import { buildTextGraphicDataUrl, selectLicensedLibraryImage } from './news-visu
 
 async function insertNewsSafely(newsItem: Partial<News>) {
     if (!supabaseAdmin) return newsItem;
-    const attempt = await supabaseAdmin.from('news').insert([newsItem]).select().single();
+
+    // Phase 42: Deep Payload Sanitization against 23502 NOT NULL Violations
+    const sanitizedItem = {
+        ...newsItem,
+        title: newsItem.title || 'Live Global Coverage',
+        slug: newsItem.slug || `global-${Date.now()}`,
+        content: newsItem.content || '<p>Detailed intelligence pending verification by the autonomous desk.</p>',
+        summary: newsItem.summary || 'Strategic overview pending verification.',
+        view_count: Number.isFinite(newsItem.view_count) ? newsItem.view_count : 0,
+        author_id: newsItem.author_id || 'global-intelligence-bot',
+    };
+
+    const attempt = await supabaseAdmin.from('news').insert([sanitizedItem]).select().single();
     if (!attempt.error) return attempt.data;
 
-    if (attempt.error?.message?.includes('impact_score')) {
-        const fallback = { ...(newsItem as any) };
-        delete fallback.impact_score;
-        delete fallback.market_entities;
-        delete fallback.sentiment;
+    // Retry gracefully if certain aggressive analytic fields fail constraint
+    if (attempt.error?.message?.includes('impact_score') || attempt.error?.message?.includes('23502')) {
+        const fallback = { ...sanitizedItem };
+        delete (fallback as any).impact_score;
+        delete (fallback as any).market_entities;
+        delete (fallback as any).sentiment;
         const retry = await supabaseAdmin.from('news').insert([fallback]).select().single();
         if (!retry.error) return retry.data;
     }

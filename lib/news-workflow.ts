@@ -73,39 +73,46 @@ export const NewsWorkflowService = {
     },
 
     /**
-     * Performs maintenance: Deletes articles older than 7 days.
+     * Performs maintenance: Ruthlessly deletes expired articles and autonomous content older than 7 days.
      */
     async performMaintenance() {
         if (!supabaseAdmin) return;
 
-        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        // Hard threshold: 7 days and 12 hours max TTL to guarantee zero stale content
+        const hardTTL = new Date(Date.now() - 7.5 * 24 * 60 * 60 * 1000).toISOString();
         const now = new Date().toISOString();
 
         await this.refreshLegacyAutomationStories();
 
-        // 1) Always delete explicitly expired items
-        const expiredDelete = await supabaseAdmin
-            .from('news')
-            .delete()
-            .lt('expires_at', now);
+        try {
+            // 1) Explicitly Expired Delete (Directly enforced)
+            const expiredDelete = await supabaseAdmin
+                .from('news')
+                .delete()
+                .lt('expires_at', now);
 
-        if (expiredDelete.error) {
-            console.error('[Workflow] Maintenance (expires_at) failed:', expiredDelete.error);
+            if (expiredDelete.error) console.error('[Workflow] Maintenance (expires_at) failed:', expiredDelete.error);
+
+            // 2) Aggressive Global Purge for all Autonomous Intelligence Bot stories older than TTL
+            const botDelete = await supabaseAdmin
+                .from('news')
+                .delete()
+                .in('author_id', ['global-intelligence-bot', 'system-scraper'])
+                .lt('created_at', hardTTL);
+
+            if (botDelete.error) console.error('[Workflow] Maintenance (bot cleanup) failed:', botDelete.error);
+
+            // 3) Catch-all for any orphaned or nameless data older than TTL
+            await supabaseAdmin
+                .from('news')
+                .delete()
+                .is('author_id', null)
+                .lt('created_at', hardTTL);
+
+            console.log('[Workflow] Enterprise garbage collection completed globally.');
+        } catch (e) {
+            console.error('[Workflow] Critical Maintenance Failure:', e);
         }
-
-        // 2) Delete old autonomous/bot-generated items after 7 days
-        const botDelete = await supabaseAdmin
-            .from('news')
-            .delete()
-            .eq('author_id', 'global-intelligence-bot')
-            .lt('created_at', oneWeekAgo);
-
-        if (botDelete.error) {
-            console.error('[Workflow] Maintenance (bot cleanup) failed:', botDelete.error);
-            return;
-        }
-
-        console.log('[Workflow] Maintenance cleanup completed (expired + bot archives).');
     },
 
     async refreshLegacyAutomationStories(limit: number = 3) {

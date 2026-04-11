@@ -10,6 +10,8 @@ import {
   BookOpen,
   Bot,
   ChevronDown,
+  Globe,
+  Hash,
   Layers,
   LayoutDashboard,
   Library,
@@ -18,6 +20,7 @@ import {
   Search,
   Shield,
   ShoppingBag,
+  Target,
   Trophy,
   Zap,
 } from "lucide-react";
@@ -56,6 +59,17 @@ const LABELS_BY_LOCALE: Record<string, NavLabels> = {
   de: { home: "Start", world: "Welt", more: "Mehr" },
   ar: { home: "الرئيسية", world: "العالم", more: "المزيد" },
 };
+
+const REGIONS_MAP: Record<string, string[]> = {
+  "Asia": ["Nepal", "India", "China", "Japan", "Bangladesh", "Pakistan", "Sri Lanka", "UAE"],
+  "Europe": ["Serbia", "UK", "Germany", "France", "Russia", "Ukraine", "Norway", "Switzerland"],
+  "Americas": ["USA", "Canada", "Brazil", "Mexico", "Argentina"],
+  "Africa": ["South Africa", "Nigeria", "Egypt"],
+  "Global": ["All", "Global", "Australia"]
+};
+
+const NAV_COUNTRIES = Object.values(REGIONS_MAP).flat();
+const NAV_CATEGORIES = ["All", "Sports", "Finance", "Technology", "Politics", "Environment", "Health", "World", "Science"];
 
 const LOCALE_BY_COUNTRY: Record<string, string> = {
   Nepal: "ne-NP",
@@ -180,11 +194,21 @@ export function NewsNavbar() {
 
   const moreCategories = useMemo(() => {
     const blocked = new Set(["All", "Home", "World"]);
-    const base = availableCategories.filter((category) => !blocked.has(category));
-    if (currentCategory !== "All" && !blocked.has(currentCategory) && !base.includes(currentCategory)) {
-      return [currentCategory, ...base];
+    // Merge discovered categories with our required high-fidelity sectors
+    const combined = Array.from(new Set([...NAV_CATEGORIES, ...availableCategories]));
+    const base = combined.filter((category) => !blocked.has(category));
+    
+    // Explicit Sort: Prioritize Finance and Sports top of list as requested by user
+    const priority = ["Finance", "Sports"];
+    const sorted = [
+      ...priority.filter(p => base.includes(p)),
+      ...base.filter(c => !priority.includes(c))
+    ];
+
+    if (currentCategory !== "All" && !blocked.has(currentCategory) && !sorted.includes(currentCategory)) {
+      return [currentCategory, ...sorted];
     }
-    return base;
+    return sorted;
   }, [availableCategories, currentCategory]);
 
   const countries = useMemo(() => {
@@ -197,16 +221,16 @@ export function NewsNavbar() {
       <div className="w-full max-w-none px-4 md:px-8 py-0 flex items-center justify-between min-h-[64px]">
         <div className="flex items-center gap-8 h-full">
           <Link href="/news" className="flex items-center group py-4">
-            <div className="text-[1.8rem] md:text-[2.2rem] font-black tracking-tighter leading-none text-[#f08821] font-serif transition-transform duration-500 group-hover:scale-[1.02] flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full border-[3px] border-dotted border-[#f08821] flex items-center justify-center -mr-1">
-                <div className="w-4 h-4 rounded-full bg-[#f08821]" />
+            <div className="text-[1.8rem] md:text-[2.2rem] font-black tracking-tighter leading-none text-[#06b6d4] font-serif transition-all duration-500 group-hover:scale-[1.02] group-hover:text-white flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full border-[2px] border-white/20 bg-white/5 flex items-center justify-center -mr-1 group-hover:border-[#06b6d4]/50 transition-colors">
+                <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-[#06b6d4] to-blue-600 animate-pulse" />
               </span>
               Terai Times
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center h-full pt-1">
-            <ul className="flex items-center h-full text-[14px] font-bold text-[#333333] dark:text-gray-300">
+            <ul className="flex items-center h-full text-[13px] font-black uppercase tracking-widest text-[#333333] dark:text-gray-400">
               {coreCategories.map((item) => {
                 const isHome = item.value === "Home";
                 const href = isHome ? buildNewsHref("All", currentCountry) : buildNewsHref(item.value, currentCountry);
@@ -215,7 +239,7 @@ export function NewsNavbar() {
                   <li key={item.value} className="h-full flex items-center">
                     <Link
                       href={href}
-                      className={`h-full flex items-center px-4 hover:text-[#f08821] transition-colors ${isActive ? "text-[#f08821] border-b-[3px] border-[#f08821]" : "border-b-[3px] border-transparent"}`}
+                      className={`h-full flex items-center px-5 hover:text-[#06b6d4] transition-all duration-300 ${isActive ? "text-[#06b6d4] border-b-[3px] border-[#06b6d4]" : "border-b-[3px] border-transparent opacity-60 hover:opacity-100"}`}
                       style={{ marginBottom: "-1px" }}
                     >
                       {item.label}
@@ -224,107 +248,112 @@ export function NewsNavbar() {
                 );
               })}
 
-              {/* IPL LIVE SPECIAL LINK */}
-              <li className="h-full flex items-center">
-                <Link
-                  href={buildNewsHref("IPL-Live", currentCountry)}
-                  className={`h-full flex items-center px-4 gap-2 transition-all group ${currentCategory === 'IPL-Live' ? 'text-orange-500 border-b-[3px] border-orange-500 bg-orange-500/5' : 'text-[#333333] dark:text-gray-300 hover:text-orange-500 border-b-[3px] border-transparent'}`}
-                  style={{ marginBottom: "-1px" }}
-                >
-                  <Trophy size={14} className={`${currentCategory === 'IPL-Live' ? 'text-orange-500' : 'text-slate-400 group-hover:text-orange-500'} transition-colors`} />
-                  <span className="font-black uppercase tracking-widest text-[11px]">IPL Live</span>
-                  <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]" />
-                </Link>
-              </li>
-
+              {/* Advanced Regional Megamenu */}
               <li className="relative group/world h-full flex items-center">
                 <button
-                  className={`flex items-center gap-1 px-4 h-full hover:text-[#f08821] transition-colors border-b-[3px] ${currentCountry !== "All" ? "text-[#f08821] border-[#f08821]" : "border-transparent"}`}
+                  className={`flex items-center gap-1.5 px-5 h-full hover:text-[#06b6d4] transition-all duration-300 border-b-[3px] ${currentCountry !== "All" ? "text-[#06b6d4] border-[#06b6d4]" : "border-transparent opacity-60 hover:opacity-100"}`}
                   style={{ marginBottom: "-1px" }}
                 >
-                  {labels.world} <ChevronDown size={14} className="mt-0.5" />
+                  <Globe size={13} className={currentCountry !== "All" ? "animate-pulse" : ""} />
+                  {labels.world}
+                  <ChevronDown size={12} className="opacity-40" />
                 </button>
-                <div className="absolute top-full left-0 mt-0 w-56 max-h-[360px] overflow-y-auto bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 shadow-xl py-2 opacity-0 invisible group-hover/world:opacity-100 group-hover/world:visible transition-all z-[110]">
-                  {countries.map((country) => (
-                    <Link
-                      key={country}
-                      href={buildNewsHref(currentCategory, country)}
-                      className={`block px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#f08821] transition-colors text-[13px] ${currentCountry === country ? "text-[#f08821] font-bold" : ""}`}
-                    >
-                      {country}
-                    </Link>
+                
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-[900px] bg-[#0a0c12]/98 backdrop-blur-3xl border border-white/5 shadow-[0_30px_100px_-15px_rgba(0,0,0,1)] py-10 px-10 opacity-0 invisible group-hover/world:opacity-100 group-hover/world:visible transition-all duration-500 z-[1001] rounded-b-[2.5rem] grid grid-cols-5 gap-8">
+                  {Object.entries(REGIONS_MAP).map(([region, regionCountries]) => (
+                    <div key={region} className="flex flex-col gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-3 bg-[#06b6d4] rounded-full"></div>
+                        <span className="text-[10px] font-black text-white/90 tracking-[0.2em] uppercase">{region}</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {regionCountries.map((country) => (
+                          <Link
+                            key={country}
+                            href={buildNewsHref(currentCategory, country)}
+                            className={`block text-[11px] transition-all duration-300 hover:translate-x-1 outline-none ${currentCountry === country ? "text-[#06b6d4] font-bold" : "text-gray-500 hover:text-white"}`}
+                          >
+                            {country === "All" ? "Global Overview" : country}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   ))}
+                  <div className="col-span-5 mt-6 pt-6 border-t border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex -space-x-2">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="w-6 h-6 rounded-full border border-[#0a0c12] bg-gradient-to-br from-[#06b6d4] to-indigo-600 flex items-center justify-center text-[8px] text-white font-bold">TT</div>
+                        ))}
+                      </div>
+                      <span className="text-[10px] text-gray-500">24/7 Global Intelligence Grid Active</span>
+                    </div>
+                    <Link href="/news" className="text-[10px] font-bold text-[#06b6d4] hover:underline tracking-tighter">VIEW ALL COVERAGE LANES →</Link>
+                  </div>
                 </div>
               </li>
 
-              {(userRole === "superadmin" || userRole === "admin") && (
-                <li className="relative group/admin h-full flex items-center">
-                  <button
-                    className="flex items-center gap-1 px-4 h-full text-slate-500 dark:text-gray-400 hover:text-[#f08821] transition-colors border-b-[3px] border-transparent"
-                    style={{ marginBottom: "-1px" }}
-                  >
-                    <Shield size={14} className="mr-1" />
-                    Administration <ChevronDown size={14} className="mt-0.5" />
-                  </button>
-                  <div className="absolute top-full left-0 mt-0 w-64 max-h-[480px] overflow-y-auto bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 shadow-2xl py-3 opacity-0 invisible group-hover/admin:opacity-100 group-hover/admin:visible transition-all z-[111]">
-                    <div className="px-5 py-2 mb-2">
-                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">System Management</span>
-                    </div>
-                    {userRole === "superadmin" && (
-                      <Link href="/admin/super" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                        <Trophy size={14} className="text-amber-500" />
-                        <span className="font-bold">Super Console</span>
-                      </Link>
-                    )}
-                    <Link href="/admin" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                      <Shield size={14} className="text-blue-500" />
-                      <span className="font-medium">Admin Panel</span>
-                    </Link>
-                    <Link href="/admin/users" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                      <Bot size={14} className="text-purple-500" />
-                      <span className="font-medium">User Management</span>
-                    </Link>
-                    <Link href="/admin/courses" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                      <Layers size={14} className="text-emerald-500" />
-                      <span className="font-medium">Course Management</span>
-                    </Link>
-                    <Link href="/admin/analytics" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                      <BarChart3 size={14} className="text-cyan-500" />
-                      <span className="font-medium">Analytics Dashboard</span>
-                    </Link>
-                    <Link href="/admin/logs" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px]">
-                      <Activity size={14} className="text-slate-500" />
-                      <span className="font-medium">Activity Logs</span>
-                    </Link>
-                    <Link href="/admin/settings" className="flex items-center gap-3 px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-[#f08821] transition-colors text-[13px] border-t border-gray-100 dark:border-white/5 mt-2 pt-3">
-                      <Zap size={14} className="text-amber-500" />
-                      <span className="font-medium">System Settings</span>
-                    </Link>
-                  </div>
-                </li>
-              )}
-
-
+              {/* Innovation Sectors (Categories) */}
               <li className="relative group/more h-full flex items-center">
                 <button
-                  className={`flex items-center gap-1 px-4 h-full hover:text-[#f08821] transition-colors border-b-[3px] ${moreCategories.includes(currentCategory) ? "text-[#f08821] border-[#f08821]" : "border-transparent"}`}
+                  className={`flex items-center gap-1.5 px-5 h-full hover:text-[#06b6d4] transition-all duration-300 border-b-[3px] ${moreCategories.includes(currentCategory) ? "text-[#06b6d4] border-[#06b6d4]" : "border-transparent opacity-60 hover:opacity-100"}`}
                   style={{ marginBottom: "-1px" }}
                 >
-                  {labels.more} <ChevronDown size={14} className="mt-0.5" />
+                  <Layers size={13} />
+                  {labels.more}
+                  <ChevronDown size={12} className="opacity-40" />
                 </button>
-                <div className="absolute top-full left-0 mt-0 w-56 max-h-[360px] overflow-y-auto bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 shadow-xl py-2 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all z-[110]">
+                <div className="absolute top-full left-0 mt-0 w-64 bg-[#0a0c12]/95 backdrop-blur-3xl border border-white/5 shadow-2xl py-4 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-300 z-[1001] rounded-b-2xl">
+                   <div className="px-6 py-2 mb-2 border-b border-white/5">
+                      <span className="text-[10px] font-black text-[#06b6d4] tracking-[0.2em]">Intelligence Vertical</span>
+                   </div>
                   {moreCategories.map((category) => (
                     <Link
                       key={category}
                       href={buildNewsHref(category, currentCountry)}
-                      className={`block px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#f08821] transition-colors text-[13px] ${currentCategory === category ? "text-[#f08821] font-bold" : ""}`}
+                      className={`flex items-center gap-3 px-6 py-2.5 hover:bg-white/5 hover:text-[#06b6d4] transition-all text-xs ${currentCategory === category ? "text-[#06b6d4] font-bold" : "text-gray-400"}`}
                     >
+                      <Hash size={10} className="opacity-30" />
                       {category}
                     </Link>
                   ))}
-                  {!moreCategories.length ? <div className="px-5 py-3 text-[12px] text-gray-500">No categories yet</div> : null}
+                  {!moreCategories.length ? <div className="px-6 py-3 text-[11px] text-gray-600">No active sectors</div> : null}
                 </div>
               </li>
+
+              {(userRole === "superadmin" || userRole === "admin") && (
+                <li className="relative group/admin h-full flex items-center ml-4">
+                  <button
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-[#06b6d4]/30 transition-all text-[11px] font-black uppercase tracking-widest"
+                  >
+                    <Shield size={12} className="text-[#06b6d4]" />
+                    Ops Console
+                  </button>
+                  <div className="absolute top-full right-0 mt-2 w-64 bg-[#0a0c12]/98 backdrop-blur-3xl border border-white/10 shadow-2xl py-4 opacity-0 invisible group-hover/admin:opacity-100 group-hover/admin:visible transition-all duration-300 z-[1001] rounded-2xl">
+                    <div className="px-5 py-2 mb-2">
+                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">System Command</span>
+                    </div>
+                    {userRole === "superadmin" && (
+                      <Link href="/admin/super" className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 hover:text-[#06b6d4] transition-colors text-[11px]">
+                        <Trophy size={13} className="text-amber-500" />
+                        <span className="font-black uppercase tracking-widest">Super Console</span>
+                      </Link>
+                    )}
+                    <Link href="/admin" className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 hover:text-[#06b6d4] transition-colors text-[11px]">
+                      <Shield size={13} className="text-[#06b6d4]" />
+                      <span className="font-bold uppercase tracking-wider text-gray-300">Admin Control</span>
+                    </Link>
+                    <Link href="/admin/studio/news" className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 hover:text-[#06b6d4] transition-colors text-[11px]">
+                      <Newspaper size={13} className="text-rose-500" />
+                      <span className="font-medium uppercase tracking-wider text-gray-300">Newsroom Desk</span>
+                    </Link>
+                    <Link href="/admin/analytics" className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 hover:text-[#06b6d4] transition-colors text-[11px] border-t border-white/5 mt-2 pt-3">
+                      <BarChart3 size={13} className="text-emerald-500" />
+                      <span className="font-medium uppercase tracking-wider text-gray-300">Strategic Intel</span>
+                    </Link>
+                  </div>
+                </li>
+              )}
             </ul>
           </nav>
         </div>

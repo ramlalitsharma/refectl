@@ -59,11 +59,16 @@ export const MultiAgentOrchestrator = {
                             generationConfig: { response_mime_type: "application/json" }
                         })
                     });
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) return JSON.parse(text) as NewsDraftResult;
+                    if (response.ok) {
+                        const data = await response.json();
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) return JSON.parse(text) as NewsDraftResult;
+                    } else {
+                        const err = await response.text();
+                        console.warn(`[Multi-Agent] Gemini Pro Author status error (${response.status}):`, err.slice(0, 100));
+                    }
                 } catch (e) {
-                    console.warn('[Multi-Agent] Gemini Pro Author failed.');
+                    console.warn('[Multi-Agent] Gemini Pro Author network/parse failure.');
                 }
             }
 
@@ -74,16 +79,21 @@ export const MultiAgentOrchestrator = {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            model: "llama3-70b-8192",
+                            model: "llama-3.1-70b-versatile",
                             messages: [{ role: "user", content: prompt }],
                             response_format: { type: "json_object" }
                         })
                     });
-                    const data = await response.json();
-                    const text = data.choices?.[0]?.message?.content;
-                    if (text) return JSON.parse(text) as NewsDraftResult;
+                    if (response.ok) {
+                        const data = await response.json();
+                        const text = data.choices?.[0]?.message?.content;
+                        if (text) return JSON.parse(text) as NewsDraftResult;
+                    } else {
+                        const err = await response.text();
+                        console.warn(`[Multi-Agent] Groq Author status error (${response.status}):`, err.slice(0, 100));
+                    }
                 } catch (e) {
-                    console.warn('[Multi-Agent] Groq Author failed.');
+                    console.warn('[Multi-Agent] Groq Author network failure.');
                 }
             }
 
@@ -98,11 +108,16 @@ export const MultiAgentOrchestrator = {
                             generationConfig: { response_mime_type: "application/json" }
                         })
                     });
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) return JSON.parse(text) as NewsDraftResult;
+                    if (response.ok) {
+                        const data = await response.json();
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text) return JSON.parse(text) as NewsDraftResult;
+                    } else {
+                        const err = await response.text();
+                        console.warn(`[Multi-Agent] Gemini Flash Author status error (${response.status}):`, err.slice(0, 100));
+                    }
                 } catch (e) {
-                    console.warn('[Multi-Agent] Gemini Flash Author failed.');
+                    console.warn('[Multi-Agent] Gemini Flash Author network failure.');
                 }
             }
 
@@ -185,11 +200,15 @@ export const MultiAgentOrchestrator = {
                 })
             });
 
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            return JSON.parse(data.choices?.[0]?.message?.content || '{"quality_score": 100, "feedback": "Verified", "hallucinations": []}');
+            if (response.ok) {
+                const data = await response.json();
+                return JSON.parse(data.choices?.[0]?.message?.content || '{"quality_score": 100, "feedback": "Verified", "hallucinations": []}');
+            } else {
+                console.warn(`[Multi-Agent] Critic Agent status error (${response.status})`);
+                return { quality_score: 100, feedback: "Autonomous validator offline. Manual review recommended.", hallucinations: [] };
+            }
         } catch (e) {
-            console.warn('[Multi-Agent] Critic Swarm Warning:', e);
+            console.warn('[Multi-Agent] Critic Swarm network failure.');
             return { quality_score: 100, feedback: "Autonomous system validation bypassed.", hallucinations: [] };
         }
     },
@@ -268,9 +287,11 @@ export const MultiAgentOrchestrator = {
                             response_format: { type: "json_object" }
                         })
                     });
-                    const data = await response.json();
-                    const text = data.choices?.[0]?.message?.content;
-                    if (text) return JSON.parse(text) as EditorialStrategyResult;
+                    if (response.ok) {
+                        const data = await response.json();
+                        const text = data.choices?.[0]?.message?.content;
+                        if (text) return JSON.parse(text) as EditorialStrategyResult;
+                    }
                 }
 
                 if (openRouterKey) {

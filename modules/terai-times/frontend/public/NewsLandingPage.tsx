@@ -24,6 +24,8 @@ export async function NewsLandingPage({
   const resolvedParams = await searchParams;
   const category = (resolvedParams?.category as string) || undefined;
   const country = (resolvedParams?.country as string) || undefined;
+  const page = Number(resolvedParams?.page) || 1;
+  const pageSize = 15;
   let payload: TeraiTimesLandingPayload = {
     category: 'All',
     country: 'All',
@@ -40,11 +42,15 @@ export async function NewsLandingPage({
       maintenanceMode: 'degraded' as 'healthy' | 'degraded',
     },
     networkAnalytics: undefined as any,
+    availableCategories: [],
+    totalCount: 0,
+    page: 1,
+    pageSize: 15,
   };
 
   try {
     const service = new TeraiTimesPublicService();
-    payload = await service.getLandingPayload({ category, country });
+    payload = await service.getLandingPayload({ category, country, page, pageSize });
   } catch (error) {
     console.error('NewsLandingPage initial fetch error:', error);
   }
@@ -61,6 +67,11 @@ export async function NewsLandingPage({
           initialEvents={payload.initialEvents}
           automationStatus={payload.automationStatus}
           networkAnalytics={payload.networkAnalytics}
+          availableCountries={payload.availableCountries}
+          availableCategories={payload.availableCategories}
+          totalCount={payload.totalCount}
+          page={payload.page}
+          pageSize={payload.pageSize}
         />
       </main>
     </div>

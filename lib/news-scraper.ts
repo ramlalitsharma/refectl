@@ -1,14 +1,12 @@
 import { NewsCategory } from './models/News';
 import { DiscoveredTrend } from './news-discovery';
+import Parser from 'rss-parser';
 
 export interface ScrapeTarget {
     url: string;
     source: string;
     category: NewsCategory;
-    country?: import('./models/News').NewsCountry; // Assign scraped news to a specific country filter
-    // Simple patterns to find titles/links in HTML if regex is used
-    titlePattern: RegExp;
-    linkPattern: RegExp;
+    country?: import('./models/News').NewsCountry;
 }
 
 export type ArticleMediaIntelligence = {
@@ -20,145 +18,167 @@ export type ArticleMediaIntelligence = {
     imageLicense?: 'partner' | 'creative_commons' | 'public_domain' | 'unknown';
 };
 
+// Global Authentic RSS Feeds for enterprise resilience
 const SCRAPE_TARGETS: ScrapeTarget[] = [
-    {
-        url: 'https://www.bbc.com/news',
-        source: 'BBC News Hub',
-        category: 'World',
-        country: 'UK',
-        titlePattern: /"title":"([^"]+)"/g,
-        linkPattern: /"href":"([^"]+)"/g
-    },
-    {
-        url: 'https://www.aljazeera.com/news/',
-        source: 'Al Jazeera',
-        category: 'World',
-        country: 'UAE',
-        titlePattern: /<h3[^>]*><span>([^<]+)<\/span>/g,
-        linkPattern: /<a[^>]*href="([^"]+)"[^{]*class="u-clickable-card__link"/g
-    },
-    {
-        url: 'https://www.cnn.com/world',
-        source: 'CNN Global',
-        category: 'World',
-        country: 'USA',
-        titlePattern: /"headline":"([^"]+)"/g,
-        linkPattern: /"url":"([^"]+)"/g
-    },
-    {
-        url: 'https://www.businessinsider.com/international',
-        source: 'Business Insider',
-        category: 'Finance',
-        country: 'Global',
-        titlePattern: /"title":"([^"]+)"/g,
-        linkPattern: /"url":"([^"]+)"/g
-    },
-    {
-        url: 'https://www.newscientist.com/section/news/',
-        source: 'New Scientist',
-        category: 'Technology',
-        country: 'Global',
-        titlePattern: /<h3[^>]*><a[^>]*>([^<]+)<\/a><\/h3>/g,
-        linkPattern: /<h3[^>]*><a[^>]*href="([^"]+)"/g
-    },
-    {
-        url: 'https://www.nationalgeographic.com/pages/topic/latest-stories',
-        source: 'National Geographic',
-        category: 'Environment',
-        country: 'Global',
-        titlePattern: /"title":"([^"]+)"/g,
-        linkPattern: /"url":"([^"]+)"/g
-    },
-    {
-        url: 'https://www.theguardian.com/world',
-        source: 'The Guardian',
-        category: 'World',
-        country: 'UK',
-        titlePattern: /"headline":"([^"]+)"/g,
-        linkPattern: /"url":"([^"]+)"/g
-    },
-    {
-        url: 'https://www.un.org/news/',
-        source: 'UN News Hub',
-        category: 'World',
-        country: 'Global',
-        titlePattern: /<h1[^>]*><span>([^<]+)<\/span>/g,
-        linkPattern: /<a[^>]*href="([^"]+)"[^{]*class="u-link"/g
-    }
+    { url: 'http://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC News Global', category: 'World', country: 'Global' },
+    { url: 'http://feeds.bbci.co.uk/news/business/rss.xml', source: 'BBC Business', category: 'Finance', country: 'Global' },
+    { url: 'https://news.google.com/rss/search?q=technology&hl=en-US&gl=US&ceid=US:en', source: 'Google Tech Intelligence', category: 'Technology', country: 'USA' },
+    { url: 'https://news.google.com/rss/search?q=finance+economy&hl=en-US&gl=US&ceid=US:en', source: 'Google Trade Data', category: 'Finance', country: 'Global' },
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera Global', category: 'World', country: 'UAE' },
+    { url: 'https://feeds.npr.org/1004/rss.xml', source: 'NPR World', category: 'World', country: 'USA' },
+    { url: 'https://news.google.com/rss/search?q=science+nature&hl=en-US&gl=US&ceid=US:en', source: 'Science Journal', category: 'Science', country: 'Global' }
 ];
 
 export const AdvancedScraperService = {
     /**
-     * Scrapes multiple news hubs directly from HTML.
+     * Scrapes multiple news hubs securely using Enterprise RSS endpoints.
      */
     async scrapeTrends(): Promise<DiscoveredTrend[]> {
         const discovered: DiscoveredTrend[] = [];
+        const parser = new Parser({
+            customFields: {
+                item: ['media:content', 'media:thumbnail', 'description', 'pubDate'],
+            }
+        });
 
         await Promise.allSettled(
             SCRAPE_TARGETS.map(async (target) => {
                 try {
-                    const response = await fetch(target.url, {
-                        cache: 'no-store',
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
-                    if (!response.ok) throw new Error(`Fetch failed for ${target.source}`);
+                    const feed = await parser.parseURL(target.url);
+                    
+                    const items = (feed.items || []).slice(0, 15).map(item => {
+                        const title = this.cleanHtml(item.title || '');
+                        const description = this.cleanHtml(item.description || '');
+                        
+                        // Intelligent Enrichment: Auto-detect if generic
+                        let category = target.category;
+                        let country = target.country;
 
-                    const html = await response.text();
-                    const items = this.extractFromHtml(html, target);
-                    discovered.push(...items);
+                        if (!category || category === 'World' || category === 'Business') {
+                            category = this.inferCategory(title, description);
+                        }
+                        if (!country || country === 'Global') {
+                            country = this.inferCountry(title, description);
+                        }
+
+                        return {
+                            title,
+                            link: item.link || '',
+                            source: target.source,
+                            pubDate: item.pubDate || new Date().toISOString(),
+                            category,
+                            country,
+                            score: this.calculateVectorScore(title)
+                        } as DiscoveredTrend & { score: number };
+                    });
+
+                    // Filter low value and push top 8
+                    const topItems = items
+                        .filter(i => i.title.length > 20 && i.link.startsWith('http'))
+                        .sort((a, b) => b.score - a.score)
+                        .slice(0, 8);
+
+                    discovered.push(...topItems);
                 } catch (error) {
-                    console.error(`[Scraper] Failed to scrape ${target.source}:`, error);
+                    console.error(`[Scraper] RSS Fetch failed for ${target.source}:`, error);
                 }
             })
         );
 
-        return discovered;
+        // Deduplicate globally across sources by title and url
+        const unique = new Map<string, DiscoveredTrend>();
+        discovered.forEach(item => {
+            const key = item.title.toLowerCase().trim();
+            if (!unique.has(key)) {
+                unique.set(key, item);
+            }
+        });
+
+        return Array.from(unique.values()).sort((a: any, b: any) => (b.score || 0) - (a.score || 0));
+    },
+
+    calculateVectorScore(title: string): number {
+        let score = 50;
+        const lower = title.toLowerCase();
+
+        // High priority vectors
+        const HIGH_IMPACT = ['crisis', 'market', 'announce', 'launch', 'unveil', 'president', 'global', 'economy', 'breakthrough', 'AI', 'summit', 'war', 'deal', 'historic'];
+        HIGH_IMPACT.forEach(k => { if (lower.includes(k)) score += 12; });
+
+        // Decrease score for soft news / low priority
+        const SOFT_NEWS = ['review', 'deals', 'opinion', 'column', 'celebrity', 'gossip', 'horoscope', 'recipe'];
+        SOFT_NEWS.forEach(k => { if (lower.includes(k)) score -= 20; });
+
+        // Penalize extremely short or long titles
+        if (title.length < 30) score -= 15;
+        if (title.length > 120) score -= 10;
+
+        return score;
     },
 
     /**
-     * Extracts headlines and links using regex patterns.
+     * Linguistic Intelligence: Infers a more specific category if the source is generic.
      */
-    extractFromHtml(html: string, target: ScrapeTarget): DiscoveredTrend[] {
-        const items: DiscoveredTrend[] = [];
-        const titles: string[] = [];
-        const links: string[] = [];
+    inferCategory(title: string, content: string): NewsCategory {
+        const text = `${title} ${content}`.toLowerCase();
+        
+        const KEYWORDS: Record<NewsCategory, string[]> = {
+            'Finance': ['market', 'stock', 'inflation', 'trade', 'bank', 'finance', 'economy', 'gdp', 'fed', 'rate', 'dollar', 'crypto', 'btc', 'budget', 'earnings', 'quarterly'],
+            'Sports': ['cricket', 'match', 'ipl', 'football', 'fifa', 'league', 'score', 'match', 'trophy', 'stadium', 'athlete', 'olympics', 'nba', 'tennis', 'tournament', 'world cup'],
+            'Technology': ['ai', 'tech', 'software', 'app', 'gadget', 'silicon', 'cyber', 'meta', 'google', 'apple', 'startup', 'openai', 'llm', 'chip', 'robotics'],
+            'Politics': ['election', 'vote', 'politics', 'government', 'president', 'summit', 'policy', 'minister', 'opposition', 'diplomatic', 'nato', 'un', 'legislation'],
+            'Environment': ['climate', 'nature', 'sustainable', 'warming', 'forest', 'energy', 'solar', 'pollution', 'carbon', 'earth', 'ocean', 'ecology'],
+            'Health': ['health', 'medical', 'virus', 'doctor', 'hospital', 'science', 'research', 'dna', 'vaccine', 'outbreak', 'cancer', 'pandemic', 'wellness'],
+            'Science': ['science', 'research', 'space', 'nasa', 'universe', 'planet', 'expert', 'discovery', 'gene', 'lab', 'physics', 'astronomy'],
+            'World': ['conflict', 'international', 'diplomatic', 'border', 'global', 'summit', 'war', 'tensions'],
+            'Business': ['company', 'ceo', 'industry', 'brand', 'commercial', 'startup', 'venture'],
+            'Education': ['school', 'university', 'student', 'learning', 'research', 'academy']
+        };
 
-        let titleMatch;
-        while ((titleMatch = target.titlePattern.exec(html)) !== null) {
-            titles.push(this.cleanHtml(titleMatch[1]));
+        for (const [cat, keywords] of Object.entries(KEYWORDS)) {
+            if (keywords.some(k => new RegExp(`\\b${k}\\b`, 'i').test(text))) return cat as NewsCategory;
         }
 
-        let linkMatch;
-        while ((linkMatch = target.linkPattern.exec(html)) !== null) {
-            let url = linkMatch[1];
-            if (url.startsWith('/')) {
-                const base = new URL(target.url).origin;
-                url = base + url;
-            }
-            links.push(url);
+        return 'World';
+    },
+
+    /**
+     * Geographic Intelligence: Detects the specific country from title/content tokens.
+     */
+    inferCountry(title: string, content: string): import('./models/News').NewsCountry {
+        const text = `${title} ${content}`.toLowerCase();
+
+        const GEO_TOKENS: Record<string, string[]> = {
+            'Nepal': ['nepal', 'kathmandu', 'pokhara', 'everest', 'oli', 'prachanda', 'biratnagar', 'lalitpur'],
+            'Serbia': ['serbia', 'belgrade', 'vucic', 'balkan', 'niš', 'nis', 'novi sad', 'dinar'],
+            'India': ['india', 'modi', 'delhi', 'mumbai', 'bengaluru', 'chennai', 'bollywood', 'cricket', 'gandhi', 'rupee'],
+            'China': ['china', 'beijing', 'shanghai', 'xi jinping', 'yuan', 'alibaba', 'tencent', 'hong kong'],
+            'Japan': ['japan', 'tokyo', 'yen', 'kishida', 'osaka', 'kyoto'],
+            'Russia': ['russia', 'moscow', 'putin', 'kremlin', 'ukraine', 'ruble'],
+            'Ukraine': ['ukraine', 'kyiv', 'zelensky', 'kharkiv'],
+            'Germany': ['germany', 'berlin', 'scholz', 'munich', 'hamburg', 'euro'],
+            'France': ['france', 'paris', 'macron', 'marseille', 'lyon'],
+            'UAE': ['uae', 'dubai', 'abu dhabi', 'emirates'],
+            'Saudi Arabia': ['saudi', 'riyadh', 'jeddah', 'bin salman'],
+            'South Africa': ['south africa', 'ramaphosa', 'cape town', 'johannesburg'],
+            'Nigeria': ['nigeria', 'abuja', 'lagos', 'tinubu'],
+            'Brazil': ['brazil', 'lula', 'rio', 'sao paulo'],
+            'Mexico': ['mexico', 'obrador', 'mexico city'],
+            'Australia': ['australia', 'canberra', 'sydney', 'melbourne', 'albanese'],
+            'USA': ['usa', 'america', 'washington', 'biden', 'trump', 'congress', 'new york', 'california', 'dollar'],
+            'UK': ['uk', 'britain', 'london', 'sunak', 'king charles', 'bbc', 'manchester', 'pound']
+        };
+
+        // Priority Check: Try to find specific mentioned countries first
+        for (const [country, tokens] of Object.entries(GEO_TOKENS)) {
+            if (tokens.some(t => new RegExp(`\\b${t}\\b`, 'i').test(text))) return country as any;
         }
 
-        // Pair them up (limited to top 15 per source)
-        const count = Math.min(titles.length, links.length, 15);
-        for (let i = 0; i < count; i++) {
-            if (titles[i].length > 10 && links[i].includes('http')) {
-                items.push({
-                    title: titles[i],
-                    link: links[i],
-                    source: target.source,
-                    pubDate: new Date().toISOString(),
-                    category: target.category,
-                    country: target.country
-                } as DiscoveredTrend);
-            }
-        }
-
-        return items;
+        return 'Global';
     },
 
     cleanHtml(text: string): string {
+        if (!text) return '';
         return text
             .replace(/\\u0027/g, "'")
             .replace(/&amp;/g, '&')
@@ -167,7 +187,57 @@ export const AdvancedScraperService = {
             .replace(/&nbsp;/g, ' ')
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
+            // Aggressive JSON/Object detection (balanced-like approach for nested structures)
+            .replace(/\{"[\s\S]*?"uri"[\s\S]*?\}/gi, '')
+            .replace(/\{"[\s\S]*?"url"[\s\S]*?\}/gi, '')
+            .replace(/\{"[\s\S]*?"title"[\s\S]*?\}/gi, '')
+            .replace(/\{"[\s\S]*?[\{\[][\s\S]*?[\}\]][\s\S]*?\}/g, '') // Nested objects
+            .replace(/\{"[\s\S]*?"\}/g, '')
+            .replace(/\[\{[\s\S]*?\}\]/g, '')
+            // System Markers & Robotic Artifacts
+            .replace(/\[Intelligence Truncated\]/gi, '')
+            .replace(/\*Journalistic Note:[\s\S]*?\*/gi, '')
+            .replace(/## Intelligence Briefing/gi, '')
+            .replace(/## Executive Brief/gi, '')
+            .replace(/Executive Brief:/gi, '')
+            .replace(/Autonomous intelligence gathering[\s\S]*?global sources\./gi, '')
+            .replace(/This synthesized report provides raw factual anchors[\s\S]*?sources\./gi, '')
+            .replace(/This report was synthesized using the Terai Times Deterministic Sanitizer protocol/gi, '')
+            // Media Credits & Attribution Bloat
+            .replace(/[A-Z][a-z]+\s[A-Z][a-z]+\/(Getty Images|AFP|Reuters|AP|CNN|BBC)/gi, '')
+            .replace(/(Getty Images|AFP|Reuters|AP|CNN|BBC)\sLive Updates/gi, '')
+            .replace(/By\s([A-Z][a-z]+\s?,?\s?){1,5},?\s?(and\s[A-Z][a-z]+\s[A-Z][a-z]+)?/gi, '')
+            .replace(/Live Updates[\s\S]*?En español/gi, '')
+            // Broken HTML attribute leaks & Nested JSON
+            .replace(/\{"[\s\S]*?"(uri|url|small|big|medium)"[\s\S]*?\}/gi, '')
+            .replace(/data-[a-z0-9-]+=".*?"/gi, '')
+            .replace(/data-[a-z0-9-]+='.*?'/gi, '')
+            .replace(/data-[a-z0-9-]+=[^\s>]*/gi, '')
+            .replace(/video-id=[^\s>]*/gi, '')
+            // Final pass: Remove remaining HTML tags
             .replace(/<[^>]*>?/gm, '')
+            // Collapse multiple spaces/newlines
+            .replace(/\s+/g, ' ')
+            .trim();
+    },
+
+    /**
+     * Deep neural scrubber for article bodies.
+     */
+    scrubMetadata(text: string): string {
+        if (!text) return '';
+        return text
+            .replace(/\\"/g, '"')
+            .replace(/\\n/g, '\n')
+            // Target specific JSON leakage patterns observed in CNN/BBC RSS
+            .replace(/\{"big":\s*\{.*\}\}/gi, '')
+            .replace(/\{"small":\s*\{.*\}\}/gi, '')
+            .replace(/Image Briefing.*?Link Copied!/gi, '')
+            .replace(/Source:\s*CNN/gi, '')
+            .replace(/Updated\s*\d+:\d+\s*[AP]M\s*EDT.*?Link\s*Copied!/gi, '')
+            .replace(/\s*[A-Z0-9-]+\.jpg\?[a-z0-9=&_]+/gi, '')
+            .replace(/\s*([a-z0-9-]+)\s*:\s*{\s*"url"\s*:\s*".*?"\s*}/gi, '')
+            .replace(/\s+/g, ' ')
             .trim();
     },
 
@@ -206,7 +276,7 @@ export const AdvancedScraperService = {
             .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ');
 
         const paragraphs = Array.from(normalized.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi))
-            .map((m) => this.cleanHtml(m[1] || ''))
+            .map((m) => this.scrubMetadata(this.cleanHtml(m[1] || '')))
             .map((p) => p.replace(/\s+/g, ' ').trim())
             .filter((p) => p.length >= 90)
             .filter((p) => !/cookie|subscribe|sign up|advertis|newsletter/i.test(p))

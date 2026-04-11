@@ -35,15 +35,29 @@ export const NewsService = {
     },
 
     /**
-     * Get all published news for public view with filtering
+     * Get all published news for public view with filtering and pagination
      */
-    async getPublishedNews(filters?: { country?: string; category?: string; query?: string; limit?: number }): Promise<News[]> {
+    async getPublishedNews(filters?: { 
+        country?: string; 
+        category?: string; 
+        query?: string; 
+        limit?: number;
+        page?: number;
+        pageSize?: number;
+    }): Promise<News[]> {
         const client = supabaseAdmin || supabase;
+        const page = filters?.page || 1;
+        const pageSize = filters?.pageSize || 15;
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        const now = new Date().toISOString();
 
         let query = client
             .from('news')
             .select('*')
-            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay']);
+            .in('status', ['published', 'Published', 'live', 'Live', 'Active Relay', 'active relay'])
+            .or(`expires_at.is.null,expires_at.gt.${now}`)
+            .order('published_at', { ascending: false });
 
         if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
             query = query.eq('country', filters.country);
@@ -61,9 +75,11 @@ export const NewsService = {
 
         if (typeof filters?.limit === 'number' && filters.limit > 0) {
             query = query.limit(filters.limit);
+        } else {
+            query = query.range(from, to);
         }
 
-        const primary = await query.order('published_at', { ascending: false });
+        const primary = await query;
         let data = primary.error ? [] : (primary.data || []);
 
         if (!data.length && !primary.error) {
@@ -71,7 +87,7 @@ export const NewsService = {
                 .from('news')
                 .select('*')
                 .order('created_at', { ascending: false })
-                .limit(50);
+                .range(from, to);
 
             if (fallback.data) {
                 data = fallback.data.filter((n: any) => {
@@ -90,7 +106,39 @@ export const NewsService = {
             }
         }
 
-        return data.filter(item => this.isCleanArticle(item)).slice(0, filters?.limit || 50);
+        return data.filter(item => this.isCleanArticle(item)).slice(0, filters?.limit || pageSize);
+    },
+
+    /**
+     * Total count for pagination UI
+     */
+    async getNewsCount(filters?: { country?: string; category?: string; query?: string }): Promise<number> {
+        const client = supabaseAdmin || supabase;
+        const now = new Date().toISOString();
+
+        let query = client
+            .from('news')
+            .select('id', { count: 'exact', head: true })
+            .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .or(`expires_at.is.null,expires_at.gt.${now}`);
+
+        if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
+            query = query.eq('country', filters.country);
+        }
+
+        if (filters?.category && filters.category !== 'All') {
+            query = query.eq('category', filters.category);
+        }
+
+        const queryText = (filters?.query || '').trim();
+        if (queryText) {
+            const escaped = queryText.replace(/[%_,]/g, ' ');
+            query = query.or(`title.ilike.%${escaped}%,summary.ilike.%${escaped}%,content.ilike.%${escaped}%`);
+        }
+
+        const { count, error } = await query;
+        if (error) return 0;
+        return count || 0;
     },
 
     /**

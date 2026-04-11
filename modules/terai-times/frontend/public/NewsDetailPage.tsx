@@ -1,7 +1,10 @@
 import { format } from 'date-fns';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { Bookmark, Globe2, ArrowLeft, Share2, TrendingUp, ChevronRight, BarChart3 } from 'lucide-react';
+import { 
+  Bookmark, Globe2, ArrowLeft, Share2, TrendingUp, ChevronRight, BarChart3, 
+  Bot, Zap, Activity, ShieldCheck, CheckCircle2, PenSquare 
+} from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import { BRAND_URL } from '@/lib/brand';
 import { NewsNavbar } from '@/components/layout/NewsNavbar';
@@ -12,7 +15,8 @@ import { TeraiTimesArticleService, TeraiTimesSeoService } from '@/modules/terai-
 import { extractTrustMetadata } from '@/lib/news-trust-metadata';
 import { getPublicNewsTags, getRenderableNewsImage } from '@/lib/news-image-metadata';
 import { GoogleAdUnit } from '@/components/news/GoogleAdUnit';
-import { Bot, Zap, Activity, ShieldCheck, Lock } from 'lucide-react';
+import { ReadingProgressBar } from '@/components/news/ReadingProgressBar';
+import { AnimatedArticleBody } from '@/components/news/AnimatedArticleBody';
 
 function formatDate(value?: string) {
   const d = value ? new Date(value) : new Date();
@@ -59,18 +63,32 @@ function cleanPresentationText(value?: string | null): string {
     .trim();
 }
 
-function enhanceContentPresentation(html: string): string {
+function enhanceContentPresentation(html: string) {
   if (!html) return '';
-  if (html.includes('nda-dropcap')) return html;
+  
+  // Final rendering-layer failsafe: Strip robotic system artifacts and metadata leakage
+  let clean = html
+    .replace(/\[Intelligence Truncated\]/gi, '')
+    .replace(/\*Journalistic Note:[\s\S]*?\*/gi, '')
+    .replace(/## Intelligence Briefing/gi, '')
+    .replace(/## Executive Brief/gi, '')
+    .replace(/Executive Brief:/gi, '')
+    .replace(/This report was synthesized using the Terai Times Deterministic Sanitizer protocol/gi, '')
+    // Final check for raw JSON/URI leaks and broken attributes
+    .replace(/\{"[\s\S]*?"uri"[\s\S]*?\}/gi, '')
+    .replace(/\{"[\s\S]*?"url"[\s\S]*?\}/gi, '')
+    .replace(/\{"[\s\S]*?[\{\[][\s\S]*?[\}\]][\s\S]*?\}/g, '')
+    .replace(/data-[a-z0-9-]+=[^\s>]*/gi, '')
+    .replace(/video-id=[^\s>]*/gi, '')
+    .trim();
   
   // Inject dropcap into the first <p> that has text
   let replaced = false;
-  return html.replace(/<p>(.*?)<\/p>/g, (match, p1) => {
+  return clean.replace(/<p>(.*?)<\/p>/g, (match, p1) => {
     if (replaced) return match;
     const stripped = p1.replace(/<[^>]+>/g, '').trim();
     if (!stripped) return match; // skip empty paragraphs
     
-    // Find the first letter in the actual text content of p1
     replaced = true;
     return `<p>` + p1.replace(/^[ ]*([A-Za-z0-9"'])/, `<span class="nda-dropcap">$1</span>`) + `</p>`;
   });
@@ -125,6 +143,9 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
   return (
     <div className="news-page-shell news-paper-theme min-h-screen">
       <NewsNavbar />
+      
+      {/* Premium Reading Progress Bar (Client Component) */}
+      <ReadingProgressBar />
 
       {articleSchema && (
         <script
@@ -167,18 +188,24 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               <span className="nda-kicker">{categoryLabel}</span>
               <span className="nda-kicker-dot" />
               <span className="nda-desk">{countryLabel} Desk</span>
-              {news.author_id?.includes('bot') ? (
+              {news.author_id?.includes('bot') || !news.author_name ? (
                 <>
                   <span className="nda-kicker-dot" />
-                  <span className="nda-desk">AI-assisted reporting</span>
+                  <span className="nda-desk flex items-center gap-1.5 text-[#06b6d4]">
+                    <Bot size={12} className="animate-pulse" />
+                    Neural Intelligence
+                  </span>
                 </>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-4">
               <h1 className="nda-headline">{cleanPresentationText(news.title)}</h1>
-              {(news.tags || []).includes('multi_source_verified') && (
-                <span className="nda-verified-badge">Verified</span>
+              {((news.tags || []).includes('multi_source_verified') || news.impact_score > 90) && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]">
+                  <ShieldCheck size={12} />
+                  Verified
+                </div>
               )}
             </div>
 
@@ -237,22 +264,14 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               </div>
             )}
 
+            {/* Primary Briefing Dispatch */}
             {news.summary && (
-              <div className="bg-[#f9f9f9] dark:bg-[#111111] p-5 mb-8 font-sans w-full">
-                <div className="border-b border-[#e0e0e0] dark:border-[#333] pb-2 mb-3">
-                  <h3 className="font-bold text-[14px] text-[#111111] dark:text-white uppercase">Summary</h3>
+              <div className="nda-key-takeaways !mt-12 !mb-16 bg-white/[0.01] border border-white/5 p-8 rounded-[2rem]">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+                  <div className="nda-key-head !mb-0 uppercase tracking-[0.3em] text-[10px] font-black text-gray-500">Dispatch Brief</div>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
                 </div>
-                <ul className="list-disc pl-5 text-[#333333] dark:text-gray-300 space-y-2 text-[15px] leading-relaxed marker:text-gray-400">
-                  <li>{news.summary.split('.')[0]}.</li>
-                  {news.summary.split('.').length > 1 && news.summary.split('.')[1].trim().length > 0 && <li>{news.summary.split('.')[1]}.</li>}
-                </ul>
-              </div>
-            )}
-
-            {/* Key Takeaways */}
-            {news.summary && (
-              <div className="nda-key-takeaways">
-                <div className="nda-key-head">Key Takeaways</div>
                 <ul>
                   {news.summary
                     .split('.')
@@ -266,39 +285,16 @@ export async function NewsDetailPage({ params }: { params: Promise<{ slug: strin
               </div>
             )}
 
-            <div className="font-sans text-[#333333] dark:text-gray-300 mb-2">
+            <div className="font-sans text-[#333333] dark:text-gray-300 mb-6">
               <strong>{news.country ? `${news.country.toUpperCase()}` : 'GLOBAL'} (Terai Times) - </strong>
+              Intelligence relay established via the {countryLabel} desk.
             </div>
 
-            {/* Phase 3: Revenue & Premium Gating */}
-            {news.impact_score && news.impact_score > 85 ? (
-              <div className="relative group/premium">
-                <div 
-                  className="nda-body blur-md select-none pointer-events-none transition-all group-hover/premium:blur-sm"
-                  dangerouslySetInnerHTML={{ __html: enhanceContentPresentation(news.content) }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-[var(--news-bg)] via-transparent to-transparent">
-                  <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-24 p-8 max-w-md text-center shadow-2xl animate-in fade-in zoom-in duration-700">
-                    <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(245,158,11,0.4)]">
-                      <Lock className="text-slate-950" size={32} />
-                    </div>
-                    <h3 className="text-2xl font-black text-white mb-3">Locked Analysis</h3>
-                    <p className="text-slate-300 text-sm mb-6 leading-relaxed">
-                      This is a high-impact intelligence report with a strategic score of <span className="text-amber-500 font-bold">{news.impact_score}/100</span>. Full access requires a premium intelligence membership.
-                    </p>
-                    <Link href="/news/subscribe" className="inline-flex items-center gap-2 bg-amber-500 text-slate-950 px-6 py-3 rounded-full font-black uppercase text-xs tracking-widest hover:bg-amber-400 transition-colors shadow-lg">
-                      <Zap size={14} className="fill-slate-950" />
-                      Unlock Full Brief
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="nda-body"
-                dangerouslySetInnerHTML={{ __html: enhanceContentPresentation(news.content) }}
-              />
-            )}
+            <AnimatedArticleBody 
+              content={enhanceContentPresentation(news.content)}
+              impactScore={news.impact_score}
+              isPremium={!!(news.impact_score && news.impact_score > 85)}
+            />
 
             {publicTags.length > 0 && (
               <div className="nda-tags">

@@ -19,9 +19,14 @@ export const NewsImagerySearch = {
             const searchUrl = `https://unsplash.com/s/photos/${encodeURIComponent(query)}`;
             const response = await axios.get(searchUrl, {
                 headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Referer': 'https://unsplash.com/',
+                    'Connection': 'keep-alive',
+                    'Cache-Control': 'max-age=0'
                 },
-                timeout: 5000
+                timeout: 8000
             });
 
             const html = response.data;
@@ -34,8 +39,11 @@ export const NewsImagerySearch = {
                 // Return with professional formatting params
                 return `${photoUrl}?auto=format&fit=crop&w=1600&q=80`;
             }
-        } catch (error) {
-            console.warn('[Imagery Search] Public discovery failed. Bypassing to internal library.', error);
+        } catch (error: any) {
+            console.warn(`[Imagery Search] Public discovery (Unsplash) failed (Status: ${error?.response?.status || 'Network'}). Attempting Geopolitical fallback...`);
+            // Immediate fallback to Wikimedia for geopolitical/factual topics
+            const wikiFallback = await this.scanWikimedia(query);
+            if (wikiFallback) return wikiFallback;
         }
 
         return null;

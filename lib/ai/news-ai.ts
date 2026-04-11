@@ -5,6 +5,7 @@ import { STRATEGY_PROMPT } from './prompts/strategy';
 import { MultiAgentOrchestrator } from './ai-orchestrator';
 
 import { uploadImageFromUrl } from '../supabase-storage';
+import { AdvancedScraperService } from '../news-scraper';
 
 export interface NewsDraftResult {
     print_headline: string;
@@ -190,10 +191,36 @@ export const NewsAIService = {
         const headline = (params.topic || 'Intelligence Update')
             .replace(/Latest insights regarding /i, '')
             .replace(/ news in /i, ': ')
+            .replace(/Strategic Report:\s*/gi, '')
+            .replace(/Global desk dispatch:\s*/gi, '')
+            .replace(/Primary situational briefing:\s*/gi, '')
+            .replace(/Recent developments and analysis:\s*/gi, '')
+            .replace(/Verified updates consolidated:\s*/gi, '')
+            .replace(/Intelligence relay established:\s*/gi, '')
             .trim();
 
+        // Seeded hash for deterministic but varied variety
+        const hash = headline.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        
+        const summaryTemplates = [
+            `Key developments are emerging in ${params.region} regarding ${headline}, as local and international sources provide new insights into the evolving situation.`,
+            `${headline} has become a focal point of recent updates from the ${params.region} desk, indicating a significant shift in the regional landscape.`,
+            `Reports from across ${params.region} highlight critical updates in ${headline}, providing a clearer picture of the current state of affairs and potential future directions.`,
+            `As major events unfold in ${params.region}, the situation regarding ${headline} continues to draw attention from regional analysts and global observers alike.`
+        ];
+
+        const subheadlineTemplates = [
+            `Global desk dispatch from the ${params.region} region.`,
+            `Primary situational briefing: ${params.region} news desk.`,
+            `Recent developments and analysis from ${params.region}.`,
+            `Verified updates consolidated from ${params.region} field sources.`
+        ];
+
+        const executive_summary = summaryTemplates[hash % summaryTemplates.length];
+        const subheadline = subheadlineTemplates[hash % subheadlineTemplates.length];
+
         // Phase 27: Smart Neural Scrubber (Improved Parsing)
-        let sanitizedBody = 'Autonomous factual gathering in progress.';
+        let sanitizedBody = 'Developments currently unfolding.';
         const raw = params.sourceMaterial || '';
 
         if (raw.includes('TARGETED NEWS BRIEFING')) {
@@ -209,18 +236,18 @@ export const NewsAIService = {
                     const source = sourceMatch ? sourceMatch[1].trim() : 'Verified Wire';
                     const context = contextMatch ? contextMatch[1].trim().replace(/Context:\s*/, '') : '';
 
-                    return `### ${idx === 0 ? 'Primary Lead: ' : ''}${title}\n**Source:** ${source}\n\n${context}`;
+                    return `### ${idx === 0 ? 'Primary Lead: ' : ''}${title}\n**Source:** ${source}\n\n${AdvancedScraperService.scrubMetadata(context)}`;
                 }).join('\n\n---\n\n');
             }
         } else if (raw.length > 100) {
-            sanitizedBody = raw.slice(0, 1500) + '... [Intelligence Truncated]';
+            sanitizedBody = AdvancedScraperService.scrubMetadata(raw.slice(0, 1500)) + '... [Intelligence Truncated]';
         }
 
         return {
             print_headline: headline,
             digital_headline: `Strategic Report: ${headline}`,
-            subheadline: `Verified intelligence from ${params.region} and surrounding sectors.`,
-            executive_summary: `Autonomous intelligence gathering has identified movements regarding ${headline}. This synthesized report provides raw factual anchors retrieved from verified global sources.`,
+            subheadline,
+            executive_summary,
             body: `## Intelligence Briefing\n\n${sanitizedBody}\n\n*Journalistic Note: This report was synthesized using the Terai Times Deterministic Sanitizer protocol due to high-traffic intelligence filtering.*`,
             suggested_tier: 'Standard'
         };

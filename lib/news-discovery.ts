@@ -96,28 +96,49 @@ const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[
 ];
 
 
+import Parser from 'rss-parser';
+
 export const NewsDiscoveryService = {
     async getLiveTrends(): Promise<DiscoveredTrend[]> {
         const discovered: DiscoveredTrend[] = [];
+        const parser = new Parser({
+            customFields: {
+                item: ['description', 'pubDate'],
+            }
+        });
 
         const outputs = await Promise.allSettled(
             RSS_FEEDS.map(async (feed) => {
                 try {
-                    const response = await fetch(feed.url, {
-                        cache: 'no-store',
-                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+                    const parsedFeed = await parser.parseURL(feed.url);
+                    return (parsedFeed.items || []).slice(0, 10).map(item => {
+                        const title = this.cleanText(item.title || '');
+                        const description = this.cleanText(item.description || '');
+
+                        // Phase 42: Intelligent Localization & Categorization
+                        let category = feed.defaultCategory;
+                        let country: any = 'Global';
+
+                        // If the category is a generic one like 'World' or 'Business', try to drill down
+                        if (category === 'World' || category === 'Business') {
+                            category = AdvancedScraperService.inferCategory(title, description);
+                        }
+                        
+                        // Always try to pinpoint the specific country
+                        const inferredCountry = AdvancedScraperService.inferCountry(title, description);
+                        if (inferredCountry !== 'Global') {
+                            country = inferredCountry;
+                        }
+
+                        return {
+                            title,
+                            link: item.link || '',
+                            source: feed.source,
+                            pubDate: item.pubDate || new Date().toISOString(),
+                            category,
+                            country
+                        };
                     });
-                    
-                    if (!response.ok) {
-                        console.warn(`[Discovery] Skipping feed ${feed.source} (HTTP ${response.status})`);
-                        return [];
-                    }
-
-                    const text = await response.text();
-
-                    // Lightweight XML parsing for titles and links
-                    const items = this.parseRssItems(text, feed.source, feed.defaultCategory);
-                    return items;
                 } catch (error) {
                     console.error(`[Discovery] Failed to fetch feed ${feed.source}:`, error);
                     return [];
@@ -131,7 +152,7 @@ export const NewsDiscoveryService = {
             }
         });
 
-        // 2. Fetch from Advanced Scrapers (Phase 18)
+        // 2. Fetch from Advanced Scrapers (Already enriched in AdvancedScraperService)
         try {
             const scrapedTrends = await AdvancedScraperService.scrapeTrends();
             discovered.push(...scrapedTrends);

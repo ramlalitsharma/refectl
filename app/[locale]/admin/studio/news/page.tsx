@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { FadeIn } from '@/components/ui/Motion';
 import { NewsImage } from '@/components/news/NewsImage';
 import { getNewsAuthorsByIds } from '@/lib/news-authors';
-import { approveSourceTrustAction, blockSourceAction } from '@/app/actions/news';
+import { approveSourceTrustAction, blockSourceAction, deleteNews } from '@/app/actions/news';
 import { ingestTrendDraftAction, ingestTrendPublishAction, scrapeTargetedQueueAction } from '@/app/actions/news-ai';
 
 export const dynamic = 'force-dynamic';
@@ -289,13 +289,24 @@ function articleQualityScore(n: StudioNews) {
     return Math.min(100, score);
 }
 
-export default async function NewsStudioPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function NewsStudioPage(props: { params: Promise<{ locale: string }>; searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
     await requireContentWriter();
-    const { locale } = await params;
+    const { locale } = await props.params;
+    const searchParams = await props.searchParams;
+    const currentTab = searchParams.tab || 'discovery';
+
     const labels = LABELS_BY_LOCALE[baseLocale(locale)] || LABELS_BY_LOCALE.en;
     const news: StudioNews[] = await NewsService.getAllNews().catch(() => []);
     const automationStatus = await new TeraiTimesPublicService().getAutomationStatus();
-    const trendCandidates = await NewsAutomationService.fetchGlobalTrends().catch(() => []);
+    let trendCandidates = await NewsAutomationService.fetchGlobalTrends().catch(() => []);
+    
+    // Filter out ingested trends
+    const existingTitles = new Set(news.map((n) => n.title?.toLowerCase().trim()).filter(Boolean));
+    trendCandidates = trendCandidates.filter((t) => {
+        if (!t.title) return false;
+        return !existingTitles.has(t.title.toLowerCase().trim());
+    });
+
     const publishedNews = news.filter((n) => (n.status || '').toLowerCase() === 'published');
     const draftNews = news.filter((n) => (n.status || '').toLowerCase() === 'draft');
     const trendingNews = news.filter((n) => n.is_trending);
@@ -407,7 +418,7 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
     return (
         <div className="min-h-screen bg-elite-bg text-slate-100 p-8 lg:p-12 space-y-16 selection:bg-elite-accent-cyan/30">
             {/* Header / Brand Strip */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 pb-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-6">
                 <div className="flex items-center gap-8">
                     <div className="w-20 h-20 bg-elite-accent-cyan rounded-[2rem] flex items-center justify-center text-black font-black text-3xl shadow-2xl shadow-elite-accent-cyan/20">
                         RT
@@ -433,9 +444,23 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                         </Button>
                     </Link>
                 </FadeIn>
+
             </div>
 
-            {/* Performance Monitoring Indices */}
+            {/* Navigation Tabs */}
+            <div className="flex flex-wrap items-center gap-3 border-b border-white/5 pb-8">
+                <Link href={`?tab=discovery`} scroll={false} className={`px-6 py-3.5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.25em] transition-all ${currentTab === 'discovery' ? 'bg-elite-accent-cyan text-black shadow-lg shadow-elite-accent-cyan/20' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}>
+                    Discovery & Scrape
+                </Link>
+                <Link href={`?tab=manage`} scroll={false} className={`px-6 py-3.5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.25em] transition-all ${currentTab === 'manage' ? 'bg-elite-accent-emerald text-black shadow-lg shadow-elite-accent-emerald/20' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}>
+                    Manage News
+                </Link>
+                <Link href={`?tab=trust`} scroll={false} className={`px-6 py-3.5 rounded-[1.5rem] font-black uppercase text-[10px] tracking-[0.25em] transition-all ${currentTab === 'trust' ? 'bg-elite-accent-purple text-black shadow-lg shadow-elite-accent-purple/20' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}>
+                    Source Trust
+                </Link>
+            </div>
+
+            {/* Performance Monitoring Indices - GLOBAL */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {[
                     { label: 'Network Assets', value: news.length, color: 'text-white', icon: Newspaper, accent: 'cyan' },
@@ -456,7 +481,9 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+            {currentTab === 'discovery' && (
+                <>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 <FadeIn delay={0.35}>
                     <div className="glass-card-premium p-8 rounded-[2.25rem] border border-white/5 hover:border-white/10 transition-all group relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-elite-accent-emerald/5 rounded-full blur-3xl" />
@@ -599,7 +626,12 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                         </div>
                     </div>
                 </FadeIn>
+                </div>
+            </>
+            )}
 
+            {currentTab === 'trust' && (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <FadeIn delay={0.45}>
                     <div className="glass-card-premium p-8 rounded-[2.25rem] border border-white/5 hover:border-white/10 transition-all">
                         <div className="flex items-center justify-between mb-6">
@@ -645,8 +677,11 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                     </div>
                 </FadeIn>
             </div>
+            )}
 
             {/* Author Performance Dashboard */}
+            {currentTab === 'manage' && (
+                <>
             <FadeIn delay={0.45}>
                 <section className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     <div className="xl:col-span-8 glass-card-premium rounded-[2rem] border border-white/5 p-8 md:p-10 space-y-8">
@@ -986,9 +1021,11 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                                                             <Edit className="w-4 h-4" />
                                                         </Button>
                                                     </Link>
-                                                    <Button size="sm" variant="ghost" className="h-12 w-12 p-0 rounded-2xl border border-white/5 bg-white/5 hover:bg-red-500/10 hover:text-red-500 transition-all">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
+                                                    <form action={deleteNews.bind(null, item.id)}>
+                                                        <Button type="submit" size="sm" variant="ghost" className="h-12 w-12 p-0 rounded-2xl border border-white/5 bg-white/5 hover:bg-red-500/10 hover:text-red-500 transition-all">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>
@@ -999,6 +1036,8 @@ export default async function NewsStudioPage({ params }: { params: Promise<{ loc
                     )}
                 </div>
             </FadeIn>
+            </>
+            )}
         </div>
     );
 }

@@ -4,6 +4,7 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: process.cwd(),
   webpack: (config, { isServer }) => {
     // pdfjs-dist requires canvas on the server; alias it to empty module to prevent errors
     if (isServer) {

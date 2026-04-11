@@ -3,6 +3,8 @@ import { NewsWorkflowService } from '@/lib/news-workflow';
 import { NewsAutomationService } from '@/lib/news-automation';
 import { NewsNewsletterService } from '@/lib/news-newsletter';
 
+export const maxDuration = 60;
+
 /**
  * Hourly News Automation Job
  * 1. Discover trends and auto-generate draft if configured (future expansion)

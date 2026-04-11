@@ -8,6 +8,9 @@ export type TeraiTimesLandingPayload = {
   category: string;
   country: string;
   initialItems: any[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
   initialTrending: any[];
   initialEvents: any[];
   automationStatus: {
@@ -26,6 +29,8 @@ export type TeraiTimesLandingPayload = {
     networkPulse: string;
     ingressRate: string;
   };
+  availableCountries: string[];
+  availableCategories: string[];
 };
 
 export class TeraiTimesPublicService extends FeatureModule {
@@ -36,20 +41,26 @@ export class TeraiTimesPublicService extends FeatureModule {
   async getLandingPayload(params: {
     category?: string;
     country?: string;
+    page?: number;
+    pageSize?: number;
   }): Promise<TeraiTimesLandingPayload> {
     const category = params.category || 'All';
     const country = params.country || 'All';
+    const page = params.page || 1;
+    const pageSize = 15;
 
     // Phase 42: Category Mapping for Live Relays
     // If the category is IPL-Live, we fetch Sports news from the database
     const dbCategory = category === 'IPL-Live' ? 'Sports' : category;
 
-    const [published, trending, events, automationStatus, networkAnalytics] = await Promise.all([
-      NewsService.getPublishedNews({ category: dbCategory, country }),
+    const [published, totalCount, trending, events, automationStatus, networkAnalytics, filters] = await Promise.all([
+      NewsService.getPublishedNews({ category: dbCategory, country, page, pageSize }),
+      NewsService.getNewsCount({ category: dbCategory, country }),
       NewsService.getTrendingNews(6),
       NewsEventService.getPublishedForNews(country, 4),
       this.getAutomationStatus(),
       NewsService.getAnalyticsSummary(),
+      NewsService.getAvailableFilters(),
     ]);
 
     let initialItems = Array.isArray(published) ? published : [];
@@ -77,8 +88,13 @@ export class TeraiTimesPublicService extends FeatureModule {
       initialItems,
       initialTrending,
       initialEvents,
+      totalCount,
+      page,
+      pageSize,
       automationStatus,
       networkAnalytics,
+      availableCountries: filters.countries || [],
+      availableCategories: filters.categories || [],
     };
   }
 
@@ -153,6 +169,7 @@ export class TeraiTimesPublicService extends FeatureModule {
     if (!latestPublishedAt) return true;
     const hoursSinceLatest = (Date.now() - latestPublishedAt) / (1000 * 60 * 60);
 
-    return hoursSinceLatest >= 6 && (automationStatus.last24hAutomatedPublished ?? 0) < 1;
+    // Goal: At least one news every hour
+    return hoursSinceLatest >= 1;
   }
 }
