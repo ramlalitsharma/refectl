@@ -692,9 +692,6 @@ export const NewsAutomationService = {
                     expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
                 };
                 const evalResult = NewsRevenueMode.evaluateCandidate(newsItem, minScore);
-                    }
-                    newsItem.tags = [...(newsItem.tags || []), 'quality_override:trusted_source'];
-                }
                 // Phase 45: Global Permissionless Publishing
                 // All news is now published instantly by default to ensure maximum intelligence density.
                 newsItem.status = 'published';
