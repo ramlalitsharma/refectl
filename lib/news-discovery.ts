@@ -106,7 +106,12 @@ const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[
     { url: 'https://www.sciencedaily.com/rss/all.xml', source: 'Science Daily', defaultCategory: 'Science' },
     { url: 'https://foreignpolicy.com/feed/', source: 'Foreign Policy', defaultCategory: 'World' },
     { url: 'https://www.newscientist.com/section/news/feed/', source: 'New Scientist', defaultCategory: 'Science' },
-    { url: 'https://www.zdnet.com/topic/security/rss.xml', source: 'ZDNet Security', defaultCategory: 'Technology' }
+    { url: 'https://www.zdnet.com/topic/security/rss.xml', source: 'ZDNet Security', defaultCategory: 'Technology' },
+
+    // Phase 46: Nepal Regional Financial Intelligence (IPOs, NEPSE, Economy)
+    { url: 'https://news.google.com/rss/search?q=site:arthasansar.com+OR+site:sharesansar.com+OR+site:merolagani.com+OR+IPO+Nepal&hl=en-US&gl=US&ceid=US:en', source: 'Nepal Financial Hub', defaultCategory: 'Finance' },
+    { url: 'https://news.google.com/rss/search?q=NEPSE+OR+Share+Market+Nepal&hl=ne&gl=NP&ceid=NP:ne', source: 'NEPSE Updates', defaultCategory: 'Finance' },
+    { url: 'https://english.onlinekhabar.com/category/business/feed', source: 'OnlineKhabar Business', defaultCategory: 'Finance' }
 ];
 
 
