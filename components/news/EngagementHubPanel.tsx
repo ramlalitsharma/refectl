@@ -11,6 +11,8 @@ type EngagementNewsItem = {
   country?: string;
   summary?: string;
   cover_image?: string;
+  tags?: string[];
+  source_url?: string;
 };
 
 type EngagementData = {
@@ -24,6 +26,22 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
 
   const latestNews = engagement.recent || [];
   const trendingNews = engagement.popular || [];
+
+  const NewsLink = ({ item, className, children }: { item: EngagementNewsItem; className?: string; children: React.ReactNode }) => {
+    const isRelay = item.tags?.includes('type:external_relay') && item.source_url;
+    if (isRelay) {
+      return (
+        <a href={item.source_url} target="_blank" rel="noopener noreferrer" className={className}>
+          {children}
+        </a>
+      );
+    }
+    return (
+      <Link href={`/news/${item.slug}`} className={className}>
+        {children}
+      </Link>
+    );
+  };
 
   return (
     <section className="nda-more-news-panel font-sans w-full max-w-[1200px] mx-auto px-4 md:px-8 py-10">
@@ -43,7 +61,7 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {latestNews.slice(0, 4).map((n) => (
-              <Link key={n.id} href={`/news/${n.slug}`} className="group flex flex-col gap-2">
+              <NewsLink key={n.id} item={n} className="group flex flex-col gap-2">
                 <div className="w-full aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-900">
                   <NewsImage
                     src={n.cover_image || '/news-placeholder.jpg'}
@@ -57,7 +75,7 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
                     {n.title}
                   </h3>
                 </div>
-              </Link>
+              </NewsLink>
             ))}
           </div>
         </div>
@@ -74,7 +92,7 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            <Link href={`/news/${trendingNews[0].slug}`} className="group flex flex-col gap-3">
+            <NewsLink item={trendingNews[0]} className="group flex flex-col gap-3">
               <div className="w-full aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-900">
                 <NewsImage
                   src={trendingNews[0].cover_image || '/news-placeholder.jpg'}
@@ -96,11 +114,11 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
                     'A significant geopolitical development requires attention from global markets. Click to read the full intelligence brief.'}
                 </p>
               </div>
-            </Link>
+            </NewsLink>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
               {trendingNews.slice(1, 5).map((n) => (
-                <Link key={n.id} href={`/news/${n.slug}`} className="group flex flex-col gap-2">
+                <NewsLink key={n.id} item={n} className="group flex flex-col gap-2">
                   <div className="w-full aspect-[16/10] overflow-hidden bg-gray-100 dark:bg-gray-900">
                     <NewsImage
                       src={n.cover_image || '/news-placeholder.jpg'}
@@ -115,7 +133,7 @@ export function EngagementHubPanel({ engagement }: { engagement: EngagementData 
                     </h4>
                     <div className="text-[11px] text-[#555] dark:text-gray-400 mt-1.5">Updated recently</div>
                   </div>
-                </Link>
+                </NewsLink>
               ))}
             </div>
           </div>

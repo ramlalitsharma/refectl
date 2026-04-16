@@ -237,6 +237,14 @@ export default function NewsFeedClient({
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
+  const handleCardClick = (item: NewsItem) => {
+    if (item.tags?.includes('type:external_relay') && item.source_url) {
+      window.open(item.source_url, '_blank', 'noopener,noreferrer');
+    } else {
+      router.push(`/news/${item.slug}`);
+    }
+  };
+
   return (
     <div className="news-layout-grid flex flex-col gap-12">
       {!items.length ? (
@@ -260,7 +268,7 @@ export default function NewsFeedClient({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: "easeOut" }}
           className="hero-stage-shell group" 
-          onClick={() => router.push(`/news/${lead.slug}`)}
+          onClick={() => handleCardClick(lead)}
         >
           <div className="absolute inset-0 bg-black">
             <img
@@ -361,8 +369,8 @@ export default function NewsFeedClient({
               <motion.div
                 variants={itemVariants}
                 key={item.id}
-                className="group cursor-pointer flex flex-col gap-6"
-                onClick={() => router.push(`/news/${item.slug}`)}
+                className="group cursor-pointer flex flex-col gap-4 relative"
+                onClick={() => handleCardClick(item)}
               >
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-slate-900 border border-white/5">
                   <img

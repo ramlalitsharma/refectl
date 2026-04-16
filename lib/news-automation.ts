@@ -591,6 +591,46 @@ export const NewsAutomationService = {
                     continue; // Skip if no news found for this specific combo
                 }
 
+                // Phase 46: External Relay Bypass (Skip AI for direct feeds)
+                if ((trend as any).isRelay) {
+                    const optimizedTitle = trend.title;
+                    console.log(`[Automation - Roaming Engine] Vector ${i + 1} is an External Relay. Bypassing AI pipeline.`);
+                    const newsItem: Partial<News> = {
+                        title: optimizedTitle,
+                        slug: this.generateSlug(optimizedTitle),
+                        content: '', // No heavy content, just redirect
+                        summary: articleIntel.headline || optimizedTitle,
+                        category: trend.category,
+                        country: trend.country || 'Global',
+                        cover_image: articleIntel.imageUrl || buildTextGraphicDataUrl({ title: optimizedTitle, category: trend.category, country: trend.country || 'Global' }),
+                        tags: ['type:external_relay', 'operational:relay', 'quality_score:90', 'source_trusted'],
+                        author_id: 'global-intelligence-relay',
+                        status: 'published',
+                        sentiment: 'Neutral',
+                        market_entities: [],
+                        impact_score: 85,
+                        source_url: trend.source_url,
+                        source_name: trend.source_name || 'Verified Partner',
+                        is_trending: true,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                        published_at: new Date().toISOString()
+                    };
+
+                    if (supabaseAdmin) {
+                        try {
+                            const saved = await insertNewsSafely(newsItem);
+                            if (saved) published.push(saved);
+                        } catch (error) {
+                            console.error(`[Automation - Roaming Engine] Relay DB Insert Failed:`, error);
+                        }
+                    } else {
+                        published.push(newsItem);
+                    }
+                    continue;
+                }
+
                 // 3. Draft & Strategize using Hybrid Switchboard
                 const sourceCheck = trend.source_url
                     ? await verifySourceSafety({

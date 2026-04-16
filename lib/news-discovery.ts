@@ -10,6 +10,7 @@ export interface DiscoveredTrend {
     category?: NewsCategory;
     country?: import('./models/News').NewsCountry;
     score?: number; // 0-100 viral potential
+    isRelay?: boolean; // If true, skipped by AI and used as external link
 }
 
 const NOISE_TITLE_PATTERNS = [
@@ -109,9 +110,9 @@ const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[
     { url: 'https://www.zdnet.com/topic/security/rss.xml', source: 'ZDNet Security', defaultCategory: 'Technology' },
 
     // Phase 46: Nepal Regional Financial Intelligence (IPOs, NEPSE, Economy)
-    { url: 'https://news.google.com/rss/search?q=site:arthasansar.com+OR+site:sharesansar.com+OR+site:merolagani.com+OR+IPO+Nepal&hl=en-US&gl=US&ceid=US:en', source: 'Nepal Financial Hub', defaultCategory: 'Finance' },
-    { url: 'https://news.google.com/rss/search?q=NEPSE+OR+Share+Market+Nepal&hl=ne&gl=NP&ceid=NP:ne', source: 'NEPSE Updates', defaultCategory: 'Finance' },
-    { url: 'https://english.onlinekhabar.com/category/business/feed', source: 'OnlineKhabar Business', defaultCategory: 'Finance' }
+    { url: 'https://news.google.com/rss/search?q=site:arthasansar.com+OR+site:sharesansar.com+OR+site:merolagani.com+OR+IPO+Nepal&hl=en-US&gl=US&ceid=US:en', source: 'Nepal Financial Hub', defaultCategory: 'Finance', isRelay: true },
+    { url: 'https://news.google.com/rss/search?q=NEPSE+OR+Share+Market+Nepal&hl=ne&gl=NP&ceid=NP:ne', source: 'NEPSE Updates', defaultCategory: 'Finance', isRelay: true },
+    { url: 'https://english.onlinekhabar.com/category/business/feed', source: 'OnlineKhabar Business', defaultCategory: 'Finance', isRelay: true }
 ];
 
 
@@ -155,7 +156,8 @@ export const NewsDiscoveryService = {
                             source: feed.source,
                             pubDate: item.pubDate || new Date().toISOString(),
                             category,
-                            country
+                            country,
+                            isRelay: feed.isRelay
                         };
                     });
                 } catch (error) {
