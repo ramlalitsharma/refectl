@@ -2,15 +2,40 @@ name: Refectl Blog Architect Scheduler
 
 on:
   schedule:
-    # Runs at 02:00 UTC every 3 days
-    - cron: '0 2 */3 * *'
+    # Runs at 03:00 UTC every 3 days — low frequency, no Vercel CPU used
+    - cron: '0 3 */3 * *'
   workflow_dispatch: # Allows manual triggering from GitHub UI
 
 jobs:
   automate-blog:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Trigger Blog Architect
-        run: |
-          curl -X POST "https://www.refectl.com/api/blog-automate?secret=${{ secrets.CRON_SECRET }}" \
-          -H "Content-Type: application/json"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Blog Architect (directly on GitHub, NOT on Vercel)
+        env:
+          # MongoDB
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          # AI Keys
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Supabase
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Research
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          # Database
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: npx tsx scripts/gh-blog-cron.ts

@@ -18,16 +18,68 @@ export type ArticleMediaIntelligence = {
     imageLicense?: 'partner' | 'creative_commons' | 'public_domain' | 'unknown';
 };
 
-// Global Authentic RSS Feeds for enterprise resilience
+// Global Authentic RSS Feeds — Worldwide Coverage Matrix
 const SCRAPE_TARGETS: ScrapeTarget[] = [
-    { url: 'http://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC News Global', category: 'World', country: 'Global' },
+    // ── GLOBAL / WORLD ─────────────────────────────────────────────
+    { url: 'http://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC World', category: 'World', country: 'Global' },
+    { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera', category: 'World', country: 'Global' },
+    { url: 'https://feeds.npr.org/1004/rss.xml', source: 'NPR World', category: 'World', country: 'Global' },
+    { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en', source: 'Google Top Stories', category: 'World', country: 'Global' },
+
+    // ── USA ─────────────────────────────────────────────────────────
+    { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', source: 'NY Times World', category: 'World', country: 'USA' },
+    { url: 'https://feeds.washingtonpost.com/rss/world', source: 'Washington Post', category: 'Politics', country: 'USA' },
+    { url: 'https://www.cbsnews.com/latest/rss/world', source: 'CBS News World', category: 'World', country: 'USA' },
+    { url: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml', source: 'Wall Street Journal', category: 'Finance', country: 'USA' },
+    { url: 'https://news.google.com/rss/search?q=USA+breaking+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Google USA News', category: 'Politics', country: 'USA' },
+
+    // ── UK ─────────────────────────────────────────────────────────
+    { url: 'http://feeds.bbci.co.uk/news/uk/rss.xml', source: 'BBC UK', category: 'World', country: 'UK' },
+    { url: 'https://www.theguardian.com/uk/rss', source: 'The Guardian UK', category: 'World', country: 'UK' },
+    { url: 'https://news.google.com/rss/search?q=UK+Britain+news+today&hl=en-GB&gl=GB&ceid=GB:en', source: 'Google UK News', category: 'World', country: 'UK' },
+
+    // ── INDIA ───────────────────────────────────────────────────────
+    { url: 'https://feeds.feedburner.com/ndtvnews-top-stories', source: 'NDTV India', category: 'World', country: 'India' },
+    { url: 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml', source: 'Hindustan Times', category: 'Politics', country: 'India' },
+    { url: 'https://news.google.com/rss/search?q=India+news+today&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google India News', category: 'World', country: 'India' },
+    { url: 'https://news.google.com/rss/search?q=Modi+India+economy+2025&hl=en-IN&gl=IN&ceid=IN:en', source: 'India Economy', category: 'Finance', country: 'India' },
+
+    // ── CHINA ───────────────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=China+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Google China News', category: 'World', country: 'China' },
+
+    // ── MIDDLE EAST ─────────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=Middle+East+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Middle East Wire', category: 'World', country: 'UAE' },
+
+    // ── EUROPE ──────────────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=Europe+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Google Europe News', category: 'World', country: 'Germany' },
+    { url: 'https://news.google.com/rss/search?q=France+news+Macron+2025&hl=fr-FR&gl=FR&ceid=FR:fr', source: 'France News', category: 'Politics', country: 'France' },
+    { url: 'https://news.google.com/rss/search?q=Russia+Ukraine+war+news+2025&hl=en-US&gl=US&ceid=US:en', source: 'Russia Ukraine', category: 'World', country: 'Russia' },
+
+    // ── SOUTH ASIA ──────────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=Nepal+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Google Nepal News', category: 'World', country: 'Nepal' },
+    { url: 'https://news.google.com/rss/search?q=Bangladesh+news+today&hl=en-US&gl=US&ceid=US:en', source: 'Bangladesh News', category: 'World', country: 'Bangladesh' },
+
+    // ── AFRICA ──────────────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=Africa+Nigeria+South+Africa+news+2025&hl=en-US&gl=US&ceid=US:en', source: 'Africa Wire', category: 'World', country: 'Nigeria' },
+
+    // ── TECHNOLOGY (GLOBAL) ─────────────────────────────────────────
+    { url: 'https://feeds.feedburner.com/TechCrunch', source: 'TechCrunch', category: 'Technology', country: 'USA' },
+    { url: 'https://www.wired.com/feed/rss', source: 'Wired', category: 'Technology', country: 'Global' },
+    { url: 'https://news.google.com/rss/search?q=AI+technology+news+2025&hl=en-US&gl=US&ceid=US:en', source: 'AI Tech News', category: 'Technology', country: 'Global' },
+
+    // ── FINANCE / MARKETS ───────────────────────────────────────────
     { url: 'http://feeds.bbci.co.uk/news/business/rss.xml', source: 'BBC Business', category: 'Finance', country: 'Global' },
-    { url: 'https://news.google.com/rss/search?q=technology&hl=en-US&gl=US&ceid=US:en', source: 'Google Tech Intelligence', category: 'Technology', country: 'USA' },
-    { url: 'https://news.google.com/rss/search?q=finance+economy&hl=en-US&gl=US&ceid=US:en', source: 'Google Trade Data', category: 'Finance', country: 'Global' },
-    { url: 'https://www.aljazeera.com/xml/rss/all.xml', source: 'Al Jazeera Global', category: 'World', country: 'UAE' },
-    { url: 'https://feeds.npr.org/1004/rss.xml', source: 'NPR World', category: 'World', country: 'USA' },
-    { url: 'https://news.google.com/rss/search?q=science+nature&hl=en-US&gl=US&ceid=US:en', source: 'Science Journal', category: 'Science', country: 'Global' }
+    { url: 'https://news.google.com/rss/search?q=global+stock+market+finance+2025&hl=en-US&gl=US&ceid=US:en', source: 'Markets Wire', category: 'Finance', country: 'Global' },
+
+    // ── SPORTS ──────────────────────────────────────────────────────
+    { url: 'http://feeds.bbci.co.uk/sport/rss.xml', source: 'BBC Sport', category: 'Sports', country: 'Global' },
+    { url: 'https://news.google.com/rss/search?q=cricket+football+sports+news+2025&hl=en-US&gl=US&ceid=US:en', source: 'Sports Wire', category: 'Sports', country: 'Global' },
+
+    // ── SCIENCE / HEALTH ────────────────────────────────────────────
+    { url: 'https://news.google.com/rss/search?q=science+space+discovery+2025&hl=en-US&gl=US&ceid=US:en', source: 'Science Wire', category: 'Science', country: 'Global' },
+    { url: 'https://news.google.com/rss/search?q=health+medical+research+2025&hl=en-US&gl=US&ceid=US:en', source: 'Health Wire', category: 'Health', country: 'Global' },
 ];
+
 
 export const AdvancedScraperService = {
     /**
@@ -192,7 +244,16 @@ export const AdvancedScraperService = {
             'Mexico': ['mexico', 'obrador', 'mexico city'],
             'Australia': ['australia', 'canberra', 'sydney', 'melbourne', 'albanese'],
             'USA': ['usa', 'america', 'washington', 'biden', 'trump', 'congress', 'new york', 'california', 'dollar'],
-            'UK': ['uk', 'britain', 'london', 'sunak', 'king charles', 'bbc', 'manchester', 'pound']
+            'UK': ['uk', 'britain', 'london', 'sunak', 'king charles', 'bbc', 'manchester', 'pound'],
+            // New Additions from Global Intelligence Grid
+            'Bangladesh': ['bangladesh', 'dhaka', 'hasina', 'chittagong', 'taka'],
+            'Pakistan': ['pakistan', 'islamabad', 'lahore', 'karachi', 'shehbaz', 'imran khan'],
+            'Sri Lanka': ['sri lanka', 'colombo', 'wickremesinghe', 'kandy'],
+            'Norway': ['norway', 'oslo', 'krone', 'støre'],
+            'Switzerland': ['switzerland', 'bern', 'zurich', 'geneva', 'franc'],
+            'Canada': ['canada', 'ottawa', 'trudeau', 'toronto', 'vancouver'],
+            'Argentina': ['argentina', 'buenos aires', 'milei', 'peso'],
+            'Egypt': ['egypt', 'cairo', 'sisi', 'nile']
         };
 
         // Priority Check: Try to find specific mentioned countries first
@@ -295,11 +356,38 @@ export const AdvancedScraperService = {
         return 'unknown';
     },
 
+    /**
+     * TRACKER PURGE ENGINE
+     * Strips ALL known external tracker patterns from raw HTML before
+     * we process any content. Ensures our platform only tracks OUR pages.
+     */
+    sanitizeTrackers(html: string): string {
+        return html
+            // 1. Kill tracking pixels (1x1 images from known ad/tracking networks)
+            .replace(/<img[^>]+src=["'][^"']*(doubleclick\.net|googlesyndication|googleadservices|facebook\.net\/tr|pixel\.twitter|bat\.bing|analytics\.twitter|trackjs|newrelic|hotjar|fullstory|mixpanel|segment\.io|amplitude|heap\.io|quantserve|scorecardresearch|comscore|omtrdc|demdex|krxd|outbrain|taboola|revcontent|sharethrough)[^"']*["'][^>]*>/gi, '')
+            // 2. Kill all <script> tags from third-party trackers
+            .replace(/<script[^>]*(googletagmanager|google-analytics|gtag|fbq|_gaq|analytics\.js|hotjar|fullstory|heap\.load|mixpanel|amplitude|segment|newrelic|munchkin|pardot|hubspot|marketo|intercom|drift|hs-analytics|hs-script-loader|bat\.js)[^>]*>[\s\S]*?<\/script>/gi, '')
+            // 3. Kill ALL <noscript> tracking fallbacks  
+            .replace(/<noscript>[\s\S]*?(pixel|track|analytics|facebook|google)[\s\S]*?<\/noscript>/gi, '')
+            // 4. Kill tracking iframes (common for FB pixel noscript fallbacks)
+            .replace(/<iframe[^>]*(facebook\.com\/tr|doubleclick|googlesyndication|fls\.doubleclick)[^>]*>[\s\S]*?<\/iframe>/gi, '')
+            // 5. Strip UTM and tracking query params from href/src attributes
+            .replace(/(href|src)=["']([^"']+)["']/gi, (match, attr, url) => {
+                try {
+                    const u = new URL(url);
+                    ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','fbclid','gclid','msclkid','ref','source','_ga','mc_cid','mc_eid'].forEach(p => u.searchParams.delete(p));
+                    return `${attr}="${u.toString()}"`;
+                } catch { return match; }
+            })
+            // 6. Kill inline tracker event handlers
+            .replace(/\s+on(click|mousedown|mouseup|mouseover|load|error)=["'][^"']*["']/gi, '');
+    },
+
     extractArticleIntelligenceFromHtml(html: string, url: string): ArticleMediaIntelligence {
         // Phase 63: Structural DOM Sanitization
         // Eradicate entire semantic blocks that contain menus, footers, sidebars, and UI debris
         // BEFORE we attempt to extract paragraphs.
-        const normalized = html
+        const normalized = this.sanitizeTrackers(html)
             .replace(/<script[\s\S]*?<\/script>/gi, ' ')
             .replace(/<style[\s\S]*?<\/style>/gi, ' ')
             .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')

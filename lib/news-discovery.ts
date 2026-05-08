@@ -75,11 +75,8 @@ const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[
     { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', source: 'NY Times', defaultCategory: 'World' },
     { url: 'https://www.reutersagency.com/feed/?best-topics=world-news&post_type=best', source: 'Reuters', defaultCategory: 'World' },
 
-    // Nepal Regional Intelligence (Targeted Priority)
+    // Nepal Regional Intelligence (Strategic Secondary)
     { url: 'https://kathmandupost.com/rss', source: 'Kathmandu Post', defaultCategory: 'World' },
-    { url: 'https://thehimalayantimes.com/feed', source: 'Himalayan Times', defaultCategory: 'World' },
-    { url: 'https://nepalitimes.com/feed', source: 'Nepali Times', defaultCategory: 'World' },
-    { url: 'https://www.onlinekhabar.com/feed', source: 'Online Khabar', defaultCategory: 'World' },
 
     // Technology & AI Convergence
     { url: 'https://techcrunch.com/feed/', source: 'TechCrunch', defaultCategory: 'Technology' },
@@ -100,7 +97,10 @@ const RSS_FEEDS: { url: string; source: string; defaultCategory: NewsCategory }[
     { url: 'https://www.aajtak.in/rssfeed.xml', source: 'Aaj Tak (HI)', defaultCategory: 'World' },
     { url: 'http://www.xinhuanet.com/english/rss/world.xml', source: 'Xinhua (ZH)', defaultCategory: 'World' },
     { url: 'https://www.dawn.com/feeds/home/', source: 'DAWN', defaultCategory: 'World' },
-    { url: 'https://www.scmp.com/rss/31819/feed', source: 'SCMP', defaultCategory: 'World' }
+    { url: 'https://www.scmp.com/rss/31819/feed', source: 'SCMP', defaultCategory: 'World' },
+    { url: 'https://www.france24.com/en/rss', source: 'France24', defaultCategory: 'World' },
+    { url: 'https://www.dw.com/xml/rss-en-all', source: 'Deutsche Welle', defaultCategory: 'World' },
+    { url: 'https://news.google.com/rss/search?q=Australia+news+today&hl=en-AU&gl=AU&ceid=AU:en', source: 'Google AU', defaultCategory: 'World' }
 ];
 
 

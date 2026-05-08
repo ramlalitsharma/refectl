@@ -64,10 +64,10 @@ const LABELS_BY_LOCALE: Record<string, NavLabels> = {
 
 const REGIONS_MAP: Record<string, string[]> = {
   "Asia": ["Nepal", "India", "China", "Japan", "Bangladesh", "Pakistan", "Sri Lanka", "UAE"],
-  "Europe": ["Serbia", "UK", "Germany", "France", "Russia", "Ukraine", "Norway", "Switzerland"],
-  "Americas": ["USA", "Canada", "Brazil", "Mexico", "Argentina"],
-  "Africa": ["South Africa", "Nigeria", "Egypt"],
-  "Global": ["All", "Global", "Australia"]
+  "Europe": ["Serbia", "UK", "Germany", "France", "Russia", "Ukraine", "Norway", "Sweden", "Switzerland", "Spain", "Italy"],
+  "Americas": ["USA", "Canada", "Brazil", "Mexico", "Argentina", "Colombia"],
+  "Africa": ["South Africa", "Nigeria", "Egypt", "Kenya"],
+  "Global": ["All", "Global", "Australia", "New Zealand"]
 };
 
 const COUNTRY_CODES: Record<string, string> = {
@@ -86,16 +86,22 @@ const COUNTRY_CODES: Record<string, string> = {
   "Russia": "RU",
   "Ukraine": "UA",
   "Norway": "NO",
+  "Sweden": "SE",
   "Switzerland": "CH",
+  "Spain": "ES",
+  "Italy": "IT",
   "USA": "US",
   "Canada": "CA",
   "Brazil": "BR",
   "Mexico": "MX",
   "Argentina": "AR",
+  "Colombia": "CO",
   "South Africa": "ZA",
   "Nigeria": "NG",
   "Egypt": "EG",
+  "Kenya": "KE",
   "Australia": "AU",
+  "New Zealand": "NZ",
   "Global": "UN",
 };
 
@@ -260,7 +266,14 @@ function NewsNavbarInner() {
   return (
     <header className="relative z-40 bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-[#111111] font-sans">
       <div className="w-full max-w-none px-4 md:px-8 py-0 flex items-center justify-between min-h-[64px]">
-        <div className="flex items-center gap-8 h-full">
+        <div className="flex items-center gap-4 md:gap-8 h-full">
+          <Link href="/" className="flex items-center justify-center px-3 h-8 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-[#06b6d4]/30 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:scale-105 transition-all group shrink-0" title="Back to Refectl Home">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400 group-hover:text-[#06b6d4] transition-colors flex items-center gap-1.5">
+              <svg className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+              Refectl
+            </span>
+          </Link>
+
           <Link href="/news" className="flex items-center group py-4">
             <div className="text-[1.8rem] md:text-[2.2rem] font-black tracking-tighter leading-none text-[#06b6d4] font-serif transition-all duration-500 group-hover:scale-[1.02] group-hover:text-white flex items-center gap-2">
               <span className="w-8 h-8 rounded-full border-[2px] border-white/20 bg-white/5 flex items-center justify-center -mr-1 group-hover:border-[#06b6d4]/50 transition-colors">
@@ -637,8 +650,83 @@ function NewsNavbarInner() {
           >
             <Search size={20} />
           </button>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            type="button"
+            onClick={() => setActionsOpen(!actionsOpen)}
+            className="xl:hidden inline-flex items-center justify-center p-2 text-slate-600 dark:text-gray-400 hover:text-[#06b6d4] transition-colors"
+          >
+            {actionsOpen ? <Zap size={22} className="text-[#06b6d4]" /> : <Activity size={22} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Actions Drawer (Relay Hub for Mobile) */}
+      {actionsOpen && (
+        <div className="xl:hidden fixed inset-x-0 top-[64px] bottom-0 z-[2000] bg-white dark:bg-[#0a0c12]/98 backdrop-blur-3xl overflow-y-auto animate-in slide-in-from-top duration-300">
+          <div className="p-6 flex flex-col gap-6 pb-32">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#06b6d4]">Command Center</span>
+              <button onClick={() => setActionsOpen(false)} className="text-gray-500">×</button>
+            </div>
+
+            <SignedOut>
+              <div className="grid grid-cols-1 gap-3 px-2">
+                <SignInButton mode="modal">
+                  <Button className="w-full bg-[#06b6d4] text-white font-black uppercase tracking-widest py-6 rounded-2xl shadow-lg shadow-[#06b6d4]/20">
+                    Get Started
+                  </Button>
+                </SignInButton>
+                <SignInButton mode="modal">
+                  <Button variant="outline" className="w-full border-slate-200 dark:border-white/10 text-slate-600 dark:text-white font-black uppercase tracking-widest py-6 rounded-2xl">
+                    Sign In
+                  </Button>
+                </SignInButton>
+              </div>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="flex items-center gap-4 p-5 rounded-[2rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-inner mb-2">
+                <UserButton afterSignOutUrl="/" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{activeName}</span>
+                  <span className="text-[10px] text-[#06b6d4] font-black uppercase tracking-widest">{activeEmail}</span>
+                </div>
+              </div>
+              <div className="grid gap-3 px-2">
+                <Link href="/dashboard" onClick={() => setActionsOpen(false)} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                  <LayoutDashboard size={20} className="text-[#06b6d4]" />
+                  <span className="text-xs font-black uppercase tracking-widest text-white">Dashboard</span>
+                </Link>
+                <Link href="/admin/studio/news" onClick={() => setActionsOpen(false)} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                  <Newspaper size={20} className="text-red-500" />
+                  <span className="text-xs font-black uppercase tracking-widest text-white">Newsroom</span>
+                </Link>
+              </div>
+            </SignedIn>
+
+            <div className="px-2 mt-4">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 block mb-4">Relay Hub Verticals</span>
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/shop" onClick={() => setActionsOpen(false)} className="p-5 rounded-[1.5rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-col gap-2">
+                  <ShoppingBag size={20} className="text-[#06b6d4]" />
+                  <span className="text-[10px] font-black uppercase text-white">Shop</span>
+                </Link>
+                <Link href="/ebooks" onClick={() => setActionsOpen(false)} className="p-5 rounded-[1.5rem] bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-col gap-2">
+                  <Library size={20} className="text-emerald-500" />
+                  <span className="text-[10px] font-black uppercase text-white">Library</span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="px-4 py-6 mt-4 border-t border-white/5 flex items-center justify-between">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="md:hidden mt-2 px-3">
         <div className="glass-card-premium rounded-2xl border-white/10 shadow-xl overflow-hidden">

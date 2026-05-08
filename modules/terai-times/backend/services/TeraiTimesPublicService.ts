@@ -46,7 +46,7 @@ export class TeraiTimesPublicService extends FeatureModule {
     pageSize?: number;
     locale?: string;
   }): Promise<TeraiTimesLandingPayload> {
-    const category = params.category || 'World';
+    const category = params.category || 'All';
     const country = params.country || 'All';
     const page = params.page || 1;
     const pageSize = 15;
@@ -56,7 +56,7 @@ export class TeraiTimesPublicService extends FeatureModule {
     // If the category is IPL-Live, we fetch Sports news from the database
     const dbCategory = category === 'IPL-Live' ? 'Sports' : category;
 
-    const [published, totalCount, trending, events, automationStatus, networkAnalytics, filters] = await Promise.all([
+    const [published, rawTotalCount, trending, events, automationStatus, networkAnalytics, filters] = await Promise.all([
       NewsService.getPublishedNews({ category: dbCategory, country, page, pageSize }),
       NewsService.getNewsCount({ category: dbCategory, country }),
       NewsService.getTrendingNews(6),
@@ -71,23 +71,16 @@ export class TeraiTimesPublicService extends FeatureModule {
 
     let initialItems = Array.isArray(published) ? published : [];
     let initialTrending = Array.isArray(trending) ? trending : [];
+    let finalTotalCount = Number(rawTotalCount) || 0;
     const initialEvents = Array.isArray(events) ? events : [];
 
-    // Phase 42.1: Strict Regional Isolation
-    // If no news is found for a specific region/category, we no longer fallback to global
-    // news to ensure the user's geographic focus is respected.
-    if (!initialItems.length && (category !== 'All' || country !== 'All')) {
-      // Background ingestion is already triggered below for the missing content
-      console.log(`[PublicService] No news found for ${country}/${category}. Dispatching roaming engine...`);
-    }
-
+    // Always trigger background ingestion for specific countries with few results
     if (automationStatus.autoPublishEnabled && this.shouldBackfill(initialItems, automationStatus)) {
-      // Fire-and-forget background ingestion to keep the landing page fast and resilient
-      // If we have a specific country with no items, we prioritize it
-      const backfillCountry = (!initialItems.length && country !== 'All') ? country : undefined;
+      const backfillCountry = (country !== 'All' && country !== 'Global') ? country : undefined;
       NewsAutomationService.ingestRoamingGlobalNews(Math.max(1, automationStatus.targetPerHour), backfillCountry)
         .catch(err => console.error('[PublicService] Background ingestion failed:', err));
     }
+
 
     // Phase 43: Real-Time AI Translation Relay
     // We unconditionally pass through the translation service to allow the Intelligent English Guard 
@@ -125,7 +118,7 @@ export class TeraiTimesPublicService extends FeatureModule {
       initialItems,
       initialTrending,
       initialEvents,
-      totalCount,
+      totalCount: finalTotalCount,
       page,
       pageSize,
       automationStatus,
@@ -155,6 +148,7 @@ export class TeraiTimesPublicService extends FeatureModule {
 
     try {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const [automatedRes, pendingRes] = await Promise.all([
         supabaseAdmin
@@ -162,6 +156,7 @@ export class TeraiTimesPublicService extends FeatureModule {
           .select('id', { count: 'exact', head: true })
           .eq('author_id', 'global-intelligence-bot')
           .gte('created_at', since)
+          .gt('created_at', sevenDaysAgo)
           .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay']),
         supabaseAdmin
           .from('news')

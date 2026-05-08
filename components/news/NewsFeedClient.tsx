@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Link, useRouter, usePathname } from '@/lib/navigation';
 import { useLocale } from 'next-intl';
@@ -58,6 +58,7 @@ type NewsItem = {
   published_at?: string;
   created_at?: string;
   image_url?: string;
+  cover_image?: string;
   image_alt?: string;
   view_count?: number;
   tags?: string[];
@@ -157,7 +158,7 @@ export default function NewsFeedClient({
   availableCategories = [],
   totalCount,
   page,
-  pageSize,
+  pageSize = 30,
   automationStatus,
   networkAnalytics
 }: NewsFeedClientProps) {
@@ -166,6 +167,54 @@ export default function NewsFeedClient({
   const [activeFilter, setActiveFilter] = useState(category);
   const [activeRegion, setActiveRegion] = useState(country);
   const locale = useLocale();
+  // ── Instant Client Fetch State ──────────────────────────────────
+  const [clientItems, setClientItems] = useState<typeof initialItems | null>(null);
+  const [clientTotalCount, setClientTotalCount] = useState<number | null>(null);
+  const [isFetchingClient, setIsFetchingClient] = useState(false);
+  const fetchAbortRef = useRef<AbortController | null>(null);
+
+  const fetchNewsInstant = async (filterCat: string, filterCountry: string, pg = 1) => {
+    // Cancel any in-flight request
+    if (fetchAbortRef.current) fetchAbortRef.current.abort();
+    const controller = new AbortController();
+    fetchAbortRef.current = controller;
+    setIsFetchingClient(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterCat && filterCat !== 'All') params.set('category', filterCat);
+      if (filterCountry && filterCountry !== 'All' && filterCountry !== 'Global') params.set('country', filterCountry);
+      if (pg > 1) params.set('page', String(pg));
+      const res = await fetch(`/api/public/news?${params.toString()}`, { signal: controller.signal });
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      let items = data.items || [];
+      let count = data.totalCount ?? items.length;
+
+      // ── Client-side Global Fallback ──────────────────────────────────────
+      // If the specific country returns 0 articles, show global news immediately
+      // while Mota CEO seeds that country in the background.
+      if (items.length === 0 && filterCountry && filterCountry !== 'All' && filterCountry !== 'Global') {
+        const globalParams = new URLSearchParams();
+        if (filterCat && filterCat !== 'All') globalParams.set('category', filterCat);
+        if (pg > 1) globalParams.set('page', String(pg));
+        const globalRes = await fetch(`/api/public/news?${globalParams.toString()}`, { signal: controller.signal });
+        if (globalRes.ok) {
+          const globalData = await globalRes.json();
+          items = globalData.items || [];
+          count = globalData.totalCount ?? items.length;
+        }
+      }
+      // ─────────────────────────────────────────────────────────────────────
+
+      setClientItems(items);
+      setClientTotalCount(count);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError') setClientItems([]);
+    } finally {
+      setIsFetchingClient(false);
+    }
+  };
+  // ────────────────────────────────────────────────────────────────
 
   const handleLocaleChange = (newLocale: string) => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -200,6 +249,12 @@ export default function NewsFeedClient({
 
   const relevantLocales = useMemo(() => {
     const list = [{ code: 'en', label: 'EN' }];
+
+    // If Global/Home, add core supported languages
+    if (activeRegion === 'All' || activeRegion === 'Global') {
+      list.push({ code: 'es', label: 'ES' });
+      list.push({ code: 'fr', label: 'FR' });
+    }
 
     // 1. Regional Language (The desk they are viewing)
     const regionLocale = COUNTRY_TO_LOCALE[activeRegion];
@@ -244,11 +299,14 @@ export default function NewsFeedClient({
 
 
   const items = useMemo(() => {
-    const base = initialItems || [];
-    return base;
-  }, [initialItems]);
+    // Prefer client-fetched items (instant, no SSR reload)
+    // Fall back to server-rendered initial items
+    return clientItems !== null ? clientItems : (initialItems || []);
+  }, [clientItems, initialItems]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const effectiveTotalCount = clientTotalCount !== null ? clientTotalCount : totalCount;
+
+  const totalPages = Math.ceil(effectiveTotalCount / pageSize);
   const hasMore = page < totalPages;
   const hasPrev = page > 1;
 
@@ -262,8 +320,8 @@ export default function NewsFeedClient({
   const trending = useMemo(() => initialTrending || [], [initialTrending]);
 
   const lead = page === 1 ? items[0] : null;
-  const secondary = page === 1 ? items.slice(1, 10) : [];
-  const others = page === 1 ? items.slice(10) : items;
+  const secondary = page === 1 ? items.slice(1, 20) : [];
+  const others = page === 1 ? items.slice(20) : items;
 
   // Helper to check for trust tags
   const getIntegrityStatus = (tags: string[] = []) => {
@@ -275,10 +333,13 @@ export default function NewsFeedClient({
 
   const handleFilterChange = (newCat: string) => {
     setActiveFilter(newCat);
+    setClientItems(null); // clear stale cache immediately
+    fetchNewsInstant(newCat, activeRegion);
+    // Update URL silently without SSR reload
     const params = new URLSearchParams();
     if (newCat !== 'All') params.set('category', newCat);
     if (activeRegion !== 'All' && activeRegion !== 'Global') params.set('country', activeRegion);
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   // Phase 41: World-Class Visuals - Context-Aware Fallbacks
@@ -331,10 +392,13 @@ export default function NewsFeedClient({
 
   const handleRegionChange = (newReg: string) => {
     setActiveRegion(newReg);
+    setClientItems(null); // clear stale cache immediately
+    fetchNewsInstant(activeFilter, newReg);
+    // Update URL silently without SSR reload
     const params = new URLSearchParams();
     if (activeFilter !== 'All') params.set('category', activeFilter);
     if (newReg !== 'All' && newReg !== 'Global') params.set('country', newReg);
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
 
@@ -364,6 +428,12 @@ export default function NewsFeedClient({
 
   return (
     <div className="news-layout-grid flex flex-col gap-12">
+      {/* Instant-loading shimmer overlay */}
+      {isFetchingClient && (
+        <div className="fixed inset-0 z-[999] pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#06b6d4] to-transparent animate-pulse" />
+        </div>
+      )}
       {!items.length ? (
         activeRegion !== 'Global' && activeRegion !== 'All' ? (
           <div className="flex flex-col items-center justify-center py-48 text-center border border-[#06b6d4]/20 bg-[#030407] rounded-[3rem] relative overflow-hidden">
@@ -400,257 +470,299 @@ export default function NewsFeedClient({
         )
       ) : (
         <>
-          {/* Global Stage Hero Section */}
-          {lead && (
-            <motion.section
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="hero-stage-shell group"
-              onClick={() => handleCardClick(lead)}
-            >
-              <div className="absolute inset-0 bg-black">
-                <img
-                  src={lead.image_url || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072'}
-                  alt={lead.image_alt || lead.title}
-                  className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-60"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#030407] via-[#030407]/40 to-transparent" />
-              </div>
+          {/* World-Class Lead Intelligence Grid */}
+          {lead && page === 1 && (
+            <div className="px-4 md:px-12 mb-16">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Primary Cinematic Lead */}
+                <motion.section
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="lg:col-span-8 relative overflow-hidden rounded-[3.5rem] bg-black border border-white/5 group cursor-pointer aspect-[16/10] lg:aspect-auto h-[500px] lg:h-[700px]"
+                  onClick={() => handleCardClick(lead)}
+                >
+                  <div className="absolute inset-0">
+                    <img
+                      src={lead.cover_image || lead.image_url || 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072'}
+                      alt={lead.title}
+                      className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 opacity-60"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#030407] via-[#030407]/60 to-transparent" />
+                  </div>
 
-              <div className="hero-stage-content">
-                <div className="flex flex-wrap items-center gap-4 mb-8">
-                  <span className="intel-badge">
-                    <Target size={12} />
-                    {(lead.category || 'Global Intel').toUpperCase()}
-                  </span>
-                  <span className="flex items-center gap-2 text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.2em]">
-                    <Activity size={12} className="animate-pulse" />
-                    Impact Level: {lead.impact_score || 72}/100
-                  </span>
-                  <span className="px-3 py-1 bg-white/5 border border-white/10 text-gray-400 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur">
-                    {lead.published_at ? format(new Date(lead.published_at), 'MMMM dd, HH:mm') : 'Active Relay'}
-                  </span>
-                </div>
+                  <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-end">
+                    <div className="flex flex-wrap items-center gap-4 mb-8">
+                      <span className="px-4 py-1.5 bg-[#06b6d4] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg shadow-[#06b6d4]/20">
+                        {lead.category || 'Lead Intel'}
+                      </span>
+                      <span className="px-4 py-1.5 bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-full backdrop-blur-xl">
+                        {lead.published_at ? format(new Date(lead.published_at), 'MMM dd, HH:mm') : 'Live Relay'}
+                      </span>
+                    </div>
 
-                <h1 className="hero-stage-title text-white">
-                  {lead.title}
-                </h1>
+                    <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic leading-[0.95] mb-8 max-w-5xl">
+                      {lead.title}
+                    </h1>
 
-                <p className="text-gray-400 text-lg md:text-xl line-clamp-2 max-w-4xl mb-10 leading-relaxed font-medium">
-                  {lead.summary || lead.content?.slice(0, 180)}...
-                </p>
+                    <p className="text-gray-400 text-lg md:text-xl line-clamp-2 max-w-3xl mb-12 leading-relaxed font-medium">
+                      {lead.summary || lead.content?.slice(0, 180)}...
+                    </p>
 
-                <div className="flex flex-wrap items-center gap-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full border-2 border-[#06b6d4] p-0.5 shadow-lg shadow-[#06b6d4]/20">
-                      <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-sm font-black text-white">
-                        {lead.author_name ? lead.author_name[0] : <Bot size={16} className="text-[#06b6d4]" />}
+                    <div className="flex items-center gap-6 pt-8 border-t border-white/10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl border border-white/20 bg-white/5 flex items-center justify-center">
+                          <Bot size={20} className="text-[#06b6d4]" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-black text-white uppercase tracking-wider">
+                            {lead.author_name || 'Terai Times Desk'}
+                          </span>
+                          <span className="text-[9px] font-bold text-[#06b6d4] uppercase tracking-[0.3em]">
+                            Verified Intelligence
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="ml-auto flex items-center gap-8">
+                        <span className="hidden md:flex items-center gap-3 text-gray-500 text-[11px] font-black uppercase tracking-[0.3em]">
+                          <Globe className="w-4 h-4" />
+                          {lead.source_name || 'Global Newsroom'}
+                        </span>
+                        <button className="px-10 py-4 bg-white text-black text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:scale-105 transition-transform">
+                          Open Dossier
+                        </button>
                       </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-white uppercase tracking-wider">
-                        {lead.author_name || 'Neural Intelligence'}
-                      </span>
-                      <span className="text-[9px] font-bold text-[#06b6d4] uppercase tracking-[0.2em]">
-                        {lead.author_name ? 'Identity Verified' : 'Autonomous Ingress'}
-                      </span>
+                  </div>
+                </motion.section>
+
+                {/* Top Dispatches Sidebar Grid */}
+                <div className="lg:col-span-4 flex flex-col gap-8">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-[11px] font-black text-[#06b6d4] uppercase tracking-[0.5em]">Top Dispatches</h2>
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
                     </div>
                   </div>
 
-                  {lead.source_name && (
-                    <div className="h-10 w-px bg-white/10 hidden md:block" />
-                  )}
-
-                  {lead.source_name && (
-                    <span
-                      role="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (lead.source_url) window.open(lead.source_url, '_blank');
-                      }}
-                      className="flex items-center gap-2.5 text-gray-500 hover:text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all"
+                  {secondary.slice(0, 3).map((item, idx) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="group flex gap-6 cursor-pointer"
+                      onClick={() => handleCardClick(item)}
                     >
-                      <Globe className="w-4 h-4 text-[#06b6d4]" />
-                      Internal Origin: {lead.source_name}
-                    </span>
-                  )}
+                      <div className="w-32 h-32 flex-shrink-0 rounded-[1.5rem] overflow-hidden border border-white/5 bg-slate-900">
+                        <img 
+                          src={item.cover_image || item.image_url || getFallbackImage(item.category, item.id)} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center gap-2">
+                        <span className="text-[9px] font-black text-[#06b6d4] uppercase tracking-widest">{item.category}</span>
+                        <h3 className="text-sm font-black text-white uppercase tracking-tight leading-tight group-hover:text-[#06b6d4] transition-colors line-clamp-2">
+                          {item.title}
+                        </h3>
+                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                          {item.published_at ? format(new Date(item.published_at), 'HH:mm') : 'Just now'}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
 
-                  <button className="ml-auto hidden xl:flex items-center gap-3 px-8 py-3 bg-white text-black text-[11px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-transform active:scale-95">
-                    Full Dossier
-                    <ArrowRight size={14} />
-                  </button>
+                  {/* Revenue Magnet: Sponsored Intelligence Slot */}
+                  <div className="mt-auto p-8 rounded-[2.5rem] bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/20 relative group overflow-hidden cursor-pointer">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <TrendingUp size={60} />
+                    </div>
+                    <div className="relative z-10">
+                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-[0.4em] mb-4 block">Institutional Intelligence</span>
+                      <h4 className="text-lg font-black text-white uppercase tracking-tighter italic mb-4 leading-none">
+                        Deploy Capital with Precision Geopolitics
+                      </h4>
+                      <button className="flex items-center gap-3 text-[10px] font-black text-amber-500 uppercase tracking-[0.3em]">
+                        View Briefing <ArrowUpRight size={12} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </motion.section>
+            </div>
           )}
 
-          {/* Primary Intelligence Cluster */}
+          {/* High-Density Content Matrix */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 px-4 md:px-12">
             <motion.section
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="lg:col-span-8 space-y-16"
+              className="lg:col-span-9 space-y-4"
             >
-
-              {/* Innovations Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 pt-8 border-t border-white/5">
-                {/* Regional or Global Desk Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {/* Regional or Global Desk Header - Integrated as a Wide Hero Banner */}
                 {activeRegion !== 'All' && activeRegion !== 'Global' ? (
-                  <div className="col-span-1 md:col-span-2 xl:col-span-3 mb-8 p-8 bg-[#06b6d4]/5 border border-[#06b6d4]/20 rounded-[2.5rem] flex items-center gap-8 group">
-                    <div className="w-16 h-16 rounded-3xl bg-[#06b6d4]/10 border border-[#06b6d4]/20 flex items-center justify-center">
-                      <Globe className="text-[#06b6d4] animate-pulse" size={28} />
+                  <div className="col-span-1 md:col-span-2 xl:col-span-3 2xl:col-span-4 mb-6 p-8 bg-white/[0.02] border border-white/5 rounded-[3rem] flex flex-col md:flex-row items-center justify-between group backdrop-blur-3xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Globe size={120} />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-[#06b6d4] animate-ping" />
-                        <h4 className="text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.5em]">Active Dispatch Vector</h4>
+                    <div className="flex items-center gap-8 relative z-10">
+                      <div className="w-16 h-16 rounded-[2rem] bg-[#06b6d4]/10 border border-[#06b6d4]/20 flex items-center justify-center">
+                        <Globe className="text-[#06b6d4]" size={28} />
                       </div>
-                      <div className="flex items-center gap-4">
-                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic group-hover:translate-x-1 transition-transform duration-500">Regional Desk: {activeRegion}</h2>
-                        {COUNTRY_CODES[activeRegion] && (
-                          <ReactCountryFlag
-                            countryCode={COUNTRY_CODES[activeRegion]}
-                            svg
-                            style={{ width: '32px', height: '24px' }}
-                            className="rounded shadow-2xl border border-white/10"
-                          />
-                        )}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="w-2 h-2 rounded-full bg-[#06b6d4] animate-pulse" />
+                          <h4 className="text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.5em]">Active Regional Link</h4>
+                        </div>
+                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">{activeRegion} Dispatch</h2>
                       </div>
+                      {COUNTRY_CODES[activeRegion] && (
+                        <ReactCountryFlag
+                          countryCode={COUNTRY_CODES[activeRegion]}
+                          svg
+                          style={{ width: '40px', height: '30px' }}
+                          className="rounded shadow-2xl border border-white/10 ml-4"
+                        />
+                      )}
                     </div>
-                    <div className="hidden md:flex flex-col items-end gap-3">
-                      <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+                    
+                    <div className="flex items-center gap-6 mt-8 md:mt-0 relative z-10">
+                      <div className="flex items-center gap-2 p-1.5 bg-black/40 border border-white/10 rounded-2xl">
                         {relevantLocales.map((loc) => (
                           <button
                             key={loc.code}
                             onClick={() => handleLocaleChange(loc.code)}
-                            className={`px-3 py-1 rounded-full text-[9px] font-black transition-all ${locale === loc.code ? 'bg-[#06b6d4] text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-white/40 hover:text-white'}`}
+                            className={`px-5 py-2 rounded-xl text-[10px] font-black transition-all ${locale === loc.code ? 'bg-[#06b6d4] text-black shadow-xl shadow-[#06b6d4]/30' : 'text-gray-500 hover:text-white'}`}
                           >
                             {loc.label}
                           </button>
                         ))}
-                      </div>
-                      <div className="flex flex-col items-end gap-1 opacity-40">
-                        <span className="text-[8px] font-black text-white uppercase tracking-widest">GRID STATUS: ENCRYPTED</span>
-                        <span className="text-[8px] font-black text-[#06b6d4] uppercase tracking-widest">RELAY ACTIVE</span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="col-span-1 md:col-span-2 xl:col-span-3 mb-8 p-8 bg-white/5 border border-white/10 rounded-[2.5rem] flex items-center gap-8 group">
-                    <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      <Globe className="text-white opacity-40 group-hover:opacity-100 transition-opacity" size={28} />
+                  <div className="col-span-1 md:col-span-2 xl:col-span-3 2xl:col-span-4 mb-6 p-8 bg-gradient-to-br from-[#06b6d4]/10 via-[#06b6d4]/5 to-transparent border border-[#06b6d4]/20 rounded-[3rem] flex items-center gap-10 group overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Globe size={160} />
+                    </div>
+                    <div className="w-24 h-24 rounded-[2.5rem] bg-[#06b6d4]/20 border border-[#06b6d4]/30 flex items-center justify-center shadow-2xl shadow-[#06b6d4]/20">
+                      <Globe className="text-[#06b6d4] animate-pulse" size={40} />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.5em]">Primary Intelligence Hub</h4>
+                      <div className="flex items-center gap-4 mb-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] animate-ping" />
+                        <h4 className="text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.5em]">Primary Intelligence Grid</h4>
                       </div>
-                      <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic group-hover:translate-x-1 transition-transform duration-500">Global Intelligence Desk</h2>
+                      <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-none">Global News Desk</h2>
                     </div>
-                    <div className="hidden md:flex flex-col items-end gap-3">
-                      <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-full backdrop-blur-md">
+
+                    <div className="flex items-center gap-6 mt-8 md:mt-0 relative z-10">
+                      <div className="flex items-center gap-2 p-1.5 bg-black/40 border border-white/10 rounded-2xl">
                         {relevantLocales.map((loc) => (
                           <button
                             key={loc.code}
                             onClick={() => handleLocaleChange(loc.code)}
-                            className={`px-3 py-1 rounded-full text-[9px] font-black transition-all ${locale === loc.code ? 'bg-[#06b6d4] text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'text-white/40 hover:text-white'}`}
+                            className={`px-5 py-2 rounded-xl text-[10px] font-black transition-all ${locale === loc.code ? 'bg-[#06b6d4] text-black shadow-xl shadow-[#06b6d4]/30' : 'text-gray-500 hover:text-white'}`}
                           >
                             {loc.label}
                           </button>
                         ))}
                       </div>
-                      <div className="flex flex-col items-end gap-1 opacity-20">
-                        <span className="text-[8px] font-black text-white uppercase tracking-widest">WORLD RELAY ACTIVE</span>
-                        <span className="text-[8px] font-black text-white uppercase tracking-widest">LOCALE: {locale.toUpperCase()}</span>
-                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="col-span-1 md:col-span-2 xl:col-span-3 flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#06b6d4] mb-2">Cluster Alpha</h2>
-                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">High-Fidelity Signals</h3>
+                )}
+
+                {/* Sub-Header: Secondary Intelligence Flux - High Density */}
+                <div className="col-span-1 md:col-span-2 xl:col-span-3 2xl:col-span-4 flex items-center justify-between my-2 border-y border-white/5 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] italic">Intelligence Relay Feed</h3>
                   </div>
-                  <span className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-[0.25em] rounded-full animate-pulse">Live Uplink</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active Channels: 42</span>
+                    <div className="h-1 w-20 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full w-4/5 bg-blue-500/40 rounded-full" />
+                    </div>
+                  </div>
                 </div>
 
                 {items.length === 0 && activeRegion !== 'Global' && activeRegion !== 'All' && (
-                  <div className="col-span-1 md:col-span-2 xl:col-span-3 py-32 flex flex-col items-center justify-center text-center">
-                    <div className="relative mb-10">
-                      <div className="absolute inset-0 bg-[#06b6d4]/20 rounded-full blur-[60px] animate-pulse" />
-                      <div className="w-32 h-32 rounded-full border-2 border-[#06b6d4]/30 border-t-[#06b6d4] animate-spin flex items-center justify-center">
-                        <Globe className="text-[#06b6d4]" size={48} />
+                  <div className="col-span-1 md:col-span-2 xl:col-span-3 py-48 flex flex-col items-center justify-center text-center">
+                    <div className="relative mb-12">
+                      <div className="absolute inset-0 bg-[#06b6d4]/20 rounded-full blur-[100px] animate-pulse" />
+                      <div className="w-40 h-40 rounded-full border-4 border-[#06b6d4]/10 border-t-[#06b6d4] animate-spin flex items-center justify-center">
+                        <Globe className="text-[#06b6d4]" size={64} />
                       </div>
                     </div>
-                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-4">Scanning Regional Intelligence Vector: {activeRegion}</h2>
-                    <p className="text-gray-500 max-w-lg mx-auto text-sm leading-relaxed font-medium italic">
-                      Our autonomous roaming engine is currently hunting for verified reports across native {activeRegion} intelligence nodes. High-fidelity signals will appear here as soon as they are decrypted and verified by the autonomous desk.
+                    <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic mb-6">Scanning Global Matrix...</h2>
+                    <p className="text-gray-400 max-w-xl mx-auto text-base leading-relaxed font-medium italic opacity-60">
+                      Our autonomous roaming engine is fetching verified reports from native {activeRegion} intelligence nodes.
                     </p>
-                    <div className="mt-12 flex items-center gap-4 text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.5em] animate-pulse">
-                      <Zap size={14} />
-                      Uplink Established - Hunting Regional Data...
-                    </div>
                   </div>
                 )}
 
-                {secondary.map((item) => (
-                  <motion.div
-                    variants={itemVariants}
-                    key={item.id}
-                    className="group cursor-pointer flex flex-col gap-4 relative"
-                    onClick={() => handleCardClick(item)}
-                  >
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] bg-slate-900 border border-white/5">
-                      <img
-                        src={item.image_url || getFallbackImage(item.category, item.id)}
-                        alt={item.title}
-                        className="h-full w-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:opacity-60"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                      <div className="absolute top-6 left-6 flex items-center gap-2">
-                        <span className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded">
-                          {item.category}
-                        </span>
-                      </div>
-
-                      {item.impact_score && (
-                        <div className="absolute bottom-6 right-6 flex items-center gap-2 bg-[#06b6d4] text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                          Impact {item.impact_score}
+                {/* Dynamic Content Grid: Priority Regional + Global Fallback */}
+                {(() => {
+                  const displayItems = secondary.length > 4 
+                    ? secondary.slice(4, 44) 
+                    : items.slice(0, 40);
+                  
+                  return displayItems.map((item, idx) => (
+                    <motion.div
+                      variants={itemVariants}
+                      key={item.id}
+                      className={`group cursor-pointer flex flex-col gap-3 relative p-2 rounded-2xl hover:bg-white/[0.02] transition-all duration-300 ${idx === 0 && secondary.length > 4 ? 'md:col-span-2' : ''}`}
+                      onClick={() => handleCardClick(item)}
+                    >
+                      <div className={`relative overflow-hidden rounded-2xl bg-slate-900 border border-white/5 ${idx === 0 && secondary.length > 4 ? 'aspect-[21/9]' : 'aspect-video'}`}>
+                        <img
+                          src={item.cover_image || item.image_url || getFallbackImage(item.category, item.id)}
+                          alt={item.title}
+                          className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:opacity-60"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-0 transition-opacity duration-500" />
+                        
+                        <div className="absolute top-2 left-2 flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md border border-white/10 text-white text-[7px] font-black uppercase tracking-widest rounded-md">
+                            {item.category || 'INTELLIGENCE'}
+                          </span>
+                          {secondary.length <= 4 && (
+                            <span className="px-2 py-0.5 bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[7px] font-black uppercase tracking-widest rounded-md">
+                              GLOBAL FALLBACK
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    <div className="px-2 space-y-4">
-                      <h3 className="text-xl font-black text-white uppercase tracking-tight leading-tight group-hover:text-[#06b6d4] transition-colors line-clamp-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed font-medium">
-                        {item.summary || item.content?.slice(0, 120)}...
-                      </p>
-                      <div className="flex items-center gap-6 pt-4 border-t border-white/5">
-                        <span className="flex items-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                          <CalendarClock className="w-3.5 h-3.5" />
-                          {item.published_at ? format(new Date(item.published_at), 'MMM dd') : 'Just now'}
-                        </span>
-                        <span className="flex items-center gap-2 text-[10px] font-bold text-[#06b6d4] uppercase tracking-widest ml-auto">
-                          Access Intelligence
-                          <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                        </span>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+
+                      <div className="space-y-1">
+                        <h4 className="text-[13px] font-bold text-white leading-tight group-hover:text-[#06b6d4] transition-colors line-clamp-2 uppercase tracking-tight">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center justify-between pt-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
+                            {item.source_name || 'TT RELAY'}
+                          </span>
+                          <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
+                            {item.published_at ? format(new Date(item.published_at), 'MMM dd') : 'NOW'}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ));
+                })()}
               </div>
 
               {/* Intelligence Relay - Wide Format */}
               <div className="space-y-12">
                 <div className="flex items-center gap-6">
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                  <h2 className="text-[11px] font-black uppercase tracking-[0.5em] text-gray-500 whitespace-nowrap">The Intelligence Relay</h2>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.5em] text-gray-500 whitespace-nowrap">Global News Stream</h2>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 </div>
 
@@ -661,9 +773,9 @@ export default function NewsFeedClient({
                       <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse">
                         <Database className="w-8 h-8 text-[#06b6d4]" />
                       </div>
-                      <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tighter">Targeted Discovery In Progress</h3>
+                      <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tighter">Searching for Local News</h3>
                       <p className="text-white/40 text-xs max-w-sm font-medium uppercase tracking-wider">
-                        The autonomous desk is scanning international wires for {activeRegion} specific intelligence. Please standby for synchronization.
+                        We are currently fetching the latest verified reports from {activeRegion}. Please standby.
                       </p>
                     </div>
                   )}
@@ -678,9 +790,14 @@ export default function NewsFeedClient({
                     >
                       <div className="relative h-48 w-full md:w-80 flex-shrink-0 overflow-hidden rounded-[2rem] bg-slate-900 border border-white/5">
                         <img
-                          src={item.image_url || getFallbackImage(item.category, item.id)}
+                          src={item.cover_image || item.image_url || getFallbackImage(item.category, item.id)}
                           alt={item.title}
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null;
+                            target.src = getFallbackImage(item.category, item.id);
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity" />
                       </div>
@@ -692,7 +809,7 @@ export default function NewsFeedClient({
                           </span>
                           <div className="w-1.5 h-1.5 rounded-full bg-[#06b6d4]/20" />
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                            DESK: TT-{item.id.slice(-4).toUpperCase()}
+                            {item.source_name || 'Newsroom'}
                           </span>
                           <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest ml-auto">
                             {item.published_at ? format(new Date(item.published_at), 'HH:mm | MMM dd') : 'RELAYED'}
@@ -710,8 +827,8 @@ export default function NewsFeedClient({
                             ) : (
                               <Bot className="w-4 h-4 text-[#06b6d4] animate-pulse" />
                             )}
-                            <span className={item.author_name ? 'text-gray-300' : 'text-[#06b6d4]'}>
-                              {item.author_name || 'Neural Intelligence'}
+                            <span className="text-gray-300">
+                              {item.author_name || 'Terai Times Desk'}
                             </span>
                           </span>
 
@@ -728,7 +845,7 @@ export default function NewsFeedClient({
                           )}
 
                           <button className="ml-auto opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300 flex items-center gap-2 text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.5em]">
-                            ACCESS DISPATCH
+                            READ ARTICLE
                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                           </button>
                         </div>
@@ -737,13 +854,16 @@ export default function NewsFeedClient({
                   ))}
                 </div>
 
-                <button className="w-full py-8 text-[11px] font-black text-gray-500 hover:text-white transition-all flex items-center justify-center gap-4 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-white/10 uppercase tracking-[0.6em] group animate-pulse hover:animate-none">
+                <button
+                  className="w-full py-8 text-[11px] font-black text-gray-500 hover:text-white transition-all flex items-center justify-center gap-4 bg-white/5 rounded-[2.5rem] border border-white/5 hover:border-white/10 uppercase tracking-[0.6em] group hover:animate-none"
+                  onClick={() => fetchNewsInstant(activeFilter, activeRegion)}
+                >
                   <Zap className="w-5 h-5 text-[#fbbf24] transition-transform group-hover:scale-125" />
-                  Load Recent Updates
+                  {isFetchingClient ? 'Updating Feed...' : 'Load Latest Updates'}
                 </button>
 
                 {/* Pagination Controls - Always Visible for Navigation Transparency */}
-                {totalCount > 0 && (
+                {effectiveTotalCount > 0 && (
                   <div className="mt-16 flex justify-center items-center gap-6 border-t border-white/5 pt-12">
                     <button
                       onClick={() => handlePageChange(page - 1)}
@@ -753,15 +873,15 @@ export default function NewsFeedClient({
                       <ChevronDown className="w-6 h-6 rotate-90" />
                     </button>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Operational Slice</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Page</span>
                       <span className="text-xl font-black text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10 tabular-nums">
                         {page}
                       </span>
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">of {Math.max(1, Math.ceil(totalCount / pageSize))}</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">of {Math.max(1, Math.ceil(effectiveTotalCount / pageSize))}</span>
                     </div>
                     <button
                       onClick={() => handlePageChange(page + 1)}
-                      disabled={page >= Math.ceil(totalCount / pageSize)}
+                      disabled={page >= Math.ceil(effectiveTotalCount / pageSize)}
                       className="p-4 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 disabled:opacity-20 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       <ChevronRight size={24} />
@@ -771,132 +891,81 @@ export default function NewsFeedClient({
               </div>
             </motion.section>
 
-            {/* Tactical Intelligence Sidebar */}
-            <aside className="lg:col-span-4 space-y-12">
-
-              {/* Signal Subscription */}
-              <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-[#06b6d4] to-blue-700 p-10 shadow-2xl shadow-[#06b6d4]/20 border border-white/10">
-                <div className="relative z-10 flex flex-col h-full">
-                  <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">Live Uplink</h3>
-                  <p className="text-white/80 text-sm font-medium mb-10 leading-relaxed uppercase tracking-wider">
-                    Establish a direct neural link for Tier-1 intelligence alerts.
-                  </p>
-
-                  <div className="space-y-4 mt-auto">
-                    <input
-                      type="email"
-                      placeholder="IDENTITY@REMEDY.INTEL"
-                      className="w-full px-6 py-4 bg-black/20 border border-white/20 rounded-2xl text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-[11px] font-black tracking-widest transition-all backdrop-blur-md"
-                    />
-                    <button
-                      onClick={() => router.push('/news/subscribe')}
-                      className="w-full py-5 bg-white text-black font-black rounded-2xl hover:scale-105 transition-all active:scale-95 text-[11px] uppercase tracking-[0.4em] shadow-xl"
-                    >
-                      Establish Link
-                    </button>
-                  </div>
-                  <p className="mt-6 text-[9px] font-black text-white/40 uppercase tracking-[0.2em] text-center">Encrypted Cluster. Anonymous Routing.</p>
-                </div>
-                <Sparkles className="absolute -bottom-10 -right-10 w-48 h-48 text-white/10 animate-spin-slow" />
-              </div>
-
-              {/* Region/Sector Selection - Glass Terminal Style */}
-              <div className="glass-terminal rounded-[2.5rem] p-8 space-y-10">
-                <h4 className="text-white font-black text-[11px] uppercase tracking-[0.5em] flex items-center gap-3">
-                  <Layers className="w-4 h-4 text-[#06b6d4]" />
-                  Strategic Vectors
+            {/* High-Value News Sidebar - Revenue & Engagement Focused */}
+            <aside className="lg:col-span-3 space-y-10">
+              {/* Geopolitical Market Pulse - Revenue Indicator */}
+              <div className="p-8 rounded-[2.5rem] bg-black border border-white/5 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-[#06b6d4]" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6 flex items-center gap-2">
+                  <Activity size={12} className="text-[#06b6d4]" />
+                  Market Pulse
                 </h4>
-
-                <div className="space-y-10">
-                  <div className="space-y-6">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Operational Region</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Global', ...(availableCountries.filter(c => c !== 'Global').slice(0, 10))].map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => handleRegionChange(c)}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${activeRegion === c
-                            ? 'bg-[#06b6d4] text-black shadow-lg shadow-[#06b6d4]/30'
-                            : 'bg-white/5 border border-white/5 text-gray-500 hover:border-white/20 hover:text-white'
-                            }`}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">Intelligence vertical</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['All', ...(availableCategories.filter(cat => cat !== 'All').slice(0, 12))].map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => handleFilterChange(cat)}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${activeFilter === cat
-                            ? 'bg-[#06b6d4] text-black shadow-lg shadow-[#06b6d4]/30'
-                            : 'bg-white/5 border border-white/5 text-gray-500 hover:border-white/20 hover:text-white'
-                            }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Strategic Signals */}
-              <StrategicSignalSidebar
-                signals={trending.map(t => ({
-                  id: t.id,
-                  title: t.title,
-                  impact: t.impact_score || 50,
-                  sentiment: (t.sentiment as any) || 'Neutral',
-                  category: t.category || 'General'
-                }))}
-                entities={['Market Flux', 'Geopolitical Shift', 'Neural Ingress', 'Global Markets']}
-              />
-
-              {/* Market Pulse Dashboard */}
-              <div className="glass-terminal rounded-[2.5rem] p-8 space-y-8 overflow-hidden relative">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-white font-black text-[11px] uppercase tracking-[0.5em] flex items-center gap-3">
-                    <BarChart3 className="w-4 h-4 text-[#10b981]" />
-                    Internal Flux
-                  </h4>
-                  <div className="flex gap-1 h-3 items-end">
-                    {[6, 12, 8, 14, 10].map((h, i) => (
-                      <div key={i} className="w-1 bg-[#10b981]/60 rounded-full animate-pulse" style={{ height: `${h}px`, animationDelay: `${i * 0.2}s` }} />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <span className={`text-5xl font-black italic tracking-tighter ${sentimentStats.color} uppercase`}>
-                    {sentimentStats.label}
-                  </span>
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">
-                    Signal Integrity: {sentimentStats.score}%
-                  </span>
-                </div>
-
-                <div className="space-y-4 pt-6 border-t border-white/5">
+                <div className="space-y-5">
                   {[
-                    { label: 'Network Ingress', val: '+14.2%', color: 'text-emerald-400' },
-                    { label: 'Data Latency', val: '0.04ms', color: 'text-gray-400' },
-                    { label: 'Active Relays', val: networkAnalytics?.activeTerminals || '104', color: 'text-[#06b6d4]' }
-                  ].map((stat, i) => (
-                    <div key={i} className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                      <span className="text-gray-500">{stat.label}</span>
-                      <span className={stat.color}>{stat.val}</span>
+                    { label: 'S&P 500', val: '5,123.4', change: '+1.2%', up: true },
+                    { label: 'Gold (XAU)', val: '$2,342.1', change: '+0.8%', up: true },
+                    { label: 'Crude Oil', val: '$84.5', change: '-2.4%', up: false },
+                    { label: 'Bitcoin', val: '$64,231', change: '+3.1%', up: true }
+                  ].map((market, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{market.label}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] font-black text-white tabular-nums">{market.val}</span>
+                        <span className={`text-[9px] font-black ${market.up ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {market.change}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
-
-                <NetworkPulseSidebar analytics={networkAnalytics} />
+              </div>
+              {/* Simple Newsletter Signup */}
+              <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-slate-900 to-black p-10 border border-white/10 shadow-2xl">
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tighter italic">News Updates</h3>
+                  <p className="text-gray-500 text-xs font-bold mb-8 uppercase tracking-widest leading-relaxed">
+                    Subscribe for the latest global headlines delivered to your inbox.
+                  </p>
+                  <div className="space-y-4">
+                    <input
+                      type="email"
+                      placeholder="EMAIL@ADDRESS.COM"
+                      className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder:text-white/20 text-[10px] font-black tracking-widest focus:outline-none focus:ring-1 focus:ring-[#06b6d4]"
+                    />
+                    <button className="w-full py-5 bg-[#06b6d4] text-white font-black rounded-2xl text-[10px] uppercase tracking-[0.3em] hover:scale-[1.02] transition-all">
+                      Subscribe
+                    </button>
+                  </div>
+                </div>
               </div>
 
+              {/* Trending Topics - Clean List */}
+              <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/10">
+                <h4 className="text-white font-black text-[10px] uppercase tracking-[0.4em] mb-8">Trending Now</h4>
+                <div className="space-y-6">
+                  {trending.slice(0, 5).map((t, i) => (
+                    <Link key={t.id} href={`/news/${t.slug}`} className="group block">
+                      <div className="flex gap-4">
+                        <span className="text-2xl font-black text-white/10 group-hover:text-[#06b6d4]/40 transition-colors tabular-nums">0{i+1}</span>
+                        <div className="space-y-1">
+                          <h5 className="text-xs font-black text-white group-hover:text-[#06b6d4] transition-colors leading-tight uppercase tracking-tight line-clamp-2">
+                            {t.title}
+                          </h5>
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{t.category}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              {/* Ad/Revenue Magnet: Institutional Access */}
+              <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-[#06b6d4]/10 to-transparent border border-[#06b6d4]/20">
+                <h5 className="text-[10px] font-black text-[#06b6d4] uppercase tracking-[0.4em] mb-4">Enterprise Tiers</h5>
+                <p className="text-white font-bold text-xs mb-6 leading-relaxed uppercase tracking-tight">Unlock Terminal Access for institutional geopolitics.</p>
+                <button className="w-full py-4 bg-white/5 border border-white/10 rounded-xl text-white text-[9px] font-black uppercase tracking-[0.3em] hover:bg-white/10 transition-all">
+                  Request Access
+                </button>
+              </div>
             </aside>
           </div>
         </>)}

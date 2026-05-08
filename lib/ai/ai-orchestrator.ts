@@ -61,7 +61,7 @@ export const MultiAgentOrchestrator = {
             // 1. Try Gemini 1.5 Pro
             if (googleKey) {
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${googleKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${googleKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -89,7 +89,7 @@ export const MultiAgentOrchestrator = {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            model: "llama-3.1-70b-versatile",
+                            model: "llama-3.3-70b-versatile",
                             messages: [{ role: "user", content: prompt }],
                             response_format: { type: "json_object" }
                         })
@@ -110,7 +110,7 @@ export const MultiAgentOrchestrator = {
             // 3. Try Gemini Flash
             if (googleKey) {
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -241,7 +241,7 @@ export const MultiAgentOrchestrator = {
 
         try {
             if (googleKey) {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${googleKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${googleKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -292,7 +292,7 @@ export const MultiAgentOrchestrator = {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            model: "llama-3.1-70b-versatile",
+                            model: "llama-3.3-70b-versatile",
                             messages: [{ role: "user", content: prompt }],
                             response_format: { type: "json_object" }
                         })
@@ -351,7 +351,7 @@ export const MultiAgentOrchestrator = {
 
         if (googleKey) {
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${googleKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

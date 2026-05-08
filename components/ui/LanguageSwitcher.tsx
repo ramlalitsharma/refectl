@@ -43,6 +43,7 @@ export function LanguageSwitcher() {
         vi: 'Tiếng Việt',
         bn: 'বাংলা',
         he: 'עברית',
+        ne: 'नेपाली',
     };
 
     useEffect(() => {

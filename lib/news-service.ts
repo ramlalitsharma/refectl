@@ -65,10 +65,12 @@ export const NewsService = {
         const to = from + pageSize - 1;
         const now = new Date().toISOString();
 
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         let query = client
             .from('news')
             .select('*')
             .in('status', ['published', 'Published', 'live', 'Live', 'Active Relay', 'active relay'])
+            .gt('created_at', thirtyDaysAgo) // Expanded 30-day window
             .or(`expires_at.is.null,expires_at.gt.${now}`);
 
         // Phase 62: Global Feed Restoration
@@ -76,11 +78,21 @@ export const NewsService = {
         // which caused the query to fail and return an empty array.
         query = query.order('created_at', { ascending: false });
 
-        if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
-            // Phase 44: Resilient Regional Filtering
-            // Priority 1: Exact column match
-            // Priority 2: Intelligence Tag match (Fuzzy fallback)
-            query = query.or(`country.eq.${filters.country},tags.cs.{"${filters.country}"}`);
+        if (filters?.country && filters.country !== 'All') {
+            if (filters.country === 'Global') {
+                // Phase 50: Global Purity Guard
+                query = query.not('country', 'eq', 'Nepal');
+                query = query.or('country.eq.Global,country.is.null');
+            } else {
+                // Phase 70: Priority Regional Hybrid
+                // Instead of strict exclusion, we prioritize the selected country
+                // but allow 'Global' content to fill the gaps so the user never sees empty pages.
+                query = query.or(`country.eq.${filters.country},tags.cs.{"${filters.country}"},country.eq.Global,country.is.null`);
+                
+                // Priority Sort: Selected country first, then by date
+                query = query.order('country', { ascending: false }); // This is a hack, usually needs a calculated field
+                // Better: we handle the sorting in the code below to be more precise
+            }
         }
 
         if (filters?.category && filters.category !== 'All') {
@@ -100,7 +112,37 @@ export const NewsService = {
         }
 
         const primary = await query;
-        const data = primary.error ? [] : (primary.data || []);
+        let data = primary.error ? [] : (primary.data || []);
+
+        // Phase 71: Strict Priority & Diversity Balancing
+        if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
+            // Move items matching the country to the absolute top
+            const countryNews = data.filter(item => 
+                item.country === filters.country || 
+                (item.tags || []).includes(filters.country)
+            );
+            const otherNews = data.filter(item => 
+                item.country !== filters.country && 
+                !(item.tags || []).includes(filters.country)
+            );
+            data = [...countryNews, ...otherNews];
+        } else if (!filters?.country || filters.country === 'All' || filters.country === 'Global') {
+            const countryCounts: Record<string, number> = {};
+            const balanced: News[] = [];
+            const overflow: News[] = [];
+            
+            for (const item of data as News[]) {
+                const c = (item.country as string) || 'Global';
+                countryCounts[c] = (countryCounts[c] || 0) + 1;
+                
+                if (countryCounts[c] <= 4) {
+                    balanced.push(item);
+                } else {
+                    overflow.push(item);
+                }
+            }
+            data = [...balanced, ...overflow];
+        }
 
         const filtered = data.filter(item => this.isCleanArticle(item));
         const deduplicated = this.deduplicateItems(filtered);
@@ -114,14 +156,23 @@ export const NewsService = {
         const client = supabaseAdmin || supabase;
         const now = new Date().toISOString();
 
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
         let query = client
             .from('news')
             .select('id', { count: 'exact', head: true })
             .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .gt('created_at', thirtyDaysAgo) // Synchronized 30-day window
             .or(`expires_at.is.null,expires_at.gt.${now}`);
 
-        if (filters?.country && filters.country !== 'All' && filters.country !== 'Global') {
-            query = query.eq('country', filters.country);
+        if (filters?.country && filters.country !== 'All') {
+            if (filters.country === 'Global') {
+                // Mirror the Phase 50 Global Purity Guard
+                query = query.not('country', 'eq', 'Nepal');
+                query = query.or('country.eq.Global,country.is.null');
+            } else {
+                // Synchronized Phase 70: Priority Regional Hybrid
+                query = query.or(`country.eq.${filters.country},tags.cs.{"${filters.country}"},country.eq.Global,country.is.null`);
+            }
         }
 
         if (filters?.category && filters.category !== 'All') {
@@ -144,10 +195,13 @@ export const NewsService = {
      */
     async getTrendingNews(limit: number = 5): Promise<News[]> {
         const client = supabaseAdmin || supabase;
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        
         const res = await client
             .from('news')
             .select('*')
             .in('status', ['published', 'Published', 'live', 'Active Relay', 'active relay'])
+            .gt('created_at', sevenDaysAgo) // Enforce freshness
             .order('view_count', { ascending: false })
             .limit(limit * 2);
         

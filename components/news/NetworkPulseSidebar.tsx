@@ -75,22 +75,6 @@ export function NetworkPulseSidebar({ analytics }: NetworkPulseSidebarProps) {
         </div>
       </div>
 
-      {/* Security Status */}
-      <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 backdrop-blur-md">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-            <ShieldCheck size={12} className="text-indigo-400" />
-            Security Protocol
-          </h4>
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-            AES-256
-          </span>
-        </div>
-        <p className="text-[11px] text-slate-500 leading-relaxed italic">
-          All terminal sessions are end-to-end encrypted. User metadata is masked using the Refectl Sanitization Boundary.
-        </p>
-      </div>
-
       {/* Cumulative Engagement */}
       <div className="bg-slate-900 border border-white/5 rounded-2xl p-6 relative overflow-hidden">
         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6 flex items-center gap-2">

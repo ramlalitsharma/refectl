@@ -1,16 +1,16 @@
 {
-    "Common": {
-        "home": "Home",
-        "courses": "Courses",
-        "blog": "Blog",
-        "exams": "Exams",
-        "login": "Sign In",
-        "signup": "Get Started",
-        "search": "Search courses...",
-        "footer": "All rights reserved."
-    },
-    "Hero": {
-        "title": "Master Your Future with World-Class Learning",
-        "subtitle": "Join thousands of students and transform your career with expert-led courses."
-    }
+  "Common": {
+    "home": "首页",
+    "courses": "课程",
+    "blog": "博客",
+    "exams": "考试",
+    "login": "登录",
+    "signup": "注册",
+    "search": "搜索课程...",
+    "footer": "版权所有。"
+  },
+  "Hero": {
+    "title": "通过世界一流的学习掌握您的未来",
+    "subtitle": "加入成千上万的学生，通过专家领导的课程改变您的职业生涯。"
+  }
 }

@@ -1,15 +1,46 @@
-name: News Automation Scheduler
+name: Terai Times News Automation
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # Every 30 minutes
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    # Runs 4x/day at 00:00, 06:00, 12:00, 18:00 UTC
+    # Previously every 30 min (48x/day) — that destroyed Vercel CPU
+    # Now 4x/day = ~120 runs/month vs 1,440 before (92% reduction)
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
 
 jobs:
-  ping-news-engine:
+  run-news-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Trigger News Generation
-        run: |
-          curl -X GET "https://refectl.com/api/news-publish-now?count=5" \
-          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run News Ingestion (directly on GitHub, NOT on Vercel)
+        env:
+          # MongoDB
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB_NAME: ${{ secrets.MONGODB_DB_NAME }}
+          # AI Keys
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Supabase (news lives here)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Research
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          # Automation config
+          NEWS_AUTO_PUBLISH_ENABLED: 'true'
+          NEWS_AUTO_PUBLISH_COUNT: '3'
+          # Database
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: npx tsx scripts/gh-news-cron.ts

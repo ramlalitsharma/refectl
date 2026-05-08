@@ -13,8 +13,8 @@ export class BlogsSeoService extends SeoModule {
   async buildPageMetadata(params: Record<string, any>): Promise<Metadata> {
     const locale = (params?.locale as string | undefined) || 'en';
     return {
-      title: 'Blog | Refectl Insights',
-      description: 'Deep dives into AI pedagogy, adaptive learning, and platform updates.',
+      title: 'Refectl Insights | Institutional Intelligence',
+      description: 'Institutional analysis, deep-dive research reports, and academic insights from the Refectl Institutional Desk.',
       alternates: {
         canonical: `/${locale}/blog`,
       },

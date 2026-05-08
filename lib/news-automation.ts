@@ -260,11 +260,45 @@ function isGenericHeadline(value?: string | null): boolean {
 export const NewsAutomationService = {
     /**
      * Fetches top trending global news topics from live discovery feeds.
+     * Upgraded: Now supports targeted country injection to ensure specific regions stay warm.
      */
-    async fetchGlobalTrends(): Promise<{ title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string; imageUrl?: string }[]> {
-        console.log('[Automation] Fetching live global trends...');
+    async fetchGlobalTrends(targetCountry?: string): Promise<{ title: string; category: NewsCategory; country?: NewsCountry; source_url?: string; source_name?: string; imageUrl?: string }[]> {
+        console.log(`[Automation] Fetching live trends ${targetCountry ? `specifically for: ${targetCountry}` : '(Global Pool)'}...`);
         try {
+            // Priority 1: Fetch from broad discovery matrix
             const rawTrends = await NewsDiscoveryService.getLiveTrends();
+            
+            // Priority 2: If we have a targetCountry, perform an additional targeted scrape to guarantee matches
+            if (targetCountry && targetCountry !== 'Global' && targetCountry !== 'All') {
+                try {
+                    console.log(`[Automation] Injecting targeted vectors for ${targetCountry}...`);
+                    const targetedScrape = await AdvancedScraperService.scrapeTargetedNews(`${targetCountry} breaking news today`);
+                    
+                    // Parse the targeted scrape context back into trend objects
+                    // Note: scrapeTargetedNews returns a string, we extract headlines for better coverage
+                    const lines = targetedScrape.split('\n');
+                    const injected: any[] = [];
+                    for (const line of lines) {
+                        if (line.startsWith('[SOURCE:')) {
+                            const sourceMatch = line.match(/\[SOURCE: (.*?)\] (.*)/);
+                            if (sourceMatch) {
+                                injected.push({
+                                    title: sourceMatch[2].trim(),
+                                    source: sourceMatch[1].trim(),
+                                    link: '', // Scraper returns snapshot but link is buried, we'll use source search if needed
+                                    country: targetCountry as any,
+                                    category: 'World' as any,
+                                    score: 85 // Targeted results are high priority
+                                });
+                            }
+                        }
+                    }
+                    rawTrends.unshift(...injected);
+                } catch (e) {
+                    console.warn(`[Automation] Targeted injection failed for ${targetCountry}:`, e);
+                }
+            }
+
             const topViral = await NewsDiscoveryService.scoreAndFilterTrends(rawTrends);
 
             return topViral.map(t => ({
@@ -274,7 +308,6 @@ export const NewsAutomationService = {
                 source_url: t.link,
                 source_name: t.source,
                 imageUrl: t.imageUrl,
-                slug: this.generateSlug(t.title || 'untitled-discovery') // Ensure safety
             }));
         } catch (error) {
             console.error('[Automation] Failed to fetch live trends, using fallback:', error);
@@ -392,6 +425,19 @@ export const NewsAutomationService = {
                 category: params.category || 'World',
                 country: params.country || 'Global',
             });
+            // Phase 49: Cross-Filter Symmetry Guard
+            // If the primary target is 'Global', we perform a final neural inference
+            // to see if the article is actually about a specific country.
+            // This ensures "Global" news also appears in specific country filters.
+            let finalCountry = params.country || 'Global';
+            if (finalCountry === 'Global' || finalCountry === 'All') {
+                const detected = AdvancedScraperService.inferCountry(optimizedTitle, draft.body || '');
+                if (detected && detected !== 'Global') {
+                    finalCountry = detected;
+                    console.log(`[Automation] Cross-Filter Symmetry: Re-tagged Global piece as ${finalCountry}`);
+                }
+            }
+
             const newsItem: Partial<News> = {
                 title: optimizedTitle,
                 slug: this.generateSlug(optimizedTitle),
@@ -399,7 +445,7 @@ export const NewsAutomationService = {
                 summary,
                 cover_image: imageStrategy.coverImage,
                 category: params.category || 'World',
-                country: params.country || 'Global',
+                country: finalCountry as any,
                 tags: [...normalizedStrategy.operational_tags, ...imageStrategy.tags],
                 source_url: params.source_url || `${mode === 'AI' ? 'OpenAI GPT Synthesis' : 'Deterministic Sanitizer'}: ${params.title}`,
                 source_name: params.source_name || 'Terai Times Bureau',
@@ -555,7 +601,7 @@ export const NewsAutomationService = {
 
         const published: Partial<News>[] = [];
         const minScore = Number(process.env.NEWS_REVENUE_MIN_SCORE || '65'); // Lowered from 78 to ensure hourly density
-        const trendPool = await this.fetchGlobalTrends();
+        const trendPool = await this.fetchGlobalTrends(targetCountry);
 
         // Phase 41: Strategic Priority - Filter for high-impact categories & regions
         const highValueCategories = ['Business', 'Technology', 'Politics', 'Finance', 'Science'];
@@ -564,11 +610,18 @@ export const NewsAutomationService = {
             highValueCountries.push(targetCountry);
         }
 
-        const prioritized = trendPool.filter(t =>
-            (targetCountry && t.country === targetCountry) ||
-            highValueCategories.includes(t.category) ||
-            (t.country && highValueCountries.includes(t.country))
-        );
+        const prioritized = trendPool.filter(t => {
+            // Phase 48: Regional Diversity Guard
+            // If we are NOT specifically targeting Nepal, do not publish Nepal news in this cycle.
+            // This prevents Nepal feeds from leaking into "Global" or "Technology" cycles.
+            if (targetCountry !== 'Nepal' && (t.country === 'Nepal' || t.title.toLowerCase().includes('nepal'))) {
+                return false;
+            }
+
+            return (targetCountry && t.country === targetCountry) ||
+                highValueCategories.includes(t.category) ||
+                (t.country && highValueCountries.includes(t.country));
+        });
 
         // Mix prioritized with others to maintain variety, but FORCE targetCountry to top if exists
         const targetMatches = targetCountry ? prioritized.filter(t => t.country === targetCountry) : [];

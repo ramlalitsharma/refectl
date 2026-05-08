@@ -27,7 +27,7 @@ export async function NewsLandingPage({
   const category = (resolvedParams?.category as string) || undefined;
   const country = (resolvedParams?.country as string) || undefined;
   const page = Number(resolvedParams?.page) || 1;
-  const pageSize = 15;
+  const pageSize = 30;
   let payload: TeraiTimesLandingPayload = {
     category: 'All',
     country: 'All',
@@ -48,7 +48,7 @@ export async function NewsLandingPage({
     availableCategories: [],
     totalCount: 0,
     page: 1,
-    pageSize: 15,
+    pageSize: 30,
   };
 
   try {

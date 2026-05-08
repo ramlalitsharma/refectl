@@ -8,6 +8,7 @@ import NextLink from 'next/link';
 import { SocialShare } from '@/components/ui/SocialShare';
 import { BRAND_URL } from '@/lib/brand';
 import { BlogComments } from '@/components/blog/BlogComments';
+import { InstitutionalAdUnit } from '@/components/revenue/InstitutionalAdUnit';
 
 const MarkdownPreview = dynamic(
     () => import('@uiw/react-markdown-preview').then((mod) => mod.default),
@@ -56,7 +57,7 @@ export function BlogPostClient({ post, slug, content }: { post: any, slug: strin
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 selection:bg-indigo-500/30">
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-indigo-500 z-[100] origin-left"
+                className="fixed top-0 left-0 right-0 h-1 bg-[#06b6d4] z-[100] origin-left"
                 style={{ scaleX }}
             />
 
@@ -80,9 +81,9 @@ export function BlogPostClient({ post, slug, content }: { post: any, slug: strin
                     >
                         <NextLink
                             href="/blog"
-                            className="inline-flex items-center gap-2 text-indigo-400 font-medium pb-4 hover:gap-4 transition-all"
+                            className="inline-flex items-center gap-2 text-[#06b6d4] font-black text-[10px] uppercase tracking-[0.4em] pb-4 hover:gap-4 transition-all"
                         >
-                            <ChevronLeft className="w-5 h-5" /> All Stories
+                            <ChevronLeft className="w-4 h-4" /> Back to Intelligence Hub
                         </NextLink>
 
                         <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 font-medium">
@@ -96,11 +97,11 @@ export function BlogPostClient({ post, slug, content }: { post: any, slug: strin
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4">
-                            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter italic leading-[0.9]">
                                 {post.title}
                             </h1>
-                            <div className="hidden md:block">
+                            <div className="hidden md:block shrink-0">
                                 <SocialShare
                                     url={`${BRAND_URL}/blog/${slug}`}
                                     title={post.title}
@@ -127,7 +128,7 @@ export function BlogPostClient({ post, slug, content }: { post: any, slug: strin
                                         <button
                                             key={item.id}
                                             onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' })}
-                                            className={`text-sm font-bold text-left transition-all duration-300 border-l-2 pl-4 py-1 hover:text-white ${activeId === item.id ? 'border-indigo-500 text-white translate-x-1' : 'border-slate-800 text-slate-500 hover:border-slate-700'}`}
+                                            className={`text-[11px] font-black uppercase tracking-wider text-left transition-all duration-300 border-l-2 pl-4 py-1 hover:text-white ${activeId === item.id ? 'border-[#06b6d4] text-white translate-x-1' : 'border-white/5 text-gray-500 hover:border-white/10'}`}
                                         >
                                             {item.text}
                                         </button>
@@ -158,24 +159,32 @@ export function BlogPostClient({ post, slug, content }: { post: any, slug: strin
                         className="max-w-4xl w-full"
                     >
                         <article className="prose prose-invert prose-indigo prose-lg md:prose-xl max-w-none remark-markdown bg-transparent">
+                            <div className="my-12">
+                                <InstitutionalAdUnit slot="blog-post-top" format="rectangle" />
+                            </div>
+
                             <MarkdownPreview
                                 source={content}
                                 wrapperElement={{ "data-color-mode": "dark" }}
                                 style={{ backgroundColor: 'transparent', fontSize: 'inherit', color: 'inherit' }}
                             />
+
+                            <div className="my-12">
+                                <InstitutionalAdUnit slot="blog-post-bottom" format="auto" />
+                            </div>
                         </article>
 
-                        <div className="mt-20 pt-12 border-t border-slate-800 flex flex-col md:flex-row items-center gap-8 bg-slate-900/40 p-10 rounded-[2.5rem] border border-slate-800">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
-                                {post.authorId?.slice(0, 1) || 'A'}
+                        <div className="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row items-center gap-8 bg-white/[0.02] p-10 rounded-[3rem] border border-white/5">
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#06b6d4] to-blue-600 flex items-center justify-center text-white text-3xl font-black italic">
+                                {post.authorId?.slice(0, 1) || 'T'}
                             </div>
                             <div className="flex-1 text-center md:text-left space-y-2">
                                 <div className="flex items-center justify-center md:justify-start gap-2">
-                                    <h4 className="text-xl font-bold text-white">Editorial Board</h4>
-                                    <CheckCircle className="w-5 h-5 text-indigo-400" />
+                                    <h4 className="text-xl font-black text-white uppercase tracking-tighter italic">Refectl Institutional Desk</h4>
+                                    <CheckCircle className="w-5 h-5 text-[#06b6d4]" />
                                 </div>
-                                <p className="text-slate-400">
-                                    This article was authored and vetted by the AdaptIQ editorial team.
+                                <p className="text-gray-400 font-medium italic">
+                                    This insight was authored and vetted by the Refectl Institutional Desk team to ensure high-fidelity analysis and academic rigor.
                                 </p>
                             </div>
                         </div>

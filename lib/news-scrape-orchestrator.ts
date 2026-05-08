@@ -82,15 +82,12 @@ async function applySourceSafety(newsItem: Partial<News>) {
   }
   if (sourceCheck.sourceVerdict === 'trusted') {
     newsItem.tags = [...newsItem.tags, 'source_trusted'];
-    if ((newsItem.status || '').toLowerCase() === 'pending_approval') {
-      newsItem.status = 'published';
-    }
+    newsItem.status = 'published';
     return;
   }
 
-  if ((newsItem.status || '').toLowerCase() === 'published') {
-    newsItem.status = 'pending_approval';
-  }
+  // Phase 55: Permissionless Publishing - unverified sources still auto-publish
+  newsItem.status = 'published';
   newsItem.tags = [...newsItem.tags, 'source_unverified'];
 }
 
@@ -124,7 +121,7 @@ export class NewsScrapeOrchestrator {
       author_id: params.author_id,
       source_url: params.source_url,
       source_name: params.source_name,
-      status: params.status || 'pending_approval',
+      status: params.status || 'published',
       forcePublish: params.forcePublish === true,
     });
 
@@ -183,7 +180,7 @@ export class NewsScrapeOrchestrator {
       cover_image: draft.cover_image,
       tags: normalizedStrategy.operational_tags,
       author_id: params.author_id,
-      status: params.status || 'pending_approval',
+      status: params.status || 'published',
       sentiment: normalizedStrategy.sentiment,
       market_entities: normalizedStrategy.market_entities,
       impact_score: normalizedStrategy.impact_score,
@@ -195,11 +192,8 @@ export class NewsScrapeOrchestrator {
     };
 
     const evalResult = NewsRevenueMode.evaluateCandidate(newsItem, minScore);
-    if (evalResult.decision === 'skip') {
-      newsItem.status = 'draft';
-    } else if (evalResult.decision === 'pending_approval') {
-      newsItem.status = 'pending_approval';
-    }
+    // Phase 55: Auto-publish everything to remove human barriers
+    newsItem.status = 'published';
     newsItem.tags = [...(newsItem.tags || []), `quality_score:${evalResult.score}`];
 
     await applySourceSafety(newsItem);

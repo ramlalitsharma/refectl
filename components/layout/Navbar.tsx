@@ -432,8 +432,9 @@ function NavbarInner() {
 
           {/* Right: Search, Actions, Auth */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Desktop Search */}
-            <div className="hidden md:block shrink-0">
+            {/* Desktop Search + Language Switcher */}
+            <div className="hidden md:flex items-center gap-3 shrink-0">
+              <LanguageSwitcher />
               <GlobalSearch />
             </div>
 
@@ -728,9 +729,9 @@ function NavbarInner() {
                 {/* Primary Navigation */}
                 <div className="space-y-4">
                   {navConfig.primaryLinks.map((item, idx) => {
-                    // Check if this is a dropdown menu
                     if ('items' in item) {
                       const dropdown = item as import('@/lib/navigation-config').NavDropdown;
+                      const isUtilityMenu = dropdown.label.toLowerCase().includes('utilit');
                       return (
                         <div key={idx} className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100/70 dark:bg-white/[0.03] overflow-hidden">
                           {/* Category Header */}

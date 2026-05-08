@@ -1,16 +1,17 @@
 {
-    "Common": {
-        "home": "Home",
-        "courses": "Courses",
-        "blog": "Blog",
-        "exams": "Exams",
-        "login": "Sign In",
-        "signup": "Get Started",
-        "search": "Search courses...",
-        "footer": "All rights reserved."
-    },
-    "Hero": {
-        "title": "Master Your Future with World-Class Learning",
-        "subtitle": "Join thousands of students and transform your career with expert-led courses."
-    }
+    "Common":  {
+                   "home":  "Home",
+                   "courses":  "Courses",
+                   "blog":  "Blog",
+                   "exams":  "Exams",
+                   "login":  "Sign In",
+                   "signup":  "Get Started",
+                   "search":  "Search courses...",
+                   "footer":  "All rights reserved."
+               },
+    "Hero":  {
+                 "title":  "Master Your Future with World-Class Learning",
+                 "subtitle":  "Join thousands of students and transform your career with expert-led courses."
+             }
 }
+

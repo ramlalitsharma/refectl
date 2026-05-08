@@ -6,8 +6,10 @@ export async function handlePublicNewsGet(req: Request) {
   try {
     const url = new URL(req.url);
     const category = url.searchParams.get('category') || 'All';
-    const country = url.searchParams.get('country') || 'All';
-    const query = (url.searchParams.get('q') || '').trim();
+    const country  = url.searchParams.get('country')  || 'All';
+    const query    = (url.searchParams.get('q') || '').trim();
+    const page     = Math.max(1, Number(url.searchParams.get('page'))     || 1);
+    const pageSize = Math.min(30, Math.max(5, Number(url.searchParams.get('pageSize')) || 15));
     const facetsOnly = url.searchParams.get('facets') === '1';
 
     if (facetsOnly) {
@@ -15,23 +17,38 @@ export async function handlePublicNewsGet(req: Request) {
       return NextResponse.json(filters);
     }
 
-    const [published, trending, filters] = await Promise.all([
-      NewsService.getPublishedNews({ category, country, query, limit: query ? 20 : undefined }),
+    const dbCategory = category === 'IPL-Live' ? 'Sports' : category;
+
+    const [published, totalCount, trending, filters] = await Promise.all([
+      NewsService.getPublishedNews({ category: dbCategory, country, page, pageSize, query: query || undefined }),
+      NewsService.getNewsCount({ category: dbCategory, country }),
       NewsService.getTrendingNews(6),
       NewsService.getAvailableFilters(),
     ]);
 
-    return NextResponse.json({
-      items: published || [],
-      trending: trending || [],
-      availableCountries: filters.countries || [],
-      availableCategories: filters.categories || [],
-    });
-  } catch (error: any) {
-    console.error('Public news fetch error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch public news', message: error?.message || 'Unknown error' },
-      { status: 500 }
+      {
+        items: published || [],
+        totalCount: totalCount || 0,
+        page,
+        pageSize,
+        trending: trending || [],
+        availableCountries: filters.countries || [],
+        availableCategories: filters.categories || [],
+      },
+      {
+        headers: {
+          // 60s cache: always fresh for news while being fast for repeat filters
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error('[Public News API] Error:', error?.message || error);
+    // Return 200 with empty so client-side gracefully shows "no results" vs crash
+    return NextResponse.json(
+      { items: [], totalCount: 0, error: 'News feed temporarily unavailable.' },
+      { status: 200 }
     );
   }
 }

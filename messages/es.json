@@ -1,16 +1,17 @@
 {
-    "Common": {
-        "home": "Inicio",
-        "courses": "Cursos",
-        "blog": "Blog",
-        "exams": "Exámenes",
-        "login": "Iniciar Sesión",
-        "signup": "Empezar",
-        "search": "Buscar cursos...",
-        "footer": "Todos los derechos reservados."
-    },
-    "Hero": {
-        "title": "Domina tu Futuro con Aprendizaje de Clase Mundial",
-        "subtitle": "Únete a miles de estudiantes y transforma tu carrera con cursos dirigidos por expertos."
-    }
+    "Common":  {
+                   "home":  "Inicio",
+                   "courses":  "Cursos",
+                   "blog":  "Blog",
+                   "exams":  "Exámenes",
+                   "login":  "Iniciar Sesión",
+                   "signup":  "Empezar",
+                   "search":  "Buscar cursos...",
+                   "footer":  "Todos los derechos reservados."
+               },
+    "Hero":  {
+                 "title":  "Domina tu Futuro con Aprendizaje de Clase Mundial",
+                 "subtitle":  "Únete a miles de estudiantes y transforma tu carrera con cursos dirigidos por expertos."
+             }
 }
+

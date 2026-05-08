@@ -6,7 +6,10 @@
     "dev": "cross-env NODE_OPTIONS=\"--tls-min-v1.2\" next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint --ignore-pattern temp-LearnToday/**"
+    "lint": "eslint --ignore-pattern temp-LearnToday/**",
+    "agent:ebook": "npx tsx scripts/agent-ebook-forge.ts",
+    "agent:mota": "npx tsx scripts/mota-ceo.ts",
+    "scraper": "npx tsx scripts/news-scraper.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.1",
