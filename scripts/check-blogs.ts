@@ -1,8 +1,9 @@
 import { config } from 'dotenv';
-config({ path: '../.env.local' });
-import { getDatabase } from '../lib/mongodb';
+import path from 'path';
+config({ path: path.join(process.cwd(), '.env.local') });
 
 async function listLatestBlogs() {
+  const { getDatabase } = await import('../lib/mongodb');
   console.log('--- Database Verification ---');
   try {
     const db = await getDatabase();

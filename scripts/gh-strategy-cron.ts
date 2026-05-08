@@ -1,12 +1,10 @@
 import { config } from 'dotenv';
 import path from 'path';
 config({ path: path.join(process.cwd(), '.env.local') });
-import { supabaseAdmin } from '../lib/supabase';
-import fs from 'fs';
-
-const BRAIN_STATE_PATH = 'ceo_brain_state.json';
 
 async function runStrategyDepartment() {
+  const { supabaseAdmin } = await import('../lib/supabase');
+  const fs = await import('fs');
   console.log(`\n🧠 [STRATEGY DEPT] Mota CEO "Super Brain" online. Analyzing systemic health...`);
   
   if (!supabaseAdmin) {

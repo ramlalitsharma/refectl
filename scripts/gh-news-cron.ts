@@ -1,17 +1,15 @@
 import { config } from 'dotenv';
 import path from 'path';
 config({ path: path.join(process.cwd(), '.env.local') });
-import { NewsAutomationService } from '../lib/news-automation';
 
 async function main() {
-  console.log('[GH Cron] Starting standalone news ingestion...');
+  console.log('[GH Cron] Starting standalone news automation...');
   try {
-    const count = 5; // Fixed count or pass via args
-    console.log(`[GH Cron] Attempting to ingest ${count} articles.`);
-    const published = await NewsAutomationService.ingestRoamingGlobalNews(count);
-    console.log(`[GH Cron] Success. Published ${published.length} articles.`);
+    const { NewsAutomationService } = await import('../lib/news-automation');
+    const results = await NewsAutomationService.ingestRoamingGlobalNews(1);
+    console.log('[GH Cron] Success. Ingested:', results.length);
   } catch (error) {
-    console.error('[GH Cron] News ingestion failed:', error);
+    console.error('[GH Cron] News automation failed:', error);
     process.exit(1);
   }
 }
