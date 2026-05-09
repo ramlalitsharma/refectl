@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { Button } from './Button';
 
 interface Props {
@@ -14,7 +14,7 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+export class GlobalErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -25,10 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log error to console
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-
-    // Call custom error handler if provided
+    console.error('GlobalErrorBoundary caught an error:', error, errorInfo);
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }

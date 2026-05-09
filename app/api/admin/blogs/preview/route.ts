@@ -44,9 +44,18 @@ export async function POST(req: NextRequest) {
 
     const markdown = await generateBlogMarkdownAI(body);
     return NextResponse.json({ markdown });
-  } catch (error: unknown) {
-    const msg = (error as { message?: string })?.message || 'Unknown error';
+  } catch (error: any) {
     console.error('Blog preview generate error:', error);
-    return NextResponse.json({ error: 'Failed to generate blog preview', message: msg }, { status: 500 });
+    
+    // Check for OpenAI insufficient quota
+    const errorMessage = error.message || 'Unknown error';
+    if (errorMessage.includes('insufficient_quota') || (error.status === 429)) {
+      return NextResponse.json({ 
+        error: 'OpenAI Quota Exceeded', 
+        message: 'The OpenAI API key has run out of funds or hit its limit. Please check your OpenAI billing dashboard or update the API key in .env.local.' 
+      }, { status: 429 });
+    }
+
+    return NextResponse.json({ error: 'Failed to generate blog preview', message: errorMessage }, { status: 500 });
   }
 }

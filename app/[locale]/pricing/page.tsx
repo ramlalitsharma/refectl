@@ -1,136 +1,165 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Check, Star, Zap, Shield, Crown, Loader2, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Coffee, Flame, Heart, Copy, Check, Bitcoin, ArrowRight, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/ToastManager';
 import Link from 'next/link';
+import { setRequestLocale } from 'next-intl/server';
 
-export default function PricingPage() {
-  const router = useRouter();
+export default function SupportPage() {
   const { addToast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [showWallets, setShowWallets] = useState(false);
 
-  const handleUpgrade = async () => {
-    setLoading(true);
-    try {
-      // Direct redirect to our active payment gateway
-      window.location.href = '/api/subscriptions/checkout';
-    } catch (error) {
-      console.error('Checkout redirect failed', error);
-      addToast({
-        type: 'warning',
-        title: 'Error',
-        message: 'Could not initiate checkout. Please check your connection.',
-      });
-      setLoading(false);
-    }
+  const copyToClipboard = (text: string, currency: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(currency);
+    addToast({
+      type: 'success',
+      title: 'Address Copied',
+      message: `${currency} address copied to clipboard.`,
+    });
+    setTimeout(() => setCopied(null), 3000);
   };
 
+  const cryptoWallets = [
+    {
+      name: 'Bitcoin (BTC)',
+      address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', // Placeholder
+      icon: <Bitcoin className="w-5 h-5" />,
+      color: 'text-orange-500',
+      bg: 'bg-orange-500/10',
+      border: 'border-orange-500/20'
+    },
+    {
+      name: 'Ethereum (ETH)',
+      address: '', // Placeholder
+      icon: <Wallet className="w-5 h-5" />,
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20'
+    },
+    {
+      name: 'Solana (SOL)',
+      address: '', // Placeholder
+      icon: <Flame className="w-5 h-5" />,
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/20'
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <Link href="/dashboard" className="absolute top-8 left-8 text-slate-500 hover:text-slate-800 flex items-center gap-2 font-medium">
-        <ArrowLeft className="w-5 h-5" /> Back to Dashboard
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-orange-500/30">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-orange-500/10 to-transparent rounded-full blur-3xl opacity-50" />
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-indigo-500/10 to-transparent rounded-full blur-3xl opacity-50" />
+      </div>
+
+      <Link href="/dashboard" className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 font-medium transition-colors z-10">
+        <ArrowLeft className="w-5 h-5" /> Back to Hub
       </Link>
 
-      <div className="max-w-4xl w-full space-y-12">
+      <div className="max-w-2xl w-full z-10">
 
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-            Unlock Your Full Potential
-          </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Get unlimited access to AI tutoring, advanced analytics, and exclusive badges.
-          </p>
-        </div>
-
-        {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-
-          {/* Free Plan */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-slate-800">Basic</h3>
-              <div className="text-4xl font-black mt-2 text-slate-900">$0 <span className="text-lg text-slate-500 font-normal">/ mo</span></div>
-              <p className="text-slate-500 mt-2">Perfect for getting started.</p>
-            </div>
-            <ul className="space-y-4 mb-8">
-              {[
-                '3 AI Quizzes per day',
-                '5 AI Chat messages per day',
-                'Basic Leaderboard Access',
-                'Standard Analytics'
-              ].map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-slate-600">
-                  <div className="p-1 rounded-full bg-slate-100 text-slate-600">
-                    <Check className="w-3 h-3" />
-                  </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Button variant="outline" className="w-full py-6 text-lg rounded-xl" disabled>
-              Current Plan
-            </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-6 mb-12"
+        >
+          <div className="inline-flex items-center justify-center p-4 bg-white/5 rounded-2xl border border-white/10 shadow-2xl mb-4 backdrop-blur-md">
+            <Coffee className="w-12 h-12 text-orange-400" strokeWidth={1.5} />
           </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
+            Fuel the Forge
+          </h1>
+          <p className="text-xl text-slate-400 max-w-lg mx-auto leading-relaxed">
+            We operate independently to bring you the best tools and knowledge. If you love what we build, toss a coin to your developers.
+          </p>
+        </motion.div>
 
-          {/* Pro Plan */}
-          <motion.div
-            initial={{ scale: 0.95, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            className="relative bg-gradient-to-br from-indigo-900 to-indigo-800 p-8 rounded-3xl shadow-2xl text-white border border-indigo-700/50"
-          >
-            {/* Badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-400 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
-              <Star className="w-3 h-3 fill-white" /> MOST POPULAR
-            </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden"
+        >
+          {/* Decorative Corner */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2" />
 
-            <div className="mb-6">
-              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Crown className="w-6 h-6 text-amber-400 fill-amber-400" /> Pro Power
-              </h3>
-              <div className="text-5xl font-black mt-2 text-white">$9.99 <span className="text-lg text-indigo-200 font-normal">/ mo</span></div>
-              <p className="text-indigo-200 mt-2">For serious learners.</p>
+          {!showWallets ? (
+            <div className="text-center space-y-8 relative z-10">
+              <div className="flex justify-center mb-6">
+                <Heart className="w-16 h-16 text-rose-500 fill-rose-500/20 animate-pulse" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-3xl font-bold text-white">Keep Us Running</h2>
+              <p className="text-slate-400 text-lg max-w-md mx-auto">
+                No monthly subscriptions. No paywalls. Just open infrastructure funded entirely by the community. Give what feels right.
+              </p>
+
+              <Button
+                onClick={() => setShowWallets(true)}
+                className="w-full md:w-auto px-10 py-6 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-2xl text-xl font-bold tracking-wide shadow-lg shadow-orange-500/25 transition-all hover:-translate-y-1"
+              >
+                Support with Crypto <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
-            <ul className="space-y-4 mb-8">
-              {[
-                'Unlimited AI Quizzes',
-                'Unlimited AI Tutor Chat',
-                'Advanced Analytics & Insights',
-                'Verified Gold "Pro" Badge',
-                'Priority Support'
-              ].map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-indigo-50">
-                  <div className="p-1 rounded-full bg-indigo-500/50 text-amber-300">
-                    <Zap className="w-3 h-3 fill-amber-300" />
-                  </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <Button
-              onClick={handleUpgrade}
-              disabled={loading}
-              className="w-full py-8 text-xl font-bold rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white shadow-xl transition-transform active:scale-95"
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-6 relative z-10"
             >
-              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Upgrade Now'}
-            </Button>
-            <p className="text-center text-indigo-300 text-xs mt-4">
-              30-day money-back guarantee. Cancel anytime.
-            </p>
-          </motion.div>
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl font-bold text-white">Select Network</h3>
+                <button
+                  onClick={() => setShowWallets(false)}
+                  className="text-slate-400 hover:text-white text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
 
-        </div>
+              <div className="space-y-4">
+                {cryptoWallets.map((wallet) => (
+                  <div
+                    key={wallet.name}
+                    className={`flex items-center justify-between p-4 rounded-2xl border ${wallet.border} ${wallet.bg} backdrop-blur-sm transition-all hover:bg-white/10 group`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl bg-white/5 ${wallet.color}`}>
+                        {wallet.icon}
+                      </div>
+                      <div>
+                        <div className="text-white font-bold">{wallet.name}</div>
+                        <div className="text-slate-400 text-sm font-mono truncate w-32 md:w-64">
+                          {wallet.address}
+                        </div>
+                      </div>
+                    </div>
 
-        {/* Trust Badges */}
-        <div className="flex flex-wrap justify-center gap-6 md:gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-          <div className="flex items-center gap-2 font-bold text-slate-600"><Shield className="w-5 h-5" /> Secure Payment</div>
-          <div className="flex items-center gap-2 font-bold text-slate-600"><Star className="w-5 h-5" /> 4.9/5 Rating</div>
-        </div>
+                    <button
+                      onClick={() => copyToClipboard(wallet.address, wallet.name)}
+                      className={`p-3 rounded-xl transition-all ${copied === wallet.name
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5'
+                        }`}
+                    >
+                      {copied === wallet.name ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                    </button>
+                  </div>
+                ))}
+              </div>
 
+              <p className="text-center text-slate-500 text-sm mt-8">
+                Thank you for your support. Transfers are processed securely via the blockchain.
+              </p>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </div>
   );

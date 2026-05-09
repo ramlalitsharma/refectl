@@ -45,6 +45,17 @@
   --color-surface-2: #f8fafc;
   --color-surface-3: #f1f5f9;
 
+  /* Studio Design System Tokens */
+  --studio-primary: #4254f0;
+  --studio-bg-light: #f6f6f8;
+  --studio-bg-dark: #09090B;
+  --studio-surface: #18181B;
+  --studio-surface-hover: #27272A;
+  --studio-text-main: #FAFAFA;
+  --studio-text-muted: #A1A1AA;
+  --studio-border-subtle: #27272A;
+  --studio-success: #10B981;
+
   /* Elite Design Tokens: Refectl Palette (Light Mode Defaults) */
   --elite-bg: #ffffff;
   --elite-card: rgba(255, 255, 255, 0.8);
@@ -92,6 +103,16 @@
   --color-elite-accent-purple: var(--elite-accent-purple);
   --color-elite-accent-emerald: var(--elite-accent-emerald);
   --color-elite-accent-blue: var(--elite-accent-blue);
+  
+  --color-studio-primary: var(--studio-primary);
+  --color-studio-bg: var(--studio-bg-dark);
+  --color-studio-surface: var(--studio-surface);
+  --color-studio-surface-hover: var(--studio-surface-hover);
+  --color-studio-text: var(--studio-text-main);
+  --color-studio-muted: var(--studio-text-muted);
+  --color-studio-border: var(--studio-border-subtle);
+  --color-studio-success: var(--studio-success);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { RouteAwareShell } from "@/components/layout/RouteAwareShell";
 import { GlobalBackButton } from "@/components/layout/GlobalBackButton";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
-import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
@@ -174,6 +173,7 @@ export default async function RootLayout({
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="preconnect" href="https://img.clerk.com" />
           <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+          <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
           <meta
             httpEquiv="Content-Security-Policy"
             content="upgrade-insecure-requests"
@@ -260,7 +260,6 @@ export default async function RootLayout({
             }}
           />
           <NextIntlClientProvider messages={messages} locale={locale}>
-            <ErrorBoundary>
               <ThemeProvider>
                 <ToastProvider>
                   <GlobalBackButton />
@@ -269,7 +268,6 @@ export default async function RootLayout({
                   <ServiceWorkerRegistration />
                 </ToastProvider>
               </ThemeProvider>
-            </ErrorBoundary>
           </NextIntlClientProvider>
           <PostHogProvider>
             {process.env.NODE_ENV === "production" && (

@@ -1,140 +1,126 @@
-import { Link } from '@/lib/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Newspaper, FileText, Video, PenTool, LayoutDashboard, Database, Activity, Target, Book, GraduationCap, Brain, Play, CalendarDays } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
-import { FadeIn } from '@/components/ui/Motion';
+'use client';
 
-export default async function StudioPage() {
-  const t = await getTranslations('Admin');
+import React from 'react';
+import Link from 'next/link';
 
-  const tools = [
-    {
-      title: 'Intelligence Studio',
-      description: 'Manage news articles, announcements, and global intelligence nodes.',
-      icon: Newspaper,
-      href: '/admin/studio/news',
-      color: 'text-elite-accent-cyan border-elite-accent-cyan/20 bg-elite-accent-cyan/10',
-      action: 'Enter Newsroom'
-    },
-    {
-      title: 'Event Command',
-      description: 'Create special event banners with global or country-specific visibility.',
-      icon: CalendarDays,
-      href: '/admin/studio/events',
-      color: 'text-amber-300 border-amber-300/20 bg-amber-300/10',
-      action: 'Manage Events'
-    },
-    {
-      title: 'Knowledge Base',
-      description: 'Synchronize blog posts and share vertical insights with the network.',
-      icon: PenTool,
-      href: '/admin/studio/blogs',
-      color: 'text-elite-accent-purple border-elite-accent-purple/20 bg-elite-accent-purple/10',
-      action: 'Manage Insights'
-    },
-    {
-      title: 'Curriculum Hub',
-      description: 'Engineers comprehensive courses, modules, and intellectual paths.',
-      icon: GraduationCap,
-      href: '/admin/studio/courses',
-      color: 'text-emerald-400 border-emerald-400/20 bg-emerald-400/10',
-      action: 'Design Paths'
-    },
-    {
-      title: 'Ebook Studio',
-      description: 'Create and distribute interactive digital texts and research papers.',
-      icon: Book,
-      href: '/admin/studio/ebooks',
-      color: 'text-amber-400 border-amber-400/20 bg-amber-400/10',
-      action: 'Publish Texts'
-    },
-    {
-      title: 'Neural Archives',
-      description: 'Manage quiz repositories, question banks, and assessment logic.',
-      icon: Database,
-      href: '/admin/questions',
-      color: 'text-blue-400 border-blue-400/20 bg-blue-400/10',
-      action: 'Configure Logic'
-    },
-    {
-      title: 'Flashcard Forge',
-      description: 'Design spaced-repetition memory modules and neural decks.',
-      icon: Brain,
-      href: '/admin/studio/flashcards',
-      color: 'text-pink-400 border-pink-400/20 bg-pink-400/10',
-      action: 'Forge Decks'
-    },
-    {
-      title: 'Media Vault',
-      description: 'Manage centralized video assets, streaming, and VOD delivery.',
-      icon: Play,
-      href: '/admin/videos',
-      color: 'text-indigo-400 border-indigo-400/20 bg-indigo-400/10',
-      action: 'Access Vault'
-    },
-    {
-      title: 'Network Pulse',
-      description: 'Real-time telemetry of user engagement and system throughput.',
-      icon: Activity,
-      href: '/admin/analytics',
-      color: 'text-orange-400 border-orange-400/20 bg-orange-400/10',
-      action: 'View Pulse'
-    },
-    {
-      title: 'Mission Control',
-      description: 'Global system configuration and cross-node administration.',
-      icon: LayoutDashboard,
-      href: '/admin/dashboard',
-      color: 'text-slate-400 border-white/10 bg-white/5',
-      action: 'System Root'
-    },
+export default function StudioDashboardPage() {
+  const quickStats = [
+    { label: 'Total Content', value: '1,284', change: '+12%', icon: 'description' },
+    { label: 'Avg Engagement', value: '8.4%', change: '+2.1%', icon: 'show_chart' },
+    { label: 'AI Gen Posts', value: '412', change: '+24%', icon: 'smart_toy', active: true },
+    { label: 'Network Reach', value: '48.2k', change: '+5.4%', icon: 'public' },
+  ];
+
+  const recentActivity = [
+    { type: 'blog', title: 'Why the Hantavirus Cruise Ship Outbreak...', time: '2h ago', status: 'Published' },
+    { type: 'ai', title: 'AI Assistant generated a draft for "Future of AI"', time: '5h ago', status: 'Draft' },
+    { type: 'system', title: 'New SEO Strategy deployed to 12 articles', time: '1d ago', status: 'System' },
   ];
 
   return (
-    <div className="min-h-screen bg-elite-bg text-slate-100 p-12 space-y-16">
-      <div className="flex flex-col gap-4 max-w-2xl">
-        <FadeIn>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-4 py-1.5 backdrop-blur-xl">
-            <Target size={12} className="text-elite-accent-cyan" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-elite-accent-cyan">Central Command</span>
+    <div className="flex-1 flex flex-col h-full overflow-y-auto custom-scrollbar">
+      <header className="h-20 shrink-0 flex items-center justify-between px-8 border-b border-studio-border">
+        <div>
+          <h1 className="text-xl font-bold text-studio-text tracking-tight">Command Center</h1>
+          <p className="text-[11px] text-studio-muted font-medium">Monitoring global content intelligence and performance</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex -space-x-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="w-8 h-8 rounded-full border-2 border-studio-surface bg-studio-surface-hover flex items-center justify-center text-[10px] font-bold text-studio-muted">
+                {String.fromCharCode(64 + i)}
+              </div>
+            ))}
           </div>
-        </FadeIn>
-        <FadeIn delay={0.1}>
-          <h1 className="text-5xl font-black text-white tracking-tighter uppercase leading-none">Content <span className="text-gradient-cyan">Studio</span> V2.0</h1>
-        </FadeIn>
-        <FadeIn delay={0.2}>
-          <p className="text-slate-400 font-medium text-lg leading-relaxed">
-            Welcome to the command interface. Deploy global intelligence, curricular paths, and manage the platform infrastructure from a single immersive portal.
-          </p>
-        </FadeIn>
-      </div>
+          <button className="bg-studio-primary text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg shadow-studio-primary/20">
+            Export Report
+          </button>
+        </div>
+      </header>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {tools.map((tool, index) => (
-          <FadeIn key={tool.title} delay={index * 0.05 + 0.3}>
-            <Card className="glass-card-premium border-white/5 rounded-[2.5rem] group hover:border-elite-accent-cyan/20 transition-all duration-500 relative overflow-hidden h-full flex flex-col">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-              <CardHeader className="p-10 space-y-6 flex-1">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${tool.color} group-hover:scale-110 transition-transform duration-500`}>
-                  <tool.icon className="w-6 h-6" />
+      <div className="p-8 space-y-8">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {quickStats.map((stat) => (
+            <div key={stat.label} className={`bg-studio-surface border border-studio-border p-6 rounded-2xl relative overflow-hidden group hover:border-studio-primary/30 transition-colors ${stat.active ? 'ring-1 ring-studio-primary/20' : ''}`}>
+              <div className="flex justify-between items-start mb-4">
+                <div className="w-10 h-10 rounded-xl bg-studio-surface-hover flex items-center justify-center text-studio-muted group-hover:text-studio-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">{stat.icon}</span>
                 </div>
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl font-black text-white tracking-tight uppercase group-hover:text-elite-accent-cyan transition-colors">{tool.title}</CardTitle>
-                  <CardDescription className="text-slate-500 font-medium leading-relaxed">{tool.description}</CardDescription>
+                <span className={`text-[10px] font-bold ${stat.change.startsWith('+') ? 'text-studio-success' : 'text-red-400'}`}>
+                  {stat.change}
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-studio-text mb-1">{stat.value}</div>
+              <div className="text-[10px] font-bold text-studio-muted uppercase tracking-wider">{stat.label}</div>
+              
+              {stat.active && (
+                <div className="absolute top-0 right-0 w-16 h-16 bg-studio-primary/5 rounded-bl-[4rem]" />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Chart Placeholder */}
+          <div className="lg:col-span-2 bg-studio-surface border border-studio-border rounded-2xl p-6 h-[400px] flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-sm font-bold text-studio-text">Content Performance</h3>
+              <div className="flex gap-2">
+                <button className="px-3 py-1 rounded-md bg-studio-surface-hover text-studio-text text-[10px] font-bold">Week</button>
+                <button className="px-3 py-1 rounded-md text-studio-muted text-[10px] font-bold">Month</button>
+              </div>
+            </div>
+            <div className="flex-1 flex items-end gap-2 px-2">
+              {[40, 60, 30, 80, 50, 90, 70, 45, 85, 55, 35, 75].map((h, i) => (
+                <div key={i} className="flex-1 group relative">
+                  <div 
+                    className="w-full bg-studio-primary/20 group-hover:bg-studio-primary rounded-t-sm transition-all duration-500" 
+                    style={{ height: `${h}%` }}
+                  />
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-studio-surface border border-studio-border px-2 py-1 rounded text-[8px] font-bold text-studio-text opacity-0 group-hover:opacity-100 transition-opacity">
+                    {h}%
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-10 pt-0">
-                <Link href={tool.href}>
-                  <Button className="w-full h-14 rounded-2xl border border-white/10 bg-white/5 text-white font-black uppercase text-[10px] tracking-[0.3em] group-hover:bg-elite-accent-cyan group-hover:text-black group-hover:border-transparent transition-all duration-500">
-                    {tool.action}
-                    <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </FadeIn>
-        ))}
+              ))}
+            </div>
+            <div className="flex justify-between mt-4 px-1 text-[9px] font-bold text-studio-muted uppercase tracking-widest">
+              <span>Jan</span>
+              <span>Feb</span>
+              <span>Mar</span>
+              <span>Apr</span>
+              <span>May</span>
+              <span>Jun</span>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-studio-surface border border-studio-border rounded-2xl p-6 flex flex-col">
+            <h3 className="text-sm font-bold text-studio-text mb-6">Recent Activity</h3>
+            <div className="flex-1 space-y-4">
+              {recentActivity.map((act, i) => (
+                <div key={i} className="flex gap-4 group">
+                  <div className="w-8 h-8 rounded-lg bg-studio-surface-hover border border-studio-border flex items-center justify-center shrink-0 group-hover:border-studio-primary/30 transition-colors">
+                    <span className="material-symbols-outlined text-[16px] text-studio-muted">
+                      {act.type === 'blog' ? 'description' : act.type === 'ai' ? 'smart_toy' : 'settings'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-bold text-studio-text truncate">{act.title}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[9px] text-studio-muted uppercase tracking-wider font-bold">{act.time}</span>
+                      <span className="w-1 h-1 rounded-full bg-studio-border" />
+                      <span className="text-[9px] text-studio-primary font-bold uppercase tracking-wider">{act.status}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="w-full mt-6 py-2 text-[10px] font-bold text-studio-muted hover:text-studio-text border border-studio-border rounded-lg transition-colors uppercase tracking-widest">
+              View All Activity
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

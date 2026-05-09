@@ -675,8 +675,6 @@ export default function NewsFeedClient({
                   </div>
                 )}
 
-                )}
-
                 {/* Sub-Header: Secondary Intelligence Flux - High Density */}
                 <div className="col-span-1 md:col-span-2 xl:col-span-3 2xl:col-span-4 flex items-center justify-between my-2 border-y border-white/5 py-3">
                   <div className="flex items-center gap-3">
@@ -712,6 +710,7 @@ export default function NewsFeedClient({
                     ? secondary.slice(4, 44) 
                     : items.slice(0, 40);
                   
+                  return displayItems.map((item, idx) => (
                     <div key={item.id} className="contents">
                       <motion.div
                         variants={itemVariants}

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { getDatabase } from '@/lib/mongodb';
 import { NewsService } from '@/lib/news-service';
 import { CourseServiceNeon } from '@/lib/course-service-neon';
-import { GAME_ROUTES } from '@/games/shared/seo';
+
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.refectl.com';
@@ -18,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/news',
     '/shop',
     '/live',
-    '/games',
     '/about',
     '/contact',
     '/careers',
@@ -26,7 +25,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/learning-paths',
     '/privacy',
     '/terms',
-    ...GAME_ROUTES.map((slug) => `/games/${slug}`),
   ];
 
   // Generate localized static routes

@@ -39,12 +39,6 @@ export interface RoleNavigationConfig {
   showViewAs: boolean;
 }
 
-// This will be populated dynamically in the Navbar component to avoid circular dependencies
-// or we can use a basic structure here and enrich it in the client.
-export const UTILITIES_ITEMS: NavLink[] = [
-  { href: '/tools', label: 'All Utilities Hub', icon: '🚀' },
-];
-
 export const GAMES_LINK: NavLink = { href: '/games', label: 'Games', icon: '🎮' };
 
 export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
@@ -57,12 +51,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Browse all educational content',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
-          { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
-          { href: '/courses?type=text', label: 'Text Courses', icon: '📄' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books Library', icon: '📘' },
           { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/subjects', label: 'All Subjects', icon: '🏷️' },
         ],
       },
 
@@ -75,7 +66,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/blog', label: 'Blog Platform', icon: '✍️' },
           { href: '/news', label: 'Terai Times', icon: '📰' },
           { href: '/forum', label: 'Discussion Forum', icon: '💬' },
-          { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
         ],
       },
 
@@ -84,18 +74,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
 
       // 🎮 Games - Play online
       GAMES_LINK,
-
-      // 🎯 Practice Hub - Assessments & tests
-      {
-        label: 'Master',
-        icon: '🎯',
-        description: 'Practice & self-assessment',
-        items: [
-          { href: '/quizzes', label: 'Quiz Bank', icon: '📝' },
-          { href: '/exams', label: 'Exam Center', icon: '📊' },
-          { href: '/question-bank', label: 'Question Bank', icon: '🗂️' },
-        ],
-      },
 
       // 🛡️ Administration - Full control
       {
@@ -116,12 +94,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       },
 
       // 🛠️ Utilities - Support Tools
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Professional toolkits and calculators',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/admin/super', label: 'Super Admin Console' },
     consoleLink: { href: '/admin/super', label: 'Super Admin Console' },
@@ -137,12 +110,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Browse educational content',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
-          { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
-          { href: '/courses?type=text', label: 'Text Courses', icon: '📄' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books Library', icon: '📘' },
           { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/subjects', label: 'All Subjects', icon: '🏷️' },
         ],
       },
 
@@ -154,7 +124,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/blog', label: 'Blog Platform', icon: '✍️' },
           { href: '/news', label: 'Terai Times', icon: '📰' },
           { href: '/forum', label: 'Discussion Forum', icon: '💬' },
-          { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
         ],
       },
 
@@ -180,12 +149,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       },
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Professional toolkits',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/admin/dashboard', label: 'Admin Dashboard' },
     consoleLink: { href: '/admin', label: 'Admin Console' },
@@ -201,12 +165,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Access learning content',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
-          { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
-          { href: '/courses?type=text', label: 'Text Courses', icon: '📄' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books Library', icon: '📘' },
           { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/subjects', label: 'All Subjects', icon: '🏷️' },
         ],
       },
 
@@ -218,7 +179,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/blog', label: 'Blog Platform', icon: '✍️' },
           { href: '/news', label: 'Terai Times', icon: '📰' },
           { href: '/forum', label: 'Discussion Forum', icon: '💬' },
-          { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
         ],
       },
 
@@ -242,24 +202,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         ],
       },
 
-      {
-        label: 'Master',
-        icon: '🎯',
-        description: 'Assessments & practice',
-        items: [
-          { href: '/quizzes', label: 'Quiz Bank', icon: '📝' },
-          { href: '/exams', label: 'Exam Center', icon: '📊' },
-          { href: '/question-bank', label: 'Question Bank', icon: '🗂️' },
-        ],
-      },
-
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Support tools',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/teacher/dashboard', label: 'Teacher Dashboard' },
     showAdminBadge: false,
@@ -274,9 +218,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Access content',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books', icon: '📘' },
-          { href: '/subjects', label: 'Subjects', icon: '🏷️' },
         ],
       },
 
@@ -306,12 +249,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       GAMES_LINK,
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Support tools',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/admin/studio/news', label: 'News Studio' },
     showAdminBadge: true,
@@ -326,9 +264,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Access content',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books', icon: '📘' },
-          { href: '/subjects', label: 'Subjects', icon: '🏷️' },
         ],
       },
 
@@ -357,12 +294,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       GAMES_LINK,
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Support tools',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/admin/studio/news', label: 'News Studio' },
     showAdminBadge: true,
@@ -379,23 +311,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         items: [
           { href: '/dashboard', label: 'My Dashboard', icon: '📊' },
           { href: '/my-learning', label: 'My Courses', icon: '📖' },
-          { href: '/courses', label: 'All Courses', icon: '📚' },
-          { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
-          { href: '/courses?type=text', label: 'Text Courses', icon: '📄' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books', icon: '📘' },
           { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/subjects', label: 'All Subjects', icon: '🏷️' },
-        ],
-      },
-
-      {
-        label: 'Master',
-        icon: '🎯',
-        description: 'Practice & assessment',
-        items: [
-          { href: '/quizzes', label: 'Quiz Bank', icon: '📝' },
-          { href: '/exams', label: 'Exam Center', icon: '📊' },
-          { href: '/question-bank', label: 'Question Bank', icon: '🗂️' },
         ],
       },
 
@@ -407,7 +325,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/blog', label: 'Blog Platform', icon: '✍️' },
           { href: '/news', label: 'Terai Times', icon: '📰' },
           { href: '/forum', label: 'Discussion Forum', icon: '💬' },
-          { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
         ],
       },
 
@@ -418,12 +335,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       GAMES_LINK,
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Support toolkits',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
@@ -438,12 +350,9 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '📚',
         description: 'Explore courses',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
-          { href: '/courses?type=video', label: 'Video Courses', icon: '🎞️' },
-          { href: '/courses?type=text', label: 'Text Courses', icon: '📄' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books', icon: '📘' },
           { href: '/live', label: 'Live Classes', icon: '🎥' },
-          { href: '/subjects', label: 'Subjects', icon: '🏷️' },
         ],
       },
 
@@ -455,17 +364,6 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
           { href: '/blog', label: 'Blog', icon: '✍️' },
           { href: '/news', label: 'News', icon: '📰' },
           { href: '/forum', label: 'Forums', icon: '💬' },
-          { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-        ],
-      },
-
-      {
-        label: 'Practice',
-        icon: '🎯',
-        description: 'Test yourself',
-        items: [
-          { href: '/quizzes', label: 'Quizzes', icon: '📝' },
-          { href: '/exams', label: 'Practice Exams', icon: '📊' },
         ],
       },
 
@@ -476,12 +374,7 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       GAMES_LINK,
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Support toolkits',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
     ],
     dashboardLink: { href: '/dashboard', label: 'My Dashboard' },
     showAdminBadge: false,
@@ -496,9 +389,8 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
         icon: '🔭',
         description: 'Browse courses',
         items: [
-          { href: '/courses', label: 'All Courses', icon: '📚' },
+          { href: '/courses', label: 'Courses', icon: '📚' },
           { href: '/ebooks', label: 'E-Books', icon: '📘' },
-          { href: '/subjects', label: 'Subjects', icon: '🏷️' },
         ],
       },
 
@@ -516,19 +408,14 @@ export const ROLE_NAVIGATION: Record<UserRole, RoleNavigationConfig> = {
       GAMES_LINK,
 
       // 🛠️ Utilities
-      {
-        label: 'Utilities',
-        icon: '🛠️',
-        description: 'Free toolkits',
-        items: UTILITIES_ITEMS,
-      },
+      { href: '/tools', label: 'Utilities', icon: '🛠️' },
 
       {
         label: 'Start Learning',
         icon: '👑',
         description: 'Join our community',
         items: [
-          { href: '/pricing', label: 'Browse Plans', icon: '💎' },
+          { href: '/pricing', label: 'Buy us a Coffee', icon: '☕' },
           { href: '/shop', label: 'Shop', icon: '' },
         ],
       },
@@ -560,4 +447,3 @@ export function getEffectiveRole(
 ): UserRole {
   return viewAsRole || actualRole || 'student';
 }
-
